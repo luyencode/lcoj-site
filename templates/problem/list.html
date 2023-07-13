@@ -220,7 +220,7 @@
                             {% endif %}
                         {% endif %}
                         <td class="problem-code">
-                            <a href="{{ url('problem_detail', problem.code) }}">{{ problem.code}}</a>
+                            <a href="{{ url('problem_detail', problem.code) }}">{{ problem.code|upper }}</a>
                         </td>
                         <td class="problem-name">
                             <a href="{{ url('problem_detail', problem.code) }}">{{ problem.i18n_name or problem.name }}</a>
