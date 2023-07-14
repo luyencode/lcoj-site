@@ -1,12 +1,16 @@
 @import "vars";
 
-#tagproblem-table, #tag-table {
-    td, th {
+#tagproblem-table,
+#tag-table {
+
+    td,
+    th {
         &.problem-name {
             text-align: left;
         }
 
-        &.problem-code, &.judge {
+        &.problem-code,
+        &.judge {
             white-space: nowrap;
         }
 
@@ -38,22 +42,33 @@
         padding-top: 1px;
         text-align: right;
 
-        &, a {
+        &,
+        a {
             color: grey !important;
         }
     }
 }
 
 #problem-table {
-    td, th {
+
+    td,
+    th {
+
         // Text columns are left-aligned
-        &.problem-code, &.problem-name, &.category, &.types {
+        &.problem-code,
+        &.problem-name,
+        &.category,
+        &.types {
             text-align: left;
             padding: 0 1rem;
         }
 
         // Numeric columns are center-aligned
-        &.solved, &.points, &.ac-rate, &.editorial, &.users {
+        &.solved,
+        &.points,
+        &.ac-rate,
+        &.editorial,
+        &.users {
             padding: 0 10px;
             white-space: nowrap;
         }
@@ -120,7 +135,8 @@
     height: 2.3em;
 }
 
-label[for="category"], label[for="type"] {
+label[for="category"],
+label[for="type"] {
     padding-bottom: 0.25em;
     display: block;
 }
@@ -156,7 +172,8 @@ ul.problem-list {
     content: " ";
 }
 
-.authors-value, .judges-value {
+.authors-value,
+.judges-value {
     padding-left: 1.5em;
     overflow-wrap: break-word;
 }
@@ -186,7 +203,7 @@ ul.problem-list {
 }
 
 .no-editorial-color {
-    color: #DE2121;
+    color: #d1caca;
 }
 
 .submissions-left {
@@ -275,7 +292,8 @@ ul.problem-list {
     #submit-wrapper {
         margin-top: 0.7em;
 
-        #editor, #language {
+        #editor,
+        #language {
             margin-top: 4px;
         }
 
@@ -286,7 +304,7 @@ ul.problem-list {
 
     #file_drag {
         border: 2px dashed #999;
-        border-radius : 7px;
+        border-radius: 7px;
         color: #999;
         cursor: pointer;
         display: block;
@@ -294,7 +312,8 @@ ul.problem-list {
         text-align: center;
         transition: background 0.3s, color 0.3s;
 
-        &:hover, &.hover {
+        &:hover,
+        &.hover {
             background: #ddd;
             border-style: solid;
             box-shadow: inset 0 3px 4px #999;
@@ -413,7 +432,8 @@ ul.problem-list {
     }
 }
 
-#category, #types {
+#category,
+#types {
     visibility: hidden;
 }
 
@@ -432,7 +452,8 @@ ul.problem-list {
         left: -8px;
     }
 
-    .noUi-handle:before, .noUi-handle:after {
+    .noUi-handle:before,
+    .noUi-handle:after {
         top: 3px;
         height: 12px;
     }
