@@ -80,7 +80,7 @@
             {% if problem.id in completed_problem_ids %}
                 <a href="{{ url('user_submissions', problem.code, request.user.username) }}">
                     {% if problem.is_public or request.in_contest %}
-                        <i class="solved-problem-color title-state fa fa-check-circle"></i>
+                        <i class="solved-problem-color title-state fa fa-smile-o"></i>
                     {% else %}
                         <i class="solved-problem-color title-state fa fa-lock"></i>
                     {% endif %}

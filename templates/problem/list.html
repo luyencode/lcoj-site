@@ -196,7 +196,7 @@
                     <td class="solved" solved="1">
                         <a href="{{ url('user_submissions', problem.code, request.user.username) }}">
                             {% if problem.is_public %}
-                            <i class="solved-problem-color fa fa-check-circle"></i>
+                            <i class="solved-problem-color fa fa-smile-o"></i>
                             {% else %}
                             <i class="solved-problem-color fa fa-lock"></i>
                             {% endif %}
@@ -246,7 +246,7 @@
                     <td>
                         {% if problem.has_public_editorial %}
                         <a href="{{ url('problem_editorial', problem.code) }}">
-                            <i class="has-editorial-color fa fa-check-circle"></i>
+                            <i class="has-editorial-color fa fa-smile-o"></i>
                         </a>
                         {% else %}
                         <i class="no-editorial-color fa fa-minus-circle"></i>
