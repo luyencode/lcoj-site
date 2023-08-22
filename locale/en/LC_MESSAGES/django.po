@@ -4411,7 +4411,7 @@ msgstr ""
 
 #: templates/base.html:362
 #, python-format
-msgid "proudly powered by %(dmoj)s"
+msgid "proudly powered by %(dmoj)s and %(vnoj)s"
 msgstr ""
 
 #: templates/base.html:363
