@@ -185,7 +185,7 @@
                 <div class="sidebox-content">
                     <ul class="problem-list">
                         {% for problem in new_problems %}
-                            <li><a href="{{ url('problem_detail', problem.code) }}">{{ problem.name }}</a></li>
+                            <li><a href="{{ url('problem_detail', problem.code) }}">{{ problem.code|upper }} - {{ problem.name }}</a></li>
                         {% endfor %}
                     </ul>
                     <span class="rssatom">
