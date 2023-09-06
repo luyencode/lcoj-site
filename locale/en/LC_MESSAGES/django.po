@@ -4419,6 +4419,11 @@ msgstr ""
 msgid "follow us on %(github)s and %(facebook)s"
 msgstr ""
 
+#: templates/base.html:363
+#, python-format
+msgid "made with love by %(facebook)s"
+msgstr ""
+
 #: templates/blog/blog-list-tabs.html:4
 msgid "Newsfeed"
 msgstr ""
