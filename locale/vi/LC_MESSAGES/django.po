@@ -4802,6 +4802,11 @@ msgstr "dựa trên nền tảng %(dmoj)s và %(vnoj)s"
 msgid "follow us on %(github)s and %(facebook)s"
 msgstr "theo dõi LCOJ trên %(github)s và %(facebook)s"
 
+#: templates/base.html:363
+#, python-format
+msgid "made with love by %(facebook)s"
+msgstr "được tạo bởi %(facebook)s"
+
 #: templates/blog/blog-list-tabs.html:4
 msgid "Newsfeed"
 msgstr "Tin tức"
