@@ -36,6 +36,17 @@
     {% endif %}
     {% block og_title %}{% endblock %}
     <meta property="og:site_name" content="{{ SITE_LONG_NAME }}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Luyện Code Online - Học lập trình tương tác trực tuyến">
+    <meta property='fb:app_id' content='168993876192748'>
+    <meta property='og:image:alt' content='Luyện Code Online - Học lập trình tương tác trực tuyến'>
+    <meta property='og:image:type' content='image/png'>
+    <meta name='twitter:card' content='summary_large_image'>
+    <meta name='twitter:title' content='Luyện Code Online - Học lập trình tương tác trực tuyến'>
+    <meta name='twitter:description' content='Luyện code & Học lập trình tương tác trực tuyến cực kỳ hấp dẫn qua việc chấm code tự động'>
+    <meta name='twitter:site' content='@nguyenvanhieuvn'>
+    <meta name='twitter:creator' content='@nguyenvanhieuvn'>
+    <meta property='og:description' content='Luyện code & Học lập trình tương tác trực tuyến cực kỳ hấp dẫn qua việc chấm code tự động'>
     <meta property="og:url"
           content="{{ DMOJ_SCHEME }}://{{ DMOJ_CANONICAL|default(site.domain) }}{{ request.get_full_path() }}">
 
@@ -204,6 +215,14 @@
             }
         </style>
     </noscript>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HJ344NCQQW"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-HJ344NCQQW');
+    </script>
 </head>
 <body>
 <svg width="0" height="0" style="display: block">
