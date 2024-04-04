@@ -1,6 +1,6 @@
 [submodule "resources/libs"]
 	path = resources/libs
-	url = https://github.com/DMOJ/site-assets.git
+	url = https://github.com/luyencode/site-assets.git
 	branch = master
 [submodule "resources/vnoj"]
 	path = resources/vnoj
