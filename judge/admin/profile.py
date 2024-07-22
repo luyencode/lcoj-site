@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as OldUserAdmin
 from django.forms import ModelForm
 from django.urls import reverse_lazy
 from django.utils.html import format_html
@@ -58,9 +59,9 @@ class WebAuthnInline(admin.TabularInline):
 
 
 class ProfileAdmin(NoBatchDeleteMixin, VersionAdmin):
-    fields = ('user', 'display_rank', 'badges', 'display_badge', 'about', 'organizations', 'timezone', 'language',
-              'ace_theme', 'math_engine', 'last_access', 'ip', 'mute', 'is_unlisted', 'allow_tagging', 'notes',
-              'username_display_override', 'ban_reason', 'is_totp_enabled', 'user_script', 'current_contest')
+    fields = ('user', 'display_rank', 'badges', 'display_badge', 'about', 'organizations', 'vnoj_points', 'timezone',
+              'language', 'ace_theme', 'math_engine', 'last_access', 'ip', 'mute', 'is_unlisted', 'allow_tagging',
+              'notes', 'username_display_override', 'ban_reason', 'is_totp_enabled', 'user_script', 'current_contest')
     readonly_fields = ('user',)
     list_display = ('admin_user_admin', 'email', 'is_totp_enabled', 'timezone_full',
                     'date_joined', 'last_access', 'ip', 'show_public')
@@ -72,6 +73,17 @@ class ProfileAdmin(NoBatchDeleteMixin, VersionAdmin):
     actions_on_bottom = True
     form = ProfileForm
     inlines = [WebAuthnInline]
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    # We can't use has_delete_permission here because we still want user profiles to be
+    # deleteable through related objects (i.e. User). Thus, we simply hide the delete button.
+    # If an admin wants to go directly to the delete endpoint to delete a profile, more
+    # power to them.
+    def render_change_form(self, request, context, **kwargs):
+        context['show_delete'] = False
+        return super().render_change_form(request, context, **kwargs)
 
     def get_queryset(self, request):
         return super(ProfileAdmin, self).get_queryset(request).select_related('user')
@@ -91,31 +103,28 @@ class ProfileAdmin(NoBatchDeleteMixin, VersionAdmin):
             fields += ('is_totp_enabled',)
         return fields
 
+    @admin.display(description='')
     def show_public(self, obj):
         return format_html('<a href="{0}" style="white-space:nowrap;">{1}</a>',
                            obj.get_absolute_url(), gettext('View on site'))
-    show_public.short_description = ''
 
+    @admin.display(description=_('user'), ordering='user__username')
     def admin_user_admin(self, obj):
         return obj.username
-    admin_user_admin.admin_order_field = 'user__username'
-    admin_user_admin.short_description = _('User')
 
+    @admin.display(description=_('email'), ordering='user__email')
     def email(self, obj):
         return obj.user.email
-    email.admin_order_field = 'user__email'
-    email.short_description = _('Email')
 
+    @admin.display(description=_('timezone'), ordering='timezone')
     def timezone_full(self, obj):
         return obj.timezone
-    timezone_full.admin_order_field = 'timezone'
-    timezone_full.short_description = _('Timezone')
 
+    @admin.display(description=_('date joined'), ordering='user__date_joined')
     def date_joined(self, obj):
         return obj.user.date_joined
-    date_joined.admin_order_field = 'user__date_joined'
-    date_joined.short_description = _('date joined')
 
+    @admin.display(description=_('Recalculate scores'))
     def recalculate_points(self, request, queryset):
         count = 0
         for profile in queryset:
@@ -124,8 +133,8 @@ class ProfileAdmin(NoBatchDeleteMixin, VersionAdmin):
         self.message_user(request, ngettext('%d user had scores recalculated.',
                                             '%d users had scores recalculated.',
                                             count) % count)
-    recalculate_points.short_description = _('Recalculate scores')
 
+    @admin.display(description=_('Recalulate contribution points'))
     def recalulate_contribution_points(self, request, queryset):
         count = 0
         for profile in queryset:
@@ -134,7 +143,6 @@ class ProfileAdmin(NoBatchDeleteMixin, VersionAdmin):
         self.message_user(request, ngettext('%d user has contribution scores recalculated.',
                                             '%d users have contribution scores recalculated.',
                                             count) % count)
-    recalulate_contribution_points.short_description = _('Recalulate contribution points')
 
     def get_form(self, request, obj=None, **kwargs):
         form = super(ProfileAdmin, self).get_form(request, obj, **kwargs)
@@ -144,3 +152,16 @@ class ProfileAdmin(NoBatchDeleteMixin, VersionAdmin):
                 mode='javascript', theme=request.profile.resolved_ace_theme,
             )
         return form
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if form.changed_data and 'ban_reason' in form.changed_data and form.cleaned_data['ban_reason'] == '':
+            obj.ban_reason = None
+            obj.save()
+
+
+class UserAdmin(OldUserAdmin):
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if not change:
+            Profile.objects.create(user=obj)

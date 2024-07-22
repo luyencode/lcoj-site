@@ -3396,6 +3396,11 @@ msgstr "Bắt đầu nhóm, case #%d yêu cầu điểm."
 msgid "Attempt to end batch outside of one in case #%d."
 msgstr "Kết thúc nhóm nhưng không có bắt đầu ở case #%d"
 
+#: judge/utils/problem_data.py:297
+#, python-format
+msgid "Total points must be greater than 0."
+msgstr "Tổng điểm của các test phải lớn hơn 0."
+
 #: judge/utils/problem_data.py:301
 msgid "How did you corrupt the zip path?"
 msgstr ""
@@ -3591,7 +3596,7 @@ msgstr "Không thể tham gia"
 msgid ""
 "You have been declared persona non grata for this contest. You are "
 "permanently barred from joining this contest."
-msgstr "Bạn đã được coi là cá nhận không tham gia kỳ thi này."
+msgstr "Bạn đã được coi là cá nhân không tham gia kỳ thi này."
 
 #: judge/views/contests.py:471
 msgid "Virtual joining not allowed"

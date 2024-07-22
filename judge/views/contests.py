@@ -27,8 +27,8 @@ from django.utils.html import escape, format_html
 from django.utils.safestring import mark_safe
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext as _, gettext_lazy
-from django.views.generic import FormView, ListView, TemplateView
-from django.views.generic.detail import DetailView, SingleObjectMixin, View
+from django.views.generic import FormView, ListView, TemplateView, View
+from django.views.generic.detail import DetailView, SingleObjectMixin
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import BaseListView
 from icalendar import Calendar as ICalendar, Event
@@ -1245,8 +1245,8 @@ class CreateContest(PermissionRequiredMixin, TitleMixin, CreateView):
 
     def get_contest_problem_formset(self):
         if self.request.POST:
-            return ProposeContestProblemFormSet(self.request.POST)
-        return ProposeContestProblemFormSet()
+            return ProposeContestProblemFormSet(self.request.POST, form_kwargs={'user': self.request.user})
+        return ProposeContestProblemFormSet(form_kwargs={'user': self.request.user})
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
@@ -1315,8 +1315,9 @@ class EditContest(ContestMixin, LoginRequiredMixin, TitleMixin, UpdateView):
 
     def get_contest_problem_formset(self):
         if self.request.POST:
-            return ProposeContestProblemFormSet(self.request.POST, instance=self.get_object())
-        return ProposeContestProblemFormSet(instance=self.get_object())
+            return ProposeContestProblemFormSet(self.request.POST, instance=self.get_object(),
+                                                form_kwargs={'user': self.request.user})
+        return ProposeContestProblemFormSet(instance=self.get_object(), form_kwargs={'user': self.request.user})
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)

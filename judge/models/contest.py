@@ -109,7 +109,7 @@ class Contest(models.Model):
     scoreboard_cache_timeout = models.PositiveIntegerField(verbose_name=('scoreboard cache timeout'), default=0,
                                                            help_text=_('How long should the scoreboard be cached. '
                                                                        'Set to 0 to disable caching.'))
-    show_submission_list = models.BooleanField(default=True,
+    show_submission_list = models.BooleanField(default=False,
                                                help_text=_('Allow contestants to view submission list '
                                                            'of others in contest time'))
     use_clarifications = models.BooleanField(verbose_name=_('no comments'),
@@ -240,7 +240,7 @@ class Contest(models.Model):
         if user.is_authenticated:
             profile = user.profile
             return profile and profile.current_contest is not None and profile.current_contest.contest == self \
-                and profile.current_contest.contest.can_join
+                and (profile.current_contest.contest.can_join or profile.current_contest.spectate)
         return False
 
     def can_see_own_scoreboard(self, user):
@@ -589,6 +589,23 @@ class ContestParticipation(models.Model):
                 self.save(update_fields=['score', 'cumtime', 'tiebreaker'])
     recompute_results.alters_data = True
 
+    def check_ban(self):
+        if not settings.VNOJ_SHOULD_BAN_FOR_CHEATING_IN_CONTESTS or self.contest.is_organization_private:
+            return
+
+        disqualifications_count = ContestParticipation.objects.filter(
+            user=self.user,
+            contest__is_organization_private=False,
+            is_disqualified=True,
+        ).count()
+        if disqualifications_count >= settings.VNOJ_MAX_DISQUALIFICATIONS_BEFORE_BANNING and \
+                not self.user.is_banned:
+            self.user.ban_user(settings.VNOJ_CONTEST_CHEATING_BAN_MESSAGE)
+        elif disqualifications_count < settings.VNOJ_MAX_DISQUALIFICATIONS_BEFORE_BANNING and \
+                self.user.is_banned and self.user.ban_reason == settings.VNOJ_CONTEST_CHEATING_BAN_MESSAGE:
+            self.user.unban_user()
+    check_ban.alters_data = True
+
     def set_disqualified(self, disqualified):
         self.is_disqualified = disqualified
         self.recompute_results()
@@ -600,6 +617,7 @@ class ContestParticipation(models.Model):
             self.contest.banned_users.add(self.user)
         else:
             self.contest.banned_users.remove(self.user)
+        self.check_ban()
     set_disqualified.alters_data = True
 
     @property

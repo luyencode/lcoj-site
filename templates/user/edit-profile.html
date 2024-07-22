@@ -42,7 +42,8 @@
         #edit-form {
             border: unset;
             background: unset;
-            max-width: 700px;
+            display: block;
+            padding-bottom: 30px;
         }
 
         .settings {
@@ -143,6 +144,15 @@
                             $('#remove-api-token-button').remove();
                         },
                     });
+                }
+            });
+
+            // Alert when leaving an org
+            $('.sortedm2m input').click(function () {
+                if (!$(this).is(':checked')) {
+                    return confirm('{{ _('Are you sure you want to leave this organization?') }}\n' +
+                               '{{ _('You will have to rejoin to show up on the organization leaderboard.') }}'
+                            );
                 }
             });
         });
@@ -260,14 +270,18 @@
 {% block body %}
     <div class="centered-form">
         <form id="edit-form" action="" method="post" class="form-area">
-            {% if form.errors %}
+            {% if form.errors or form_user.errors %}
                 <div class="alert alert-danger alert-dismissable">
                     <a href="#" class="close">x</a>
-                    {{ form.non_field_errors() }}
-                    {{ form.about.errors }}
+                    {% if form.errors %}
+                        {{ form.non_field_errors() }}
+                        {{ form.about.errors }}
+                    {% endif %}
+                    {% if form_user.errors %}
+                        {{ form_user.first_name.errors }}
+                    {% endif %}
                 </div>
             {% endif %}
-
             {% csrf_token %}
             {% if form_user.first_name %}
                 <table>
