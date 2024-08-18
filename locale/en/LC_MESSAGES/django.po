@@ -4410,7 +4410,7 @@ msgid "This site works best with JavaScript enabled."
 msgstr ""
 
 #: templates/base.html:362
-msgid "proudly powered by <strong>DMOJ</strong> and <strong>VNOJ"
+msgid "proudly powered by"
 msgstr ""
 
 #: templates/base.html:362
