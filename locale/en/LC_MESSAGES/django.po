@@ -4410,8 +4410,11 @@ msgid "This site works best with JavaScript enabled."
 msgstr ""
 
 #: templates/base.html:362
-#, python-format
-msgid "proudly powered by %(dmoj)s and %(vnoj)s"
+msgid "proudly powered by <strong>DMOJ</strong> and <strong>VNOJ"
+msgstr ""
+
+#: templates/base.html:362
+msgid "System Status"
 msgstr ""
 
 #: templates/base.html:363
