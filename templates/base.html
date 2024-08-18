@@ -381,16 +381,17 @@
     <footer>
         <span id="footer-content">
             <br>
-            {{_('proudly powered by %(dmoj)s and %(vnoj)s', dmoj=safe('<a style="color: #808080" href="https://dmoj.ca" target="_blank"><b>DMOJ</b></a>'), vnoj=safe('<a style="color: #808080" href="https://oj.vnoi.info" target="_blank"><b>VNOJ</b></a>'))}} |
-            {{_('made with love by %(facebook)s', facebook=safe('<a style="color: #808080" href="https://www.facebook.com/hieunv.me"><b>Hieu Nguyen</b></a>'))}}
+            {{ _('proudly powered by <strong>DMOJ</strong> and <strong>VNOJ</strong>') }} |
+            {{_('%(github)s', github=safe('<a style="color: #808080" href="https://github.com/luyencode"><b>Github</b></a>'))}} |
+            {{_('%(status)s', github=safe('<a style="color: #808080" href="https://status.luyencode.net"><b>{{ _('System Status')}}</b></a>'))}} |
             {% if misc_config.footer %}
-                {{ misc_config.footer|safe }} |
+                | {{ misc_config.footer|safe }}
             {% endif %}
             <form id="set_language" action="{{ url('set_language') }}" method="post" style="display: inline">
                 {% csrf_token %}
-            <input name="next" type="hidden" value="{{ request.get_full_path() }}">
-            <input name="language" type="hidden" value="{{LANGUAGE_CODE}}">
-          </form>
+                <input name="next" type="hidden" value="{{ request.get_full_path() }}">
+                <input name="language" type="hidden" value="{{LANGUAGE_CODE}}">
+            </form>
         </span>
     </footer>
 </div>

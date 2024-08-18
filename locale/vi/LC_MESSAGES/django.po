@@ -4794,8 +4794,12 @@ msgstr "Trang web này hoạt động tốt nhất khi JavaScript được cho p
 
 #: templates/base.html:363
 #, python-format
-msgid "proudly powered by %(dmoj)s and %(vnoj)s"
-msgstr "dựa trên nền tảng %(dmoj)s và %(vnoj)s"
+msgid "proudly powered by <strong>DMOJ</strong> and <strong>VNOJ"
+msgstr "dựa trên <strong>DMOJ</strong> và <strong>VNOJ"
+
+#: templates/base.html:362
+msgid "System Status"
+msgstr "Trạng thái hệ thống"
 
 #: templates/base.html:364
 #, python-format
