@@ -1,4 +1,3 @@
-{% with comment_lock=True %}
 {% if not request.official_contest_mode or request.user.is_superuser %}
     <div id="comments" class="comment-area">
         <h2><i style="padding-right: 0.3em" class="fa fa-comments"></i>{{ _('Comments') }}</h2>
@@ -20,7 +19,7 @@
         {% endif %}
 
         {% if has_comments %}
-            <ul class="comments top-level-comments new-comments" style="display:none;">
+            <ul class="comments top-level-comments new-comments">
                 {% set logged_in = request.user.is_authenticated %}
                 {% set profile = request.profile if logged_in else None %}
                 {% for node in mptt_tree(comment_list) recursive %}
@@ -173,4 +172,3 @@
         {% endif %}
     </div>
 {% endif %}
-{% endwith %}
