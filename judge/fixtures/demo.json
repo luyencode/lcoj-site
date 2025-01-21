@@ -55,9 +55,9 @@
             ],
             "creation_date": "2017-12-02T08:50:25.199Z",
             "is_open": true,
-            "slug": "vnoj",
-            "name": "VNOJ: Viet Nam Online Judge",
-            "short_name": "VNOJ",
+            "slug": "lcoj",
+            "name": "LCOJ: LuyenCode Online Judge",
+            "short_name": "LCOJ",
             "slots": null
         },
         "model": "judge.organization",
@@ -133,13 +133,13 @@
         "model": "judge.blogpost",
         "pk": 1,
         "fields": {
-            "title": "Ch\u00e0o m\u1eebng b\u1ea1n \u0111\u1ebfn v\u1edbi VNOJ",
+            "title": "Ch\u00e0o m\u1eebng b\u1ea1n \u0111\u1ebfn v\u1edbi LCOJ",
             "slug": "welcome-to-vnoj",
             "visible": true,
             "global_post": true,
             "sticky": true,
             "publish_on": "2017-12-02T05:00:00Z",
-            "content": "Ch\u00e0o m\u1eebng b\u1ea1n \u0111\u1ebfn v\u1edbi VNOJ.\r\n\r\nVNOJ - Vi\u1ec7t Nam Online Judge - l\u00e0 h\u1ec7 th\u1ed1ng online judge ch\u00ednh th\u1ee9c c\u1ee7a [VNOI](https://team.vnoi.info/)",
+            "content": "Ch\u00e0o m\u1eebng b\u1ea1n \u0111\u1ebfn v\u1edbi LCOJ.\r\n\r\nLCOJ - Luyen Code Online Judge - l\u00e0 h\u1ec7 th\u1ed1ng online judge ch\u00ednh th\u1ee9c c\u1ee7a [LCOJ](https://luyencode.net/)",
             "summary": "",
             "og_image": "",
             "authors": [
@@ -193,7 +193,7 @@
         "fields": {
             "url": "/about/",
             "title": "Th\u00f4ng tin",
-            "content": "VNOJ - Vi\u1ec7t Nam Online Judge l\u00e0 h\u1ec7 th\u1ed1ng online judge ch\u00ednh th\u1ee9c c\u1ee7a [VNOI](https://team.vnoi.info/)\r\n\r\n\r\n\r\n\r\n# 1. Todo 1\r\n\r\n# 2. Todo 2",
+            "content": "LCOJ: Luyen Code Online Judge l\u00e0 h\u1ec7 th\u1ed1ng online judge ch\u00ednh th\u1ee9c c\u1ee7a [LCOJ](https://luyencode.net/)\r\n\r\n\r\n\r\n\r\n# 1. Todo 1\r\n\r\n# 2. Todo 2",
             "enable_comments": false,
             "template_name": "",
             "registration_required": false,
