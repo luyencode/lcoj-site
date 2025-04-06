@@ -1885,7 +1885,10 @@ msgstr "bài đăng blog"
 
 #: judge/models/interface.py:135
 msgid "blog posts"
-msgstr "bài đăng blog"
+msgstr "Bài đăng blog"
+
+msgid "Loading..."
+msgstr "Đang tải..."
 
 #: judge/models/interface.py:145
 msgid "blog vote"

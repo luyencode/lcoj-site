@@ -14,6 +14,19 @@
     #problem-table th {
         padding: 0;
     }
+
+    .blog-posts {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+    .blog-posts li {
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+    }
+    .blog-posts li:last-child {
+        border-bottom: none;
+    }
 </style>
 {% endblock %}
 
@@ -22,6 +35,27 @@
     window.point_start = {{ point_start }};
     window.point_end = {{ point_end }};
     window.point_values = {{ point_values | json | safe }};
+
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('https://api.rss2json.com/v1/api.json?rss_url=https://blog.luyencode.net/feed/')
+            .then(response => response.json())
+            .then(data => {
+                const posts = data.items.slice(0, 5).map(item => ({
+                    title: item.title,
+                    link: item.link
+                }));
+                
+                const blogList = document.getElementById('blog-posts-list');
+                blogList.innerHTML = posts.map(post => 
+                    `<li><a href="${post.link}" target="_blank">${post.title}</a></li>`
+                ).join('');
+            })
+            .catch(error => {
+                const blogList = document.getElementById('blog-posts-list');
+                blogList.innerHTML = '<li>{{ _('Failed to load blog posts') }}</li>';
+                console.error('Error fetching blog posts:', error);
+            });
+    });
 </script>
 {% compress js %}
 <script src="{{ static('libs/nouislider.min.js') }}" type="text/javascript"></script>
@@ -145,6 +179,14 @@
                 </div>
             </div>
             {% endif %}
+            <div class="sidebox">
+                <h3>{{ _("Blog Posts") }} <i class="fa fa-rss"></i></h3>
+                <div class="sidebox-content">
+                    <ul id="blog-posts-list" class="blog-posts">
+                        <li>{{ _("Loading...") }}</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
     <div id="content-left" class="problems h-scrollable-table">

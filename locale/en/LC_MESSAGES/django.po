@@ -1747,7 +1747,10 @@ msgstr ""
 
 #: judge/models/interface.py:133
 msgid "blog posts"
-msgstr ""
+msgstr "Blog Posts"
+
+msgid "Loading..."
+msgstr "Loading..."
 
 #: judge/models/interface.py:143
 msgid "blog vote"
