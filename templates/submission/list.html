@@ -27,6 +27,29 @@
     </script>
 
     {% compress js %}
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                fetch('https://api.rss2json.com/v1/api.json?rss_url=https://blog.luyencode.net/feed/')
+                    .then(response => response.json())
+                    .then(data => {
+                        const posts = data.items.slice(0, 5).map(item => ({
+                            title: item.title,
+                            link: item.link
+                        }));
+                        
+                        const blogList = document.getElementById('blog-posts-list');
+                        blogList.innerHTML = posts.map(post => 
+                            `<li><a href="${post.link}" target="_blank">${post.title}</a></li>`
+                        ).join('');
+                    })
+                    .catch(error => {
+                        const blogList = document.getElementById('blog-posts-list');
+                        blogList.innerHTML = '<li>{{ _("Failed to load blog posts") }}</li>';
+                        console.error('Error fetching blog posts:', error);
+                    });
+            });
+        </script>
+
         {% if request.user.is_authenticated and perms.judge.rejudge_submission %}
             <script type="text/javascript">
                 window.rejudge_submission = function (id, e) {
@@ -286,6 +309,18 @@
     {% endif %}
 
     <style>
+        .blog-posts {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .blog-posts li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .blog-posts li:last-child {
+            border-bottom: none;
+        }
         .total {
             text-align: center;
             margin-bottom: 0.5em;
@@ -360,6 +395,14 @@
                                 {{ _('Total:') }} <span id="total-submission-count"></span>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div class="sidebox">
+                    <h3>{{ _('Blog Posts') }} <i class="fa fa-rss"></i></h3>
+                    <div class="sidebox-content">
+                        <ul id="blog-posts-list" class="blog-posts">
+                            <li>{{ _('Loading...') }}</li>
+                        </ul>
                     </div>
                 </div>
             </div>
