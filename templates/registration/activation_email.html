@@ -15,9 +15,9 @@
       <br>
       <a href="{{ request.scheme }}://{{ site.domain }}/accounts/activate/{{ activation_key }}/">{{ request.scheme }}://{{ site.domain }}/accounts/activate/{{ activation_key }}/</a>
       <br><br>
-      {% if SITE_ADMIN_EMAIL %}
-      {% with link='<a href="mailto:%(email)s">%(email)s</a>'|safe|format(email=SITE_ADMIN_EMAIL) %}
-      {{ _('See you soon! If you have problems activating your account, feel free to send us an email at %(email)s.', email=link) }}
+      {% if SITE_ADMIN_FACEBOOK %}
+      {% with link='<a href="%(facebook_url)s">%(facebook_url)s</a>'|safe|format(facebook_url=SITE_ADMIN_FACEBOOK) %}
+      {{ _('See you soon! If you have problems activating your account, feel free to contact us on Facebook at %(facebook_url)s.', facebook_url=link) }}
       {% endwith %}
       {% else %}
       {{ _('See you soon!') }}
