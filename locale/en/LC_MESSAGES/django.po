@@ -6168,6 +6168,10 @@ msgstr ""
 msgid "See you soon!"
 msgstr ""
 
+#: templates/registration/activation_email.html:20
+msgid "See you soon! If you have problems activating your account, feel free to contact us on Facebook at %(facebook_url)s."
+msgstr ""
+
 #: templates/registration/activation_email.html:19
 msgid ""
 "If you have problems activating your account, feel free to shoot us a "
