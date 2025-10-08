@@ -37,18 +37,47 @@
     window.point_values = {{ point_values | json | safe }};
 
     document.addEventListener('DOMContentLoaded', function() {
-        fetch('https://api.rss2json.com/v1/api.json?rss_url=https://blog.luyencode.net/feed/')
-            .then(response => response.json())
-            .then(data => {
-                const posts = data.items.slice(0, 5).map(item => ({
-                    title: item.title,
-                    link: item.link
-                }));
+        fetch('https://behitek.com/beli5/blog/archive/')
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Find all blog post links in the archive page
+                const links = doc.querySelectorAll('a[href*="/beli5/blog/"]');
+                const posts = [];
+                
+                links.forEach(link => {
+                    const href = link.getAttribute('href');
+                    const text = link.textContent.trim();
+                    
+                    // Skip if it's not a blog post link or if it's a duplicate
+                    if (href && href.includes('/beli5/blog/') && 
+                        !href.endsWith('/blog') && !href.endsWith('/blog/') &&
+                        text && text.length > 0 && 
+                        !posts.some(post => post.link === href)) {
+                        
+                        // Extract title (remove date prefix if present)
+                        let title = text.replace(/^\d+\s+tháng\s+\d+\s*-\s*/, '');
+                        
+                        posts.push({
+                            title: title,
+                            link: href.startsWith('http') ? href : `https://behitek.com${href}`
+                        });
+                    }
+                });
+                
+                // Take first 5 posts
+                const recentPosts = posts.slice(0, 5);
                 
                 const blogList = document.getElementById('blog-posts-list');
-                blogList.innerHTML = posts.map(post => 
-                    `<li><a href="${post.link}" target="_blank">${post.title}</a></li>`
-                ).join('');
+                if (recentPosts.length > 0) {
+                    blogList.innerHTML = recentPosts.map(post => 
+                        `<li><a href="${post.link}" target="_blank">${post.title}</a></li>`
+                    ).join('');
+                } else {
+                    blogList.innerHTML = '<li>{{ _('No blog posts found') }}</li>';
+                }
             })
             .catch(error => {
                 const blogList = document.getElementById('blog-posts-list');
