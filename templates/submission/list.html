@@ -59,8 +59,8 @@
                             }
                         });
                         
-                        // Take first 5 posts
-                        const recentPosts = posts.slice(0, 5);
+                        // Take last 5 posts (most recent)
+                        const recentPosts = posts.slice(-5);
                         
                         const blogList = document.getElementById('blog-posts-list');
                         if (recentPosts.length > 0) {
