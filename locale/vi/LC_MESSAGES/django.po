@@ -4795,7 +4795,7 @@ msgstr "Tới bảng xếp hạng"
 msgid "This site works best with JavaScript enabled."
 msgstr "Trang web này hoạt động tốt nhất khi JavaScript được cho phép."
 
-#: templates/base.html:363
+#: templates/base.html:384
 #, python-format
 msgid "proudly powered by"
 msgstr "dựa trên"
@@ -8038,3 +8038,7 @@ msgstr[1] "Bước cuối cùng là kích hoạt tài khoản của bạn. Vui l
 #: templates/registration/activation_email.html:20
 msgid "See you soon! If you have problems activating your account, feel free to contact us on Facebook at %(facebook_url)s."
 msgstr "Hẹn gặp lại bạn! Nếu bạn gặp khó khăn trong việc kích hoạt tài khoản, vui lòng liên hệ với chúng tôi trên Facebook tại %(facebook_url)s."
+
+#: dmoj/urls.py:113
+msgid "Điều khoản sử dụng"
+msgstr "Điều khoản sử dụng"
