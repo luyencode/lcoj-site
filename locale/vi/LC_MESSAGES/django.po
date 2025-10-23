@@ -6818,6 +6818,45 @@ msgstr "Hoặc đăng nhập bằng..."
 #: templates/registration/oauth.html:29
 msgid "Sign up with Gmail"
 msgstr "Đăng ký bằng Gmail"
+#: templates/registration/oauth.html:30
+msgid "Or sign up with..."
+msgstr "Hoặc đăng ký bằng..."
+
+#: templates/registration/login.html:12
+msgid "Welcome Back"
+msgstr "Chào mừng trở lại"
+
+#: templates/registration/registration_form.html:12
+msgid "Join Our Community"
+msgstr "Tham gia cộng đồng"
+
+#: templates/registration/registration_form.html:45
+msgid "Enter your full name"
+msgstr "Nhập họ tên của bạn"
+
+#: templates/registration/registration_form.html:54
+msgid "Choose a unique username"
+msgstr "Chọn tên đăng nhập duy nhất"
+
+#: templates/registration/registration_form.html:63
+msgid "Enter your email address"
+msgstr "Nhập địa chỉ email của bạn"
+
+#: templates/registration/registration_form.html:75
+msgid "Requirements"
+msgstr "Yêu cầu"
+
+#: templates/registration/registration_form.html:83
+msgid "Enter a secure password"
+msgstr "Nhập mật khẩu bảo mật"
+
+#: templates/registration/registration_form.html:91
+msgid "Confirm Password"
+msgstr "Xác nhận mật khẩu"
+
+#: templates/registration/registration_form.html:94
+msgid "Confirm your password"
+msgstr "Xác nhận mật khẩu của bạn"
 
 #: templates/registration/password_change_done.html:3
 msgid "Your password was successfully changed."
@@ -7583,11 +7622,12 @@ msgstr "Cám ơn bạn đã báo cáo!"
 msgid ""
 "Please keep in mind that this form is for reporting issues with a problem "
 "statement, and not for asking for help. If you require assistance on solving "
-"a problem, ask in the comments instead."
+"a problem, ask in the comments instead. Your account will be banned if you "
+"misuse this feature."
 msgstr ""
 "Xin lưu ý rằng biểu mẫu này dành cho việc báo cáo các vấn đề của bài, và "
 "không dành cho việc hỏi bài. Nếu bạn cần hỗ trợ về việc giải bài, hãy hỏi "
-"trong phần bình luận."
+"trong phần bình luận. Bạn sẽ bị ban tài khoản nếu sử dụng sai mục đích."
 
 #: templates/ticket/ticket.html:38
 #, python-brace-format
