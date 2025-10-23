@@ -6816,7 +6816,7 @@ msgid "Or log in with..."
 msgstr "Hoặc đăng nhập bằng..."
 
 #: templates/registration/oauth.html:29
-msgid "Sign up with Gmail"
+msgid "Sign up with Google"
 msgstr "Đăng ký bằng Gmail"
 #: templates/registration/oauth.html:30
 msgid "Or sign up with..."

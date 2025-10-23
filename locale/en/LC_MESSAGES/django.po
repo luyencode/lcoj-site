@@ -6206,7 +6206,7 @@ msgid "Or log in with..."
 msgstr ""
 
 #: templates/registration/oauth.html:29
-msgid "Sign up with Gmail"
+msgid "Sign up with Google"
 msgstr ""
 
 #: templates/registration/logout.html:3

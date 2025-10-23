@@ -11,6 +11,18 @@
             font-weight: 500;
         }
 
+        .oauth-header {
+            margin-bottom: 1.25rem;
+        }
+
+        .oauth-header h4 {
+            color: #555;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
         .oauth-buttons {
             display: flex;
             flex-direction: column;
@@ -106,31 +118,14 @@
 {% endblock %}
 
 {% if oauth.has_google_auth or oauth.has_facebook_auth or oauth.has_github_auth %}
-    {% if request.path == url('registration_register') %}
-        <h4>{{ _('Sign up with Gmail') }}</h4>
-    {% else %}
-        <h4>{{ _('Or log in with...') }}</h4>
-    {% endif %}
-    <div>
-        {% if next is not defined %}
-            {% set next = '' %}
-        {% endif %}
-        {% if oauth.has_google_auth %}
-            <a href="{{ url('social:begin', "google-oauth2") }}?next={{ next }}" class="social google-icon">
-                <i class="fa fa-google-plus-square"></i>
-            </a>
-        {% endif %}
-        {% if oauth.has_facebook_auth %}
-            <a href="{{ url('social:begin', "facebook") }}?next={{ next }}" class="social facebook-icon">
-                <i class="fa fa-facebook-square"></i>
-            </a>
-        {% endif %}
-        {% if oauth.has_github_auth %}
-            <a href="{{ url('social:begin', "github-secure") }}?next={{ next }}" class="social github-icon">
-                <i class="fa fa-github-square"></i>
-            </a>
-        {% endif %}
-        
+    <div class="oauth-section">
+        <div class="oauth-header">
+            {% if request.path == url('registration_register') %}
+                <h4>{{ _('Sign up with Google') }}</h4>
+            {% else %}
+                <h4>{{ _('Or log in with...') }}</h4>
+            {% endif %}
+        </div>
         <div class="oauth-buttons">
             {% if next is not defined %}
                 {% set next = '' %}
