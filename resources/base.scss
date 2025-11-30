@@ -84,9 +84,10 @@ th {
 .form-area {
     display: inline-block;
     background: $color_primary5;
-    padding: 5px 10px 10px;
-    border-radius: $widget_border_radius;
+    padding: 1rem 1.25rem 1.25rem;
+    border-radius: 0.5rem;
     border: 1px solid $color_primary25;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
 div.info-float {
@@ -107,11 +108,13 @@ body {
     min-height: 100%;
     margin: 0 auto;
     font-size: $base_font_size;
-    line-height: 1.231;
+    line-height: 1.6;
     background: $color_primary5;
-    font-family: "Segoe UI", "Lucida Grande", Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: $color_primary100;
     height: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .unselectable {
@@ -131,25 +134,26 @@ b {
 }
 
 h2 {
-    font-weight: 400;
-    font-size: 2em;
+    font-weight: 600;
+    font-size: 1.875rem;
     border-radius: $widget_border_radius;
     padding: 0;
-    margin: 0;
+    margin: 0 0 1rem 0;
 }
 
 h3 {
-    font-weight: 400;
-    font-size: 1.4em;
+    font-weight: 600;
+    font-size: 1.5rem;
     border-radius: $widget_border_radius;
     padding: 0;
-    margin: 0;
+    margin: 0 0 0.75rem 0;
 }
 
 h4 {
-    font-size: 1.1em;
+    font-weight: 600;
+    font-size: 1.25rem;
     padding: 0;
-    margin: 0;
+    margin: 0 0 0.5rem 0;
 }
 
 hr {
@@ -281,6 +285,7 @@ noscript #noscript {
     border-left: 1px solid $color_primary25;
     background: $color_pageBg;
     max-width: 100em;
+    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.05);
 }
 
 // border-bottom: 1px solid rgb(204, 204, 204)

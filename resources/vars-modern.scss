@@ -1,0 +1,182 @@
+/* Modern Light Theme Color Palette */
+/* Flat Design with Modern Color System */
+@use 'sass:color';
+@forward "vars-common";
+
+$is_light_theme: true;
+
+// Modern CSS Custom Properties (will be injected into :root)
+:root {
+  /* Primary Colors - Sky Blue */
+  --primary-50: #f0f9ff;
+  --primary-100: #e0f2fe;
+  --primary-200: #bae6fd;
+  --primary-300: #7dd3fc;
+  --primary-400: #38bdf8;
+  --primary-500: #0ea5e9;  /* Main primary */
+  --primary-600: #0284c7;
+  --primary-700: #0369a1;
+  --primary-800: #075985;
+  --primary-900: #0c4a6e;
+
+  /* Neutral/Gray Colors */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+
+  /* Success Colors */
+  --success-50: #f0fdf4;
+  --success-100: #dcfce7;
+  --success-500: #22c55e;
+  --success-600: #16a34a;
+  --success-700: #15803d;
+
+  /* Warning Colors */
+  --warning-50: #fffbeb;
+  --warning-100: #fef3c7;
+  --warning-500: #f59e0b;
+  --warning-600: #d97706;
+  --warning-700: #b45309;
+
+  /* Error Colors */
+  --error-50: #fef2f2;
+  --error-100: #fee2e2;
+  --error-500: #ef4444;
+  --error-600: #dc2626;
+  --error-700: #b91c1c;
+
+  /* Semantic Colors */
+  --background: #ffffff;
+  --surface: #f9fafb;
+  --surface-elevated: #ffffff;
+  
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  
+  --border-light: #e5e7eb;
+  --border-medium: #d1d5db;
+  --border-dark: #9ca3af;
+
+  /* UI Component Colors */
+  --button-primary-bg: var(--primary-500);
+  --button-primary-hover: var(--primary-600);
+  --button-primary-text: #ffffff;
+  
+  --button-secondary-bg: var(--gray-100);
+  --button-secondary-hover: var(--gray-200);
+  --button-secondary-text: var(--gray-700);
+
+  /* Card & Container */
+  --card-bg: #ffffff;
+  --card-border: var(--gray-200);
+  --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+
+  /* Input Fields */
+  --input-bg: #ffffff;
+  --input-border: var(--gray-300);
+  --input-border-focus: var(--primary-500);
+  --input-text: var(--gray-900);
+  --input-placeholder: var(--gray-400);
+
+  /* Status Indicators */
+  --status-online: #22c55e;
+  --status-offline: #ef4444;
+  --status-processing: #f59e0b;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+
+  /* Border Radius */
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-md: 0.375rem;  /* 6px */
+  --radius-lg: 0.5rem;    /* 8px */
+  --radius-xl: 0.75rem;   /* 12px */
+  --radius-2xl: 1rem;     /* 16px */
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;  /* 4px */
+  --spacing-sm: 0.5rem;   /* 8px */
+  --spacing-md: 1rem;     /* 16px */
+  --spacing-lg: 1.5rem;   /* 24px */
+  --spacing-xl: 2rem;     /* 32px */
+  --spacing-2xl: 3rem;    /* 48px */
+}
+
+// SCSS Variables for backward compatibility
+// These map to the new color system
+$color_primary0: #fff;
+$color_primary5: #f9fafb;    // var(--gray-50)
+$color_primary10: #f3f4f6;   // var(--gray-100)
+$color_primary25: #e5e7eb;   // var(--gray-200)
+$color_primary33: #d1d5db;   // var(--gray-300)
+$color_primary50: #6b7280;   // var(--gray-500)
+$color_primary66: #4b5563;   // var(--gray-600)
+$color_primary75: #374151;   // var(--gray-700)
+$color_primary90: #1f2937;   // var(--gray-800)
+$color_primary100: #111827;  // var(--gray-900)
+
+$color_link50: #38bdf8;      // var(--primary-400)
+$color_link75: #0ea5e9;      // var(--primary-500)
+$color_link100: #0284c7;     // var(--primary-600)
+$color_link200: #0369a1;     // var(--primary-700)
+
+$color_pageBg: #f9fafb;      // var(--surface)
+
+// Custom one-off colours
+$color_contest_ranking_disqualified: #fee2e2;  // var(--error-100)
+
+$color_martor_resize_dragger: #e5e7eb;  // var(--gray-200)
+
+// Rating colors (keep original for consistency)
+$color_rating_none: #999;
+$color_rating_newbie: #808080;
+$color_rating_pupil: #008000;
+$color_rating_specialist: #03a89e;
+$color_rating_expert: #0000ff;
+$color_rating_candidate_master: #aa00aa;
+$color_rating_master: #ff8c00;
+$color_rating_grandmaster: #ff0000;
+
+$color_select2_search_dropdown: $color_primary0;
+
+// User submission activity heatmap colors (GitHub style)
+$color_user_submission_activity0: #ebedf0;  // Lighter gray
+$color_user_submission_activity1: #9be9a8;
+$color_user_submission_activity2: #40c463;
+$color_user_submission_activity3: #2f9c4c;
+$color_user_submission_activity4: #216e39;
+
+// Alert/Message colors
+$color_info25: #f0f9ff;      // var(--primary-50)
+$color_info50: #e0f2fe;      // var(--primary-100)
+$color_info100: #0369a1;     // var(--primary-700)
+$color_success25: #f0fdf4;   // var(--success-50)
+$color_success50: #dcfce7;   // var(--success-100)
+$color_success100: #15803d;  // var(--success-700)
+$color_warning25: #fffbeb;   // var(--warning-50)
+$color_warning50: #fef3c7;   // var(--warning-100)
+$color_warning100: #b45309;  // var(--warning-700)
+$color_danger25: #fef2f2;    // var(--error-50)
+$color_danger50: #fee2e2;    // var(--error-100)
+$color_danger100: #b91c1c;   // var(--error-700)
+
+$color_problem_submit_select2: #4b5563;  // var(--gray-600)
+
+$color_voted_mark: #0ea5e9;  // var(--primary-500)
+
+$path_to_root: '.';
+
+@mixin vars-img {}

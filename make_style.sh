@@ -17,5 +17,5 @@ build_style() {
   rm resources/vars.scss
 }
 
-build_style 'default' 'resources'
+build_style 'modern' 'resources'
 build_style 'dark' 'resources/dark'
