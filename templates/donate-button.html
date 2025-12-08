@@ -1,0 +1,32 @@
+<!-- Donate Button -->
+<div id="donate-button" class="donate-sticky-button">
+    <i class="fa fa-heart"></i>
+    <span>{{ _('Donate') }}</span>
+</div>
+
+<!-- Donate Modal -->
+<div id="donate-modal" class="donate-modal">
+    <div class="donate-modal-content">
+        <div class="donate-modal-header">
+            <h2>{{ _('Support Luyen Code Online') }}</h2>
+        </div>
+        <div class="donate-modal-body">
+            <p>{{ _('Thank you for your interest in supporting us!') }}</p>
+            <p>{{ _('Your donation will be used to:') }}</p>
+            <ul>
+                <li>{{ _('Maintain and upgrade servers') }}</li>
+                <li>{{ _('Expand problem sets and learning materials') }}</li>
+                <li>{{ _('Improve user experience') }}</li>
+            </ul>
+            
+            <div class="donate-info">
+                <div class="qr-code">
+                    <img src="{{ static('donate-qr.png') }}" alt="{{ _('QR Code') }}" onerror="this.style.display='none'">
+                    <p class="qr-note">{{ _('Scan QR code to transfer') }}</p>
+                </div>
+            </div>
+            
+            <p class="thank-you">{{ _('Thank you so much for your support!') }} ❤️</p>
+        </div>
+    </div>
+</div>

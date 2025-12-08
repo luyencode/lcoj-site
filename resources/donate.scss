@@ -1,0 +1,260 @@
+// Donate Button Styles
+.donate-sticky-button {
+    position: fixed;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: right center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    box-shadow: -2px 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        box-shadow: -2px 2px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    i {
+        font-size: 18px;
+        animation: heartbeat 1.5s ease-in-out infinite;
+    }
+}
+
+@keyframes heartbeat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    10%, 30% {
+        transform: scale(1.1);
+    }
+    20%, 40% {
+        transform: scale(1);
+    }
+}
+
+// Donate Modal Styles
+.donate-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    animation: fadeIn 0.3s ease;
+    
+    &.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.donate-modal-content {
+    background-color: #fff;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideIn 0.3s ease;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.donate-modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 30px;
+    border-radius: 12px 12px 0 0;
+    
+    h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+    }
+}
+
+.donate-modal-body {
+    padding: 30px;
+    color: #333;
+    
+    p {
+        line-height: 1.6;
+        margin-bottom: 15px;
+    }
+    
+    ul {
+        margin: 15px 0;
+        padding-left: 25px;
+        
+        li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+    }
+}
+
+.donate-info {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    
+    h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #667eea;
+        font-size: 18px;
+    }
+}
+
+.bank-info {
+    margin-bottom: 20px;
+    
+    p {
+        margin: 8px 0;
+        font-size: 15px;
+        
+        strong {
+            display: inline-block;
+            min-width: 130px;
+            color: #555;
+        }
+        
+        span {
+            color: #000;
+            font-weight: 500;
+        }
+    }
+}
+
+.qr-code {
+    text-align: center;
+    margin-top: 20px;
+    
+    img {
+        max-width: 250px;
+        width: 100%;
+        height: auto;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 10px;
+        background: white;
+    }
+    
+    .qr-note {
+        margin-top: 10px;
+        font-size: 13px;
+        color: #666;
+        font-style: italic;
+    }
+}
+
+.thank-you {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #667eea;
+    margin-top: 20px;
+    margin-bottom: 0;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+    .donate-sticky-button {
+        right: 0;
+        padding: 10px 16px;
+        font-size: 13px;
+        
+        span {
+            display: none;
+        }
+        
+        i {
+            font-size: 18px;
+        }
+    }
+    
+    .donate-modal-content {
+        width: 95%;
+        max-height: 95vh;
+    }
+    
+    .donate-modal-header {
+        padding: 15px 20px;
+        
+        h2 {
+            font-size: 20px;
+        }
+    }
+    
+    .donate-modal-body {
+        padding: 20px;
+    }
+    
+    .bank-info p strong {
+        display: block;
+        margin-bottom: 3px;
+    }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+    .donate-modal-content {
+        background-color: #2d2d2d;
+    }
+    
+    .donate-modal-body {
+        color: #e0e0e0;
+    }
+    
+    .donate-info {
+        background: #3a3a3a;
+    }
+    
+    .bank-info p {
+        strong {
+            color: #b0b0b0;
+        }
+        
+        span {
+            color: #fff;
+        }
+    }
+    
+    .qr-code img {
+        border-color: #555;
+        background: #fff;
+    }
+}
