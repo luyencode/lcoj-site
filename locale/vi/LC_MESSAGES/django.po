@@ -8082,3 +8082,49 @@ msgstr "Quét mã QR để chuyển khoản"
 #: templates/donate-button.html:29
 msgid "Thank you so much for your support!"
 msgstr "Cảm ơn bạn rất nhiều vì sự ủng hộ!"
+
+# Navigation menu items with icons
+msgid "🧩 Problems"
+msgstr "🧩 Bài tập"
+
+msgid "📤 Submissions"
+msgstr "📤 Bài nộp"
+
+msgid "👥 Users"
+msgstr "👥 Người dùng"
+
+msgid "🏛️ Organizations"
+msgstr "🏛️ Tổ chức"
+
+msgid "🏆 Contests"
+msgstr "🏆 Kỳ thi"
+
+msgid "📚 Resources"
+msgstr "📚 Tài nguyên"
+
+msgid "🐍 Học Python"
+msgstr "🐍 Học Python"
+
+msgid "💰 Tính Gross Net"
+msgstr "💰 Tính Gross Net"
+
+msgid "💵 Tài chính cá nhân"
+msgstr "💵 Tài chính cá nhân"
+
+msgid "📝 Blog"
+msgstr "📝 Blog"
+
+msgid "ℹ️ About"
+msgstr "ℹ️ Giới thiệu"
+
+msgid "📝 LCOJ docs"
+msgstr "📝 Tài liệu LCOJ"
+
+msgid "🟢 Status"
+msgstr "🟢 Trạng thái"
+
+msgid "💡 Mẹo"
+msgstr "💡 Mẹo"
+
+msgid "📘 FAQ"
+msgstr "📘 Câu hỏi thường gặp"

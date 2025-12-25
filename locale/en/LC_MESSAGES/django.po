@@ -7331,3 +7331,49 @@ msgstr "Scan QR code to transfer"
 #: templates/donate-button.html:29
 msgid "Thank you so much for your support!"
 msgstr "Thank you so much for your support!"
+
+# Navigation menu items with icons
+msgid "🧩 Problems"
+msgstr "🧩 Problems"
+
+msgid "📤 Submissions"
+msgstr "📤 Submissions"
+
+msgid "👥 Users"
+msgstr "👥 Users"
+
+msgid "🏛️ Organizations"
+msgstr "🏛️ Organizations"
+
+msgid "🏆 Contests"
+msgstr "🏆 Contests"
+
+msgid "📚 Resources"
+msgstr "📚 Resources"
+
+msgid "🐍 Học Python"
+msgstr "🐍 Learn Python"
+
+msgid "💰 Tính Gross Net"
+msgstr "💰 Gross Net Calculator"
+
+msgid "💵 Tài chính cá nhân"
+msgstr "💵 Personal Finance"
+
+msgid "📝 Blog"
+msgstr "📝 Blog"
+
+msgid "ℹ️ About"
+msgstr "ℹ️ About"
+
+msgid "📝 LCOJ docs"
+msgstr "📝 LCOJ docs"
+
+msgid "🟢 Status"
+msgstr "🟢 Status"
+
+msgid "💡 Mẹo"
+msgstr "💡 Tips"
+
+msgid "📘 FAQ"
+msgstr "📘 FAQ"
