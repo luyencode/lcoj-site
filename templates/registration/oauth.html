@@ -1,153 +1,153 @@
 {% block media %}
-    <style>
-        .oauth-section {
-            text-align: center;
-        }
+<style>
+    .oauth-section {
+        text-align: center;
+    }
 
-        .oauth-title {
-            color: #666;
-            font-size: 1rem;
-            margin-bottom: 1.5rem;
-            font-weight: 500;
-        }
+    .oauth-title {
+        color: #666;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+    }
 
-        .oauth-header {
-            margin-bottom: 1.25rem;
-        }
+    .oauth-header {
+        margin-bottom: 1.25rem;
+    }
 
-        .oauth-header h4 {
-            color: #555;
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            font-weight: 500;
-            text-align: center;
-        }
+    .oauth-header h4 {
+        color: #555;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        font-weight: 500;
+        text-align: center;
+    }
 
+    .oauth-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .oauth-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 280px;
+        padding: 0.875rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .oauth-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        text-decoration: none;
+    }
+
+    .oauth-btn:active {
+        transform: translateY(0);
+    }
+
+    .oauth-btn i {
+        margin-right: 0.75rem;
+        font-size: 1.1rem;
+    }
+
+    .google-btn {
+        background: #fff;
+        color: #333;
+        border-color: #dadce0;
+    }
+
+    .google-btn:hover {
+        background: #f8f9fa;
+        color: #333;
+        border-color: #dadce0;
+    }
+
+    .google-btn i {
+        background: linear-gradient(45deg, #4285f4, #34a853, #fbbc05, #ea4335);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .facebook-btn {
+        background: #1877f2;
+        color: white;
+    }
+
+    .facebook-btn:hover {
+        background: #166fe5;
+        color: white;
+    }
+
+    .github-btn {
+        background: #333;
+        color: white;
+    }
+
+    .github-btn:hover {
+        background: #24292e;
+        color: white;
+    }
+
+    @media (min-width: 480px) {
         .oauth-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            align-items: center;
+            flex-direction: row;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .oauth-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            max-width: 280px;
-            padding: 0.875rem 1.5rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
+            width: auto;
+            min-width: 160px;
+            flex: 0 0 auto;
         }
-
-        .oauth-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            text-decoration: none;
-        }
-
-        .oauth-btn:active {
-            transform: translateY(0);
-        }
-
-        .oauth-btn i {
-            margin-right: 0.75rem;
-            font-size: 1.1rem;
-        }
-
-        .google-btn {
-            background: #fff;
-            color: #333;
-            border-color: #dadce0;
-        }
-
-        .google-btn:hover {
-            background: #f8f9fa;
-            color: #333;
-            border-color: #dadce0;
-        }
-
-        .google-btn i {
-            background: linear-gradient(45deg, #4285f4, #34a853, #fbbc05, #ea4335);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .facebook-btn {
-            background: #1877f2;
-            color: white;
-        }
-
-        .facebook-btn:hover {
-            background: #166fe5;
-            color: white;
-        }
-
-        .github-btn {
-            background: #333;
-            color: white;
-        }
-
-        .github-btn:hover {
-            background: #24292e;
-            color: white;
-        }
-
-        @media (min-width: 480px) {
-            .oauth-buttons {
-                flex-direction: row;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-
-            .oauth-btn {
-                width: auto;
-                min-width: 160px;
-                flex: 0 0 auto;
-            }
-        }
-    </style>
+    }
+</style>
 {% endblock %}
 
 {% if oauth.has_google_auth or oauth.has_facebook_auth or oauth.has_github_auth %}
-    <div class="oauth-section">
-        <div class="oauth-header">
-            {% if request.path == url('registration_register') %}
-                <h4>{{ _('Sign up with Google') }}</h4>
-            {% else %}
-                <h4>{{ _('Or log in with...') }}</h4>
-            {% endif %}
-        </div>
-        <div class="oauth-buttons">
-            {% if next is not defined %}
-                {% set next = '' %}
-            {% endif %}
-            {% if oauth.has_google_auth %}
-                <a href="{{ url('social:begin', "google-oauth2") }}?next={{ next }}" class="oauth-btn google-btn">
-                    <i class="fa fa-google"></i>
-                    Google
-                </a>
-            {% endif %}
-            {% if oauth.has_facebook_auth %}
-                <a href="{{ url('social:begin', "facebook") }}?next={{ next }}" class="oauth-btn facebook-btn">
-                    <i class="fa fa-facebook"></i>
-                    Facebook
-                </a>
-            {% endif %}
-            {% if oauth.has_github_auth %}
-                <a href="{{ url('social:begin', "github-secure") }}?next={{ next }}" class="oauth-btn github-btn">
-                    <i class="fa fa-github"></i>
-                    GitHub
-                </a>
-            {% endif %}
-        </div>
+<div class="oauth-section">
+    <div class="oauth-header">
+        {% if request.path == url('registration_register') %}
+        <h4>{{ _('Sign up with Google') }}</h4>
+        {% else %}
+        <h4>{{ _('Or log in with...') }}</h4>
+        {% endif %}
     </div>
+    <div class="oauth-buttons">
+        {% if next is not defined %}
+        {% set next = '' %}
+        {% endif %}
+        {% if oauth.has_google_auth %}
+        <a href="{{ url('social:begin', 'google-oauth2') }}?next={{ next }}" class="oauth-btn google-btn">
+            <i class="fa fa-google"></i>
+            Google
+        </a>
+        {% endif %}
+        {% if oauth.has_facebook_auth %}
+        <a href="{{ url('social:begin', 'facebook') }}?next={{ next }}" class="oauth-btn facebook-btn">
+            <i class="fa fa-facebook"></i>
+            Facebook
+        </a>
+        {% endif %}
+        {% if oauth.has_github_auth %}
+        <a href="{{ url('social:begin', 'github-secure') }}?next={{ next }}" class="oauth-btn github-btn">
+            <i class="fa fa-github"></i>
+            GitHub
+        </a>
+        {% endif %}
+    </div>
+</div>
 {% endif %}

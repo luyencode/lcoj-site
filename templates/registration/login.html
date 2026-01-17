@@ -1,168 +1,168 @@
 {% extends "base.html" %}
 
 {% block media %}
-    <style>
-        .auth-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 60vh;
-            padding: 2rem 1rem;
-        }
+<style>
+    .auth-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 60vh;
+        padding: 2rem 1rem;
+    }
 
-        .auth-card {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            padding: 3rem;
-            width: 100%;
-            max-width: 420px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-        }
+    .auth-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        padding: 3rem;
+        width: 100%;
+        max-width: 420px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
 
-        .auth-title {
-            text-align: center;
-            margin-bottom: 2rem;
-            color: #333;
-            font-size: 1.8rem;
-            font-weight: 600;
-        }
+    .auth-title {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: #333;
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
 
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
 
-        .form-input {
-            width: 100%;
-            padding: 1rem;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            background: #f8f9fa;
-            box-sizing: border-box;
-        }
+    .form-input {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid #e1e5e9;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        background: #f8f9fa;
+        box-sizing: border-box;
+    }
 
-        .form-input:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-            background: #fff;
-        }
+    .form-input:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        background: #fff;
+    }
 
-        .error-container {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-        }
+    .error-container {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
 
-        .error {
-            color: #721c24;
-            margin: 0.5rem 0;
-            font-size: 0.9rem;
-        }
+    .error {
+        color: #721c24;
+        margin: 0.5rem 0;
+        font-size: 0.9rem;
+    }
 
-        .error:first-child {
-            margin-top: 0;
-        }
+    .error:first-child {
+        margin-top: 0;
+    }
 
-        .error:last-child {
-            margin-bottom: 0;
-        }
+    .error:last-child {
+        margin-bottom: 0;
+    }
 
-        .auth-divider {
-            margin: 2rem 0;
-            border: none;
-            height: 1px;
-            background: linear-gradient(to right, transparent, #e1e5e9, transparent);
-        }
+    .auth-divider {
+        margin: 2rem 0;
+        border: none;
+        height: 1px;
+        background: linear-gradient(to right, transparent, #e1e5e9, transparent);
+    }
 
-        .login-btn {
-            width: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 1rem;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.3s ease;
-            margin-bottom: 1.5rem;
-        }
+    .login-btn {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
 
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-        }
+    .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
 
-        .login-btn:active {
-            transform: translateY(0);
-        }
+    .login-btn:active {
+        transform: translateY(0);
+    }
 
-        .forgot-password {
-            text-align: center;
-            display: block;
-            color: #666;
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.3s ease;
-        }
+    .forgot-password {
+        text-align: center;
+        display: block;
+        color: #666;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.3s ease;
+    }
 
-        .forgot-password:hover {
-            color: #007bff;
-            text-decoration: underline;
-        }
+    .forgot-password:hover {
+        color: #007bff;
+        text-decoration: underline;
+    }
 
-        .discord-link img {
-            vertical-align: middle;
-            margin-left: 0.5rem;
-        }
-    </style>
+    .discord-link img {
+        vertical-align: middle;
+        margin-left: 0.5rem;
+    }
+</style>
 {% endblock %}
 
 {% block body %}
-    <div class="auth-container">
-        <div class="auth-card">
-            <h2 class="auth-title">{{ _('Welcome Back') }}</h2>
-            
-            <form action="" method="post">
-                {% csrf_token %}
-                {% if form.errors %}
-                    <div class="error-container">
-                        <p class="error">{{ _('Invalid username or password.') }}</p>
-                        {% for error in form.non_field_errors() %}
-                            <p class="error">{{error}}</p>
-                        {% endfor %}
-                        {% if form.errors and misc_config.discord_invite_link and misc_config.discord_invite_shieldio %}
-                            <p class="error">
-                                {{ _('If you have problems with your account, feel free to shoot us a message at: ') }}
-                                <a href="{{ misc_config.discord_invite_link }}" class="discord-link">
-                                    <img src="{{ misc_config.discord_invite_shieldio }}">
-                                </a>
-                            </p>
-                        {% endif %}
-                    </div>
+<div class="auth-container">
+    <div class="auth-card">
+        <h2 class="auth-title">{{ _('Welcome Back') }}</h2>
+
+        <form action="" method="post">
+            {% csrf_token %}
+            {% if form.errors %}
+            <div class="error-container">
+                <p class="error">{{ _('Invalid username or password.') }}</p>
+                {% for error in form.non_field_errors() %}
+                <p class="error">{{error}}</p>
+                {% endfor %}
+                {% if form.errors and misc_config.discord_invite_link and misc_config.discord_invite_shieldio %}
+                <p class="error">
+                    {{ _('If you have problems with your account, feel free to shoot us a message at: ') }}
+                    <a href="{{ misc_config.discord_invite_link }}" class="discord-link">
+                        <img src="{{ misc_config.discord_invite_shieldio }}">
+                    </a>
+                </p>
                 {% endif %}
+            </div>
+            {% endif %}
 
-                <div class="form-group">
-                    {{ form.username.as_widget(attrs={'class': 'form-input', 'placeholder': _('Username')}) }}
-                </div>
+            <div class="form-group">
+                {{ form.username.as_widget(attrs={'class': 'form-input', 'placeholder': _('Username')}) }}
+            </div>
 
-                <div class="form-group">
-                    {{ form.password.as_widget(attrs={'class': 'form-input', 'placeholder': _('Password')}) }}
-                </div>
+            <div class="form-group">
+                {{ form.password.as_widget(attrs={'class': 'form-input', 'placeholder': _('Password')}) }}
+            </div>
 
-                <button type="submit" class="login-btn">{{ _('Login!') }}</button>
-                <input type="hidden" name="next" value="{{ next }}">
-            </form>
+            <button type="submit" class="login-btn">{{ _('Login!') }}</button>
+            <input type="hidden" name="next" value="{{ next }}">
+        </form>
 
-            <a href="{{ url('password_reset') }}" class="forgot-password">{{ _('Forgot your password?') }}</a>
+        <a href="{{ url('password_reset') }}" class="forgot-password">{{ _('Forgot your password?') }}</a>
 
-            <hr class="auth-divider">
-            {% include "registration/oauth.html" %}
-        </div>
+        <hr class="auth-divider">
+        {% include "registration/oauth.html" %}
     </div>
+</div>
 {% endblock %}
