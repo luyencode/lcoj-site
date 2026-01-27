@@ -4,8 +4,8 @@
     function rename_martor_widget(widget, old_name, new_name) {
         function rename_data(data_name, prefix) {
             widget.find('[data-' + data_name + '=' + prefix + old_name + ']')
-                  .data(data_name, prefix + new_name)
-                  .attr('data-' + data_name, prefix + new_name);
+                .data(data_name, prefix + new_name)
+                .attr('data-' + data_name, prefix + new_name);
         }
         function rename_id(prefix) {
             widget.find('#' + prefix + old_name).prop('id', prefix + new_name);
@@ -43,7 +43,7 @@
             }, 500);
         };
 
-        $(document).on('click', '.close', function() {
+        $(document).on('click', '.close', function () {
             $(this).closest('.reply-comment').fadeOut();
         });
 
@@ -79,8 +79,8 @@
             $.get(revision_ajax, {
                 revision: show_revision
             }).done(function (body) {
-                $comment.find('.previous-revision').css({visibility: show_revision == 0 ? 'hidden' : ''});
-                $comment.find('.next-revision').css({visibility: show_revision == max_revision ? 'hidden' : ''});
+                $comment.find('.previous-revision').css({ visibility: show_revision == 0 ? 'hidden' : '' });
+                $comment.find('.next-revision').css({ visibility: show_revision == max_revision ? 'hidden' : '' });
                 var $content = $comment.find('.content').html(body);
 
                 var edit_text = {{ _('edit {edits}')|htmltojs }}.replace("{edits}", show_revision);
@@ -152,7 +152,7 @@
                 return;
 
             var id = $(this).attr('data-id');
-            $.post('{{ url('comment_hide') }}', {id: id}).then(function () {
+            $.post('{{ url('comment_hide') }}', { id: id }).then(function () {
                 $('#comment-' + id).remove();
                 $('#comment-' + id + '-children').remove();
             }).catch(function () {
@@ -185,7 +185,7 @@
                             alert({{ _('Failed to update comment body.')|htmltojs }});
                         });
                     }).fail(function (data) {
-                            alert({{ _('Could not edit comment: {error}')|htmltojs }}.replace('{error}', data.responseText));
+                        alert({{ _('Could not edit comment: {error}')|htmltojs }}.replace('{error}', data.responseText));
                     });
                 });
             },
@@ -213,10 +213,140 @@
             $comment.find('.bad-comment-body').hide();
         };
 
+        // Long comment truncation - 200px height threshold
+        function truncate_long_comments() {
+            const MAX_HEIGHT = 200; // pixels
+
+            $('.comment-body').each(function () {
+                var $body = $(this);
+                var $comment = $body.closest('.comment');
+
+                // Skip if already processed or is a bad comment
+                if ($body.data('truncated-processed') || $comment.find('.comment-display').hasClass('bad-comment')) {
+                    return;
+                }
+
+                $body.data('truncated-processed', true);
+
+                // Check if content is too long
+                if ($body.height() > MAX_HEIGHT) {
+                    var commentId = $comment.attr('id').replace('comment-', '');
+
+                    // Wrap content in a container
+                    $body.wrapInner('<div class="comment-body-content"></div>');
+                    var $content = $body.find('.comment-body-content');
+
+                    // Add truncated class and toggle button
+                    $content.addClass('comment-truncated');
+                    $body.append(
+                        '<div class="comment-show-more">' +
+                        '<a href="javascript:void(0)" class="show-more-link" data-comment-id="' + commentId + '">' +
+                        {{ _('Show more')|htmltojs }} +
+                        '</a></div>'
+                    );
+                }
+            });
+        }
+
+        // Handle show more/less toggle
+        $(document).on('click', '.show-more-link', function () {
+            var $link = $(this);
+            var commentId = $link.data('comment-id');
+            var $comment = $('#comment-' + commentId);
+            var $content = $comment.find('.comment-body-content');
+
+            if ($content.hasClass('comment-truncated')) {
+                $content.removeClass('comment-truncated').addClass('comment-expanded');
+                $link.text({{ _('Show less')|htmltojs }});
+            } else {
+                $content.removeClass('comment-expanded').addClass('comment-truncated');
+                $link.text({{ _('Show more')|htmltojs }});
+
+                // Scroll to comment top
+                $('html, body').animate({
+                    scrollTop: $comment.offset().top - $('#navigation').height() - 10
+                }, 300);
+            }
+        });
+
+        // Calculate Wilson score on frontend (lower bound of 95% confidence interval)
+        // This avoids backend computation and ranks comments on the current page only
+        function calculateWilsonScore(upvotes, downvotes) {
+            var n = upvotes + downvotes;
+            if (n === 0) return 0;
+
+            var z = 1.96; // 95% confidence
+            var phat = upvotes / n;
+
+            // Wilson score interval lower bound
+            var score = (phat + z*z/(2*n) - z * Math.sqrt((phat*(1-phat)+z*z/(4*n))/n)) / (1+z*z/n);
+            return Math.max(0, score);
+        }
+
+        // Sort top-level comments by Wilson score (best first) - frontend only
+        function sort_comments_by_wilson_score() {
+            var container = $('.top-level-comments');
+            if (container.length === 0) return;
+
+            var topLevelComments = container.children().toArray();
+            var comments = [];
+
+            // Group each comment with its children (replies, etc.)
+            for (var i = 0; i < topLevelComments.length; ++i) {
+                var id = $(topLevelComments[i]).attr('id');
+                var comment = [topLevelComments[i]];
+
+                // Collect all related elements (children, reply forms)
+                while (i + 1 < topLevelComments.length &&
+                    $(topLevelComments[i + 1]).attr('id').startsWith(id + '-')) {
+                    comment.push(topLevelComments[i + 1]);
+                    i++;
+                }
+                comments.push(comment);
+            }
+
+            // Sort by Wilson score calculated from upvotes/downvotes
+            comments.sort(function (a, b) {
+                var $a = $(a[0]);
+                var $b = $(b[0]);
+
+                var scoreA = calculateWilsonScore(
+                    parseInt($a.data('upvotes') || 0),
+                    parseInt($a.data('downvotes') || 0)
+                );
+                var scoreB = calculateWilsonScore(
+                    parseInt($b.data('upvotes') || 0),
+                    parseInt($b.data('downvotes') || 0)
+                );
+
+                // Higher score comes first
+                if (scoreA !== scoreB) {
+                    return scoreB - scoreA;
+                }
+
+                // If scores are equal, sort by time (newer first)
+                var timeA = new Date($a.data('time') || 0);
+                var timeB = new Date($b.data('time') || 0);
+                return timeB - timeA;
+            });
+
+            // Re-render sorted comments
+            container.empty();
+            comments.forEach(function (comment) {
+                comment.forEach(function (el) {
+                    container.append(el);
+                });
+            });
+        }
+
+        // Initialize on page load
+        sort_comments_by_wilson_score();
+        truncate_long_comments();
+
         var code_regex = [/input\(/, /#include/, /void\s+main/, /fn\s+main/, /func\s+main/];
         $(document).on('click', 'form.comment-warn-code .button[type=submit]', function (e) {
             var text = $(this).parents('form').find('#id_body').val();
-            if (code_regex.some(function (regex) {return regex.test(text);})) {
+            if (code_regex.some(function (regex) { return regex.test(text); })) {
                 if (!confirm({{ _('Looks like you\'re trying to post some source code!\n\nThe comment section is not for posting source code.\nIf you want to submit your solution, please use the "Submit solution" button.\n\nAre you sure you want to post this?')|htmltojs }})) {
                     e.preventDefault();
                 }
