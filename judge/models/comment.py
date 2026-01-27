@@ -36,6 +36,8 @@ class Comment(MPTTModel):
     parent = TreeForeignKey('self', verbose_name=_('parent'), null=True, blank=True, related_name='replies',
                             on_delete=CASCADE)
     revisions = models.IntegerField(verbose_name=_('revisions'), default=1)
+    upvotes = models.IntegerField(verbose_name=_('upvotes'), default=0)
+    downvotes = models.IntegerField(verbose_name=_('downvotes'), default=0)
 
     class Meta:
         permissions = (

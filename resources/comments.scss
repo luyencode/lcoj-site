@@ -6,7 +6,9 @@
 }
 
 a {
-    &.upvote-link, &.downvote-link {
+
+    &.upvote-link,
+    &.downvote-link {
         color: $color_primary100;
     }
 
@@ -48,7 +50,7 @@ a {
         color: $color_primary75;
     }
 
-    a + a {
+    a+a {
         padding-left: 2px;
     }
 }
@@ -67,7 +69,8 @@ a {
 .comment-post-wrapper {
     padding-bottom: 5px;
 
-    input, textarea {
+    input,
+    textarea {
         min-width: 100%;
         max-width: 100%;
 
@@ -99,7 +102,8 @@ a {
     word-break: break-word;
 }
 
-.previous-revision, .next-revision {
+.previous-revision,
+.next-revision {
     color: $color_primary75;
 }
 
@@ -129,7 +133,7 @@ a {
         }
     }
 
-    .comment:target > .comment-display {
+    .comment:target>.comment-display {
         border: 1px solid $highlight_blue;
         border-left: 10px solid $highlight_blue;
         padding-left: 5px;
@@ -189,5 +193,57 @@ a {
         opacity: 1;
         /* This is necessary to prevent random flickering */
         transform: translatez(0);
+    }
+}
+
+// Comment truncation styles
+.comment-body-content {
+    &.comment-truncated {
+        max-height: 200px;
+        overflow: hidden;
+        position: relative;
+
+        &::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(to bottom, transparent, $color_primary5);
+            pointer-events: none;
+        }
+    }
+
+    &.comment-expanded {
+        max-height: none;
+        overflow: visible;
+    }
+}
+
+.comment-show-more {
+    text-align: center;
+    padding: 10px 0;
+    margin-top: 10px;
+
+    .show-more-link {
+        display: inline-block;
+        padding: 6px 16px;
+        background: $color_primary10;
+        color: $color_primary100;
+        border-radius: $widget_border_radius;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: $color_primary25;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
     }
 }
