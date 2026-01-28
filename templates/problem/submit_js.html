@@ -63,12 +63,65 @@
 
             var customAdapter = $.fn.select2.amd.require('select2/data/customAdapter');
 
-            $("#id_language").select2({
-                theme: '{{ DMOJ_SELECT2_THEME }}',
-                templateResult: format,
-                templateSelection: formatSelection,
-                resultsAdapter: customAdapter
-            });
+            // $("#id_language").select2({
+            //     theme: '{{ DMOJ_SELECT2_THEME }}',
+            //     templateResult: format,
+            //     templateSelection: formatSelection,
+            //     resultsAdapter: customAdapter
+            // });
+
+            // Custom Dropdown Logic
+            (function() {
+                const $langSelect = $('#id_language');
+                const $customToggle = $('#custom-lang-toggle');
+                const $customMenu = $('#custom-lang-menu');
+                const $selectedName = $customToggle.find('.selected-lang-name');
+                const $options = $('.lang-option');
+
+                function updateCustomDropdownUI() {
+                    const val = $langSelect.val();
+                    const $selectedOption = $langSelect.find('option:selected');
+                    if ($selectedOption.length) {
+                        $selectedName.text($selectedOption.text());
+                        $options.removeClass('selected');
+                        $options.filter('[data-value="' + val + '"]').addClass('selected');
+                    }
+                }
+
+                // Initial Sync
+                updateCustomDropdownUI();
+
+                // Listen for external changes to the select (e.g. if other scripts change it)
+                $langSelect.on('change', function() {
+                    updateCustomDropdownUI();
+                });
+
+                $customToggle.on('click', function(e) {
+                    e.stopPropagation();
+                    $customMenu.toggleClass('show');
+                    $customToggle.toggleClass('active');
+                    
+                    // Position check - if off screen
+                    // (Simple version for now)
+                });
+
+                $(document).on('click', function(e) {
+                    if (!$(e.target).closest('.custom-lang-dropdown').length) {
+                        $customMenu.removeClass('show');
+                        $customToggle.removeClass('active');
+                    }
+                });
+
+                $options.on('click', function() {
+                    const value = $(this).data('value');
+                    
+                    // Update original select
+                    $langSelect.val(value).trigger('change');
+                    
+                    $customMenu.removeClass('show');
+                    $customToggle.removeClass('active');
+                });
+            })();
 
             $('#id_language').on('select2:open', function (evt) {
                 var dropdown = $('.select2-dropdown');
@@ -107,7 +160,7 @@
                 });
                 editor.getSession().setUseWrapMode(true);
                 editor.setFontSize(14);
-                editor.setPrintMarginColumn(100);
+                editor.setShowPrintMargin(false);
                 editor.focus();
 
                 $(editor.container).on('dragover', function (e) {

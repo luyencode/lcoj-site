@@ -49,12 +49,12 @@
 }
 
 .django-ace-max_min {
+    display: none !important;
     float: right;
     padding: 5px;
 
     background: url($path_to_root + '/ace/img/expand.png') no-repeat 5px 5px;
     @include vars-img;
-    display: block;
     height: 16px;
     width: 16px;
 }

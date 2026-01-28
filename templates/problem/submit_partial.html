@@ -32,8 +32,122 @@
     <div class="editor-header">
         <div class="header-left">
             {% if not no_judges %}
-                <div id="language-select-wrapper">
-                    <select id="id_language" name="language" class="form-control">
+                <div id="language-select-wrapper" style="position: relative;">
+                    <style>
+                        /* Custom Dropdown Styles */
+                        .custom-lang-dropdown {
+                            position: relative;
+                            display: inline-block;
+                            min-width: 180px;
+                        }
+                        
+                        .lang-dropdown-toggle {
+                            background: #fff !important;
+                            border: 1px solid #ced4da;
+                            border-radius: 4px;
+                            padding: 6px 12px;
+                            cursor: pointer;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            width: 100%;
+                            font-size: 14px;
+                            color: #495057 !important;
+                            height: 34px; /* Match form-control height */
+                        }
+                        
+                        .selected-lang-name {
+                            color: #495057;
+                        }
+
+                        .lang-dropdown-toggle:hover {
+                            background: #f8f9fa !important;
+                            border-color: #b3b7bb;
+                        }
+                        
+                        .lang-dropdown-toggle.active {
+                            border-color: #80bdff;
+                            outline: 0;
+                            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+                        }
+                        
+                        .lang-dropdown-menu {
+                            position: absolute;
+                            top: 100%;
+                            left: 0;
+                            z-index: 1050;
+                            display: none;
+                            background: #fff;
+                            border: 1px solid rgba(0,0,0,.15);
+                            border-radius: 4px;
+                            box-shadow: 0 6px 12px rgba(0,0,0,.175);
+                            margin-top: 5px;
+                            width: max-content;
+                            min-width: 450px;
+                            max-width: 800px;
+                            padding: 12px;
+                        }
+                        
+                        .lang-dropdown-menu.show {
+                            display: block;
+                        }
+                        
+                        .lang-grid {
+                            column-count: 3;
+                            column-gap: 20px;
+                            width: 100%;
+                        }
+                        
+                        .lang-option {
+                            padding: 6px 10px;
+                            cursor: pointer;
+                            border-radius: 4px;
+                            display: flex;
+                            align-items: center;
+                            color: #333;
+                            font-size: 13px;
+                            line-height: 1.4;
+                            break-inside: avoid;
+                            page-break-inside: avoid;
+                            margin-bottom: 2px;
+                        }
+                        
+                        .lang-option:hover {
+                            background-color: #f1f3f4;
+                        }
+                        
+                        .lang-option.selected {
+                            background-color: #e8f0fe;
+                            color: #1a73e8;
+                            font-weight: 500;
+                        }
+                        
+                        .lang-check {
+                            margin-right: 8px;
+                            width: 14px;
+                            color: #1a73e8;
+                            visibility: hidden;
+                        }
+                        
+                        .lang-option.selected .lang-check {
+                            visibility: visible;
+                        }
+
+                        @media (max-width: 768px) {
+                            .lang-dropdown-menu {
+                                position: fixed;
+                                left: 10px;
+                                right: 10px;
+                                width: auto;
+                                min-width: 0;
+                            }
+                            .lang-grid {
+                                grid-template-columns: repeat(2, 1fr);
+                            }
+                        }
+                    </style>
+
+                    <select id="id_language" name="language" class="form-control" style="display: none;">
                         {% for lang in form.fields.language.queryset %}
                             <option value="{{ lang.id }}" data-id="{{ lang.id }}" data-name="{{ lang.name }}"
                                     data-info="{{ lang.info }}" data-ace="{{ lang.ace }}" data-fileonly="{{ lang.file_only }}"
@@ -42,6 +156,28 @@
                                     {% if lang.id == default_lang.id %}selected{% endif %}>{{ lang.name }}</option>
                         {% endfor %}
                     </select>
+
+                    <!-- Custom Dropdown -->
+                    <div class="custom-lang-dropdown">
+                        <button type="button" class="lang-dropdown-toggle" id="custom-lang-toggle">
+                            <span class="selected-lang-name">
+                                {% for lang in form.fields.language.queryset %}
+                                    {% if lang.id == default_lang.id %}{{ lang.name }}{% endif %}
+                                {% endfor %}
+                            </span>
+                            <i class="fa fa-chevron-down" style="font-size: 10px; color: #666;"></i>
+                        </button>
+                        <div class="lang-dropdown-menu" id="custom-lang-menu">
+                            <div class="lang-grid">
+                                {% for lang in form.fields.language.queryset %}
+                                    <div class="lang-option {% if lang.id == default_lang.id %}selected{% endif %}" data-value="{{ lang.id }}">
+                                        <span class="lang-check"><i class="fa fa-check"></i></span>
+                                        <span class="lang-text">{{ lang.name }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                  <button type="button" class="btn-icon" title="{{ _('Load from file') }}" onclick="document.getElementById('file_select').click()">

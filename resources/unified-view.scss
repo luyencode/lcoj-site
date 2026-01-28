@@ -48,6 +48,49 @@
             height: 100% !important;
         }
     }
+
+    // Override Global Buttons within Unified View
+    .button,
+    button,
+    input[type=submit] {
+        background: #555;
+        background: linear-gradient(to bottom, #666 0, #444 100%) repeat-x;
+        border-color: #444;
+        color: white !important;
+
+        &:hover {
+            background: #444;
+            background: linear-gradient(to bottom, #555 0, #333 100%) repeat-x;
+        }
+
+        &:active {
+            background: #333;
+            border-color: #222;
+        }
+
+        &.disabled {
+            background: #ccc !important;
+            border-color: #bbb !important;
+        }
+    }
+
+    // Icon Buttons (Ghost style)
+    .btn-icon {
+        background: transparent !important;
+        border: 1px solid transparent !important;
+        color: $color_primary50 !important;
+        padding: 4px 8px;
+        box-shadow: none !important;
+
+        &:hover {
+            background: $color_primary10 !important;
+            color: $color_primary75 !important;
+        }
+
+        &:active {
+            background: $color_primary25 !important;
+        }
+    }
 }
 
 .split-pane {
@@ -59,7 +102,7 @@
     &#problem-pane {
         flex: 0 0 auto;
         width: 50%;
-        min-width: 300px;
+        // min-width removed to allow Split.js to handle sizing via minSize
         background: $color_primary0;
         border-right: 1px solid $color_primary25;
     }
@@ -67,8 +110,47 @@
     &#submit-pane {
         flex: 0 0 auto;
         width: 50%;
-        min-width: 300px;
+        // min-width removed to allow Split.js to handle sizing via minSize
         background: $color_primary5;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+}
+
+// Ensure the form takes full height
+#problem_submit {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    flex: 1;
+    overflow: hidden;
+}
+
+// Editor Container Styling
+.editor-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    // height: 100%; // Removed to prevent overflow with flex: 1
+
+    #editor {
+        flex: 1;
+        height: 100% !important;
+        width: 100% !important;
+        position: absolute !important;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+
+        .django-ace-editor,
+        .django-ace-widget,
+        .ace_editor {
+            height: 100% !important;
+            width: 100% !important;
+        }
     }
 }
 
@@ -76,7 +158,7 @@
 .tabs-nav {
     display: flex;
     gap: 1.5rem;
-    padding: 0 1.5rem;
+    padding: 0 1rem 0 0;
     background: $color_primary0;
     border-bottom: 1px solid $color_primary25;
     flex-shrink: 0;
@@ -99,565 +181,248 @@
         top: 1px;
 
         i {
-            font-size: 1em;
+            font-size: 1rem;
+            color: $color_primary33;
         }
 
         &:hover {
             color: $color_primary75;
+
+            i {
+                color: $color_primary66;
+            }
         }
 
         &.is-active {
-            color: $color_primary100;
-            border-bottom: 2px solid $color_primary100;
-            font-weight: 600;
+            color: $color_primary90; // Dark grey instead of blue
+            border-bottom-color: $color_primary90;
+
+            i {
+                color: $color_primary90;
+            }
         }
     }
 }
 
+// Content Areas
 .tab-content-container {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     position: relative;
-    padding: 0;
 }
 
 .tab-content {
     display: none;
+    height: 100%;
     padding: 1.5rem;
-    animation: fadeIn 0.2s ease;
 
     &.is-active {
         display: block;
     }
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-// Submit Pane Styles
-#submit-pane .form-area {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    height: 100%;
-    width: 100%; // Ensure full width
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
-}
-
-.editor-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 0.75rem;
-    background: $color_primary0;
-    border-bottom: 1px solid $color_primary25; // Distinct bottom border
-    flex-shrink: 0;
-    height: 52px; // Slightly taller for better touch targets
-    z-index: 20;
-
-    .header-left,
-    .header-right {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    select {
-        border: 1px solid $color_primary25;
-        border-radius: 4px;
-        padding: 0 0.6rem; // Use 0 vertical padding and let height/line-height handle it
-        height: 36px;
-        line-height: 34px; // height - 2px borders
-        background: $color_primary5; // Differentiate input field
-        color: $color_primary100;
-        max-width: 250px;
-        font-size: 0.9rem;
-        cursor: pointer;
-        box-sizing: border-box !important; // Enforce box model
-        vertical-align: middle;
-
-        &:hover {
-            border-color: $color_primary50;
-            background: $color_primary0;
-        }
-
-        &:focus {
-            outline: none;
-            border-color: $color_link75;
-            box-shadow: 0 0 0 2px rgba($color_link75, 0.2);
-        }
-    }
-}
-
-// Button Icon Styles
-.btn-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    background: transparent;
-    color: $color_primary50 !important;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    flex-shrink: 0; // Prevent shrinking
-    z-index: 10;
-
-    i {
-        font-size: 1.1em;
-        font-weight: bold; // Make icon thicker
-    }
-}
-
-.is-toggle-left,
-.is-toggle-right {
-    display: flex !important; // Force display
-    visibility: visible !important;
-}
-
-// Ensure gutter can be hidden
-.gutter.hidden {
-    display: none !important;
-}
-
-// CTA Button Styles
-.button.primary-action {
-    height: 36px;
-    padding: 0 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    background-color: #2cbb5d; // Growth Green
-    color: white;
-    border: 1px solid transparent; // Transparent border 1px
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    box-sizing: border-box !important; // Enforce box model
-    vertical-align: middle;
-
-    &:hover {
-        background-color: darken(#2cbb5d, 5%);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        color: white;
-    }
-
-    &:active {
-        transform: translateY(0);
-    }
-
-    &:disabled {
-        background-color: $color_primary25;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    i {
-        font-size: 0.9em;
-    }
-}
-
-.editor-container {
-    flex: 1;
-    position: relative !important;
-    overflow: hidden;
-    background: white; // Editor background should be white
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-
-    #editor {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        height: 100% !important; // Force height to override JS
-        width: 100% !important;
-    }
-
-    textarea#id_source {
-        height: 100% !important;
-        width: 100% !important;
-        resize: none;
-        border: none;
-        padding: 1rem;
-        font-family: monospace;
-    }
-
-    // Ace Editor Fixes
-    .django-ace-widget,
-    .django-ace-editor {
-        width: 100% !important;
-        height: 100% !important;
-        display: flex !important;
-        flex-direction: column !important;
-    }
-
-    .django-ace-toolbar {
-        flex: 0 0 auto !important;
-        width: 100% !important;
-        background: $color_primary5;
-        border-bottom: 1px solid $color_primary25;
-    }
-
-    .django-ace-editor>div:not(.django-ace-toolbar),
-    #ace_source {
-        flex: 1 !important;
-        height: 100% !important; // Force height
-        width: 100% !important;
-    }
-
-    .django-ace-max_min {
-        display: none !important;
-    }
-
-    // File Submit Area Styling
-    #file-submit {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        padding: 2rem;
-        background: $color_primary5;
-
-        &.hidden {
-            display: none !important;
-        }
-
-        #file_drag {
-            border: 2px dashed $color_primary25;
-            border-radius: 8px;
-            padding: 3rem;
-            text-align: center;
-            background: $color_primary0;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            width: 100%;
-            max-width: 400px;
-
-            &:hover {
-                border-color: $color_link75;
-                background: rgba($color_link75, 0.05);
-            }
-
-            strong {
-                color: $color_primary75;
-                font-size: 1.1rem;
-                display: block;
-                margin-bottom: 0.5rem;
-            }
-        }
-    }
-}
-
-.gutter {
-    background-color: $color_primary10;
-    background-repeat: no-repeat;
-    background-position: 50%;
-    cursor: col-resize;
-    width: 10px;
-    margin: 0 -5px;
-    z-index: 30;
-    transition: background-color 0.2s;
-
-    &:hover {
-        background-color: $color_primary25;
-    }
-
-    @media (max-width: 768px) {
-        display: none;
-    }
-}
-
-// Problem Meta Styles
+// Problem Meta Header
 .problem-header-meta {
-    border-bottom: 1px solid $color_primary25; // added border
+    margin-bottom: 2rem;
+    border-bottom: 1px solid $color_primary10;
+    padding-bottom: 1.5rem;
 
     .problem-title {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: $color_primary100;
         margin: 0 0 1rem 0;
-        line-height: 1.3;
-        display: flex; // Align title items
-        align-items: center;
-        gap: 0.5rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: $color_primary90;
     }
 
     .meta-row {
         display: flex;
         flex-wrap: wrap;
-        gap: 1rem;
-        margin-bottom: 0.75rem;
+        gap: 1.5rem;
+        margin-bottom: 1rem;
     }
 
     .meta-item {
         display: inline-flex;
         align-items: center;
-        gap: 0.4rem;
-        padding: 0.4rem 0.75rem;
-        background: $color_primary5;
-        border-radius: 6px;
+        gap: 0.5rem;
+        color: $color_primary66;
         font-size: 0.9rem;
-        color: $color_primary75;
-        border: 1px solid $color_primary10;
+        background: $color_primary5;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
 
         i {
-            color: $color_primary50;
+            color: $color_primary33;
         }
     }
-
-
 
     .meta-actions {
         display: flex;
         gap: 1rem;
-        margin-top: 0.75rem;
-    }
+        margin-top: 1rem;
 
-    .meta-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        color: $color_primary75;
-        text-decoration: none;
-        font-size: 0.9rem;
-        padding: 0.4rem 0.75rem;
-        border-radius: 6px;
-        border: 1px solid transparent;
-        transition: all 0.2s ease;
+        .meta-link {
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: $color_primary66; // Dark grey
+            text-decoration: none;
 
-        &:hover {
-            color: $color_primary100;
-            background: $color_primary5;
-            border-color: $color_primary25;
+            &:hover {
+                text-decoration: underline;
+                color: $color_primary90;
+            }
         }
     }
 }
 
+// Problem Footer
 .problem-footer {
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 2px solid $color_primary10;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid $color_primary10;
 
     .footer-item {
-        margin-bottom: 0.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid $color_primary10;
+        border-radius: 4px;
+        overflow: hidden;
+        background: $color_primary0;
 
-        &.collapsible {
-            .footer-label {
-                cursor: pointer;
-                justify-content: space-between;
-                padding: 0.5rem 0;
-                user-select: none;
+        .footer-label {
+            padding: 0.75rem 1rem;
+            background: $color_primary5;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 500;
+            color: $color_primary75;
+            user-select: none;
 
-                &:hover {
-                    color: $color_primary100;
-                }
+            .toggle-icon {
+                transition: transform 0.2s;
+                font-size: 0.8rem;
+                color: $color_primary33;
+            }
+
+            &:hover {
+                background: $color_primary10;
+            }
+        }
+
+        .footer-content {
+            display: none;
+            padding: 1rem;
+            border-top: 1px solid $color_primary10;
+            font-size: 0.9rem;
+            color: $color_primary66;
+            line-height: 1.6;
+        }
+
+        &.is-open {
+            .footer-label .toggle-icon {
+                transform: rotate(90deg);
             }
 
             .footer-content {
-                display: none;
-                padding-left: 1.7rem; // Indent content
-                padding-bottom: 0.75rem;
-                animation: fadeIn 0.3s ease;
-            }
-
-            .toggle-icon {
-                font-size: 0.8em;
-                transition: transform 0.2s ease;
-            }
-
-            &.is-open {
-                .footer-content {
-                    display: block;
-                }
-
-                .toggle-icon {
-                    transform: rotate(90deg);
-                }
-
-                .footer-label {
-                    color: $color_primary100;
-                }
+                display: block;
             }
         }
     }
 
-    .footer-label {
+    .lang-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        background: $color_primary5;
+        border: 1px solid $color_primary10;
+        border-radius: 3px;
+        margin: 0 0.25rem 0.25rem 0;
+        font-size: 0.85rem;
+        color: $color_primary66;
+
+        &.disabled {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+    }
+}
+
+// Editor Overrides
+#editor-container {
+    border: none !important;
+    border-radius: 0 !important;
+}
+
+.ace_editor {
+    border: none !important;
+    background: transparent !important;
+}
+
+// Responsive
+@media (max-width: 768px) {
+    .tabs-nav {
+        overflow-x: auto;
+        padding: 0 1rem;
+        gap: 1rem;
+
+        .tab-link {
+            white-space: nowrap;
+        }
+    }
+
+    .problem-header-meta {
+        .meta-row {
+            gap: 0.5rem;
+        }
+    }
+}
+
+// Split.js Gutter Styles
+.gutter {
+    background-color: $color_primary10;
+    background-repeat: no-repeat;
+    background-position: 50%;
+    z-index: 50; // Reduced from 9999 to avoid overlapping navbar
+    position: relative;
+
+    &.gutter-horizontal {
+        cursor: col-resize;
+        transition: background-color 0.2s;
+
+        &:hover {
+            background-color: #999; // Neutral grey highlight on hover
+        }
+
+        &.gutter-active {
+            // When dragging
+            background-color: #777;
+        }
+    }
+}
+
+// Editor Toolbar Layout
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: $color_primary0;
+    border-bottom: 1px solid $color_primary25;
+    height: 48px; // Match tabs-nav height
+    min-height: 48px; // Enforce minimum
+    flex-shrink: 0; // Prevent shrinking
+
+    .header-left,
+    .header-right {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        font-weight: 600;
-        color: $color_primary75;
-        font-size: 0.95rem;
-
-        span {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        i {
-            width: 1.2rem;
-            text-align: center;
-        }
+        height: 100%;
     }
 
-
-
-    .problem-type-badge,
-    .lang-badge {
-        display: inline-block;
-        padding: 0.3rem 0.6rem;
-        margin: 0.2rem 0.3rem 0.2rem 0;
-        border-radius: 4px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        border: 1px solid transparent;
-    }
-
-    .problem-type-badge {
-        background: $color_primary10;
-        border-color: $color_primary25;
-        color: $color_primary100;
-    }
-
-    .lang-badge {
-        background: $color_primary10;
-        border-color: $color_primary25;
-        color: $color_primary100;
-        font-family: monospace;
-
-        &.disabled {
-            opacity: 0.5;
-            text-decoration: line-through;
-            background: transparent;
-        }
-    }
-}
-
-// Editorial Content
-.editorial-body {
-    line-height: 1.6;
-    font-size: 1rem;
-    color: $color_primary100;
-
-    h1,
-    h2,
-    h3 {
-        margin-top: 1.5em;
-        margin-bottom: 0.75em;
-    }
-
-    p {
-        margin-bottom: 1em;
-    }
-
-    pre,
-    code {
-        font-family: monospace;
-        background: $color_primary5;
-        padding: 2px 4px;
-        border-radius: 3px;
-    }
-
-    // Spoiler Styles
-    &.blurred {
-        filter: blur(8px);
-        user-select: none;
-        pointer-events: none;
-        opacity: 0.5;
-    }
-}
-
-.editorial-spoiler-wrapper {
-    position: relative;
-    min-height: 200px;
-}
-
-.editorial-spoiler-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 10;
-    pointer-events: none; // Allow scroll through overlay area
-}
-
-.editorial-reveal-button-container {
-    position: sticky;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    justify-content: center;
-    pointer-events: auto; // Re-enable clicks
-    z-index: 20;
-}
-
-// Language Select Dropdown Grid Layout
-// Using ID injected by submit_js.html
-#language-select2 {
-    width: 750px !important; // Wider container (250px per column)
-    max-width: 90vw;
-
-    .select2-results__options {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-        padding: 12px;
-        max-height: 50vh !important; // Allow taller dropdown
-    }
-
-    // Fix for truncation issue - remove overflow hidden and allow wrapping
-    .select2-results__option {
-        white-space: normal; // Allow text to wrap if needed
-        overflow: visible; // Show overflow
-        text-overflow: clip; // No ellipsis
-        padding: 8px 10px;
-        border-radius: 4px;
-        min-width: 0; // standard grid fix
-        box-sizing: border-box;
-
-        font-size: 0.95rem;
-        line-height: 1.2;
-
-        display: flex;
-        align-items: center;
-
-        // Ensure bold text (likely grouping) is visible
-        strong,
-        b {
-            font-weight: 600;
-        }
-    }
-
-    // Responsive: revert to 1 column on small screens
-    @media (max-width: 768px) {
-        width: 95vw !important;
-
-        .select2-results__options {
-            grid-template-columns: 1fr;
-        }
+    .header-right {
+        margin-left: auto;
     }
 }
