@@ -4,59 +4,17 @@
         {% include "comments/media-css.html" %}
     {% endif %}
     <style>
-        .title-state {
-            font-size: 2em;
-            float: left;
-            width: 1.1em;
-            display: block;
-            margin-top: 0.16em;
-        }
-
-        .info-float a {
-            vertical-align: middle;
-        }
-
-        .problem-clarification {
-            border-bottom: 1px solid #ccc;
-            margin-top: 1em;
-            margin-bottom: 1em;
-        }
-
-        .clarifications-area h2 {
-            margin-bottom: 20px;
-        }
-
-        .problem-clarification .body {
-            display: inline-block;
-            padding-left: 3em;
-        }
-
-        #content-right {
-            max-width: 12.5em;
-            min-width: 12.5em;
-        }
-
-        #problem-types, #allowed-langs, #available-judges {
-            padding-top: 1em;
-        }
-
-        .problem-info-entry {
-            padding-top: 0.5em;
-        }
-
-        #raw_problem {
-            visibility: hidden;
-            width: 0;
-            height: 0;
-            position: absolute;
-            left: -999em;
-        }
+        #pdf_button { display: none; }
     </style>
 {% endblock %}
 
 {% block content_js_media %}
     {% if not comment_lock %}
         {% include "comments/media-js.html" %}
+    {% endif %}
+    {% if form %}
+        <script type="text/javascript" src="{{ ACE_URL }}/ace.js"></script>
+        {{ form.media.js }}
     {% endif %}
     <script type="text/javascript">
         $(function() {
@@ -70,11 +28,120 @@
                 }
                 frames['raw_problem'].print();
             });
+
+            /* Unified View Logic */
+            $(document).on('click', '.tab-link', function() {
+                var tabId = $(this).data('tab');
+                $('.tab-link').removeClass('is-active');
+                $('.tab-content').removeClass('is-active');
+                $(this).addClass('is-active');
+                $('#tab-' + tabId).addClass('is-active');
+            });
+
+             /* Fullscreen Logic */
+             function toggleFullscreen() {
+                var container = $('.unified-container');
+                var isFS = container.hasClass('is-fullscreen');
+                
+                if (isFS) {
+                    container.removeClass('is-fullscreen');
+                } else {
+                    container.addClass('is-fullscreen');
+                }
+                if (window.ace_source) window.ace_source.resize();
+            }
+            window.toggleFullscreen = toggleFullscreen;
+
+            $(document).keydown(function(e) {
+                if (e.key === "Escape") {
+                    $('.unified-container').removeClass('is-fullscreen');
+                    if (window.ace_source) window.ace_source.resize();
+                }
+            });
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/split.js@1.6.5/dist/split.min.js"></script>
+    <script type="text/javascript">
+        $(function() {
+            if (window.innerWidth > 768 && document.querySelector('#problem-pane')) {
+                var splitInstance = Split(['#problem-pane', '#submit-pane'], {
+                    sizes: [50, 50],
+                    minSize: [0, 0], // Allow collapsing to 0
+                    gutterSize: 10,
+                    cursor: 'col-resize',
+                    onDragStart: function() {
+                        // Create global overlay to capture all mouse events
+                        var overlay = document.createElement('div');
+                        overlay.id = 'split-drag-overlay';
+                        overlay.style.position = 'fixed';
+                        overlay.style.top = '0';
+                        overlay.style.left = '0';
+                        overlay.style.width = '100%';
+                        overlay.style.height = '100%';
+                        overlay.style.zIndex = '99999';
+                        overlay.style.cursor = 'col-resize';
+                        document.body.appendChild(overlay);
+                    },
+                    onDragEnd: function() {
+                        var overlay = document.getElementById('split-drag-overlay');
+                        if (overlay) document.body.removeChild(overlay);
+                        if (window.ace_source) window.ace_source.resize();
+                    }
+                });
+
+                var prevSizes = [50, 50];
+                var isMaximized = false; // 'left' or 'right' or false
+
+                function updateToggleIcons() {
+                    $('.is-toggle-left i').attr('class', isMaximized === 'left' ? 'fa fa-compress' : 'fa fa-expand');
+                    $('.is-toggle-right i').attr('class', isMaximized === 'right' ? 'fa fa-compress' : 'fa fa-expand');
+                }
+
+                $('.is-toggle-left').click(function() {
+                    if (isMaximized === 'left') {
+                        // Restore
+                        $('#submit-pane').removeClass('hidden');
+                        $('.gutter').removeClass('hidden');
+                        splitInstance.setSizes(prevSizes);
+                        isMaximized = false;
+                    } else {
+                        // Maximize left
+                        if (!isMaximized) prevSizes = splitInstance.getSizes();
+                        splitInstance.setSizes([100, 0]);
+                        $('#submit-pane').addClass('hidden');
+                        $('.gutter').addClass('hidden');
+                        isMaximized = 'left';
+                    }
+                    updateToggleIcons();
+                    if (window.ace_source) window.ace_source.resize();
+                });
+
+                $('.is-toggle-right').click(function() {
+                    if (isMaximized === 'right') {
+                        // Restore
+                        $('#problem-pane').removeClass('hidden');
+                        $('.gutter').removeClass('hidden');
+                        splitInstance.setSizes(prevSizes);
+                        isMaximized = false;
+                    } else {
+                        // Maximize right
+                        if (!isMaximized) prevSizes = splitInstance.getSizes();
+                        splitInstance.setSizes([0, 100]);
+                        $('#problem-pane').addClass('hidden');
+                        $('.gutter').addClass('hidden');
+                        isMaximized = 'right';
+                    }
+                    updateToggleIcons();
+                    if (window.ace_source) window.ace_source.resize();
+                });
+            }
         });
     </script>
 {% endblock %}
 
 {% block title_row %}
+    {% if False %}
+
     <div class="problem-title">
         {% if request.user.is_authenticated %}
             {% if problem.id in completed_problem_ids %}
@@ -120,29 +187,32 @@
             {{ _('View as PDF') }}
         </a>
     </div>
+    {% endif %}
 {% endblock %}
 
 {% block info_float %}
-    {% if request.user.is_authenticated and request.in_contest and submission_limit %}
-        {% if submissions_left > 0 %}
+    {% if not form %}
+        {% if request.user.is_authenticated and request.in_contest and submission_limit %}
+            {% if submissions_left > 0 %}
+                <a href="{{ url('problem_submit', problem.code) }}" class="unselectable button full">
+                    {{ _('Submit solution') }}
+                </a>
+                <div class="submissions-left">
+                    {% trans trimmed counter=submissions_left %}
+                        {{ counter }} submission left
+                        {% pluralize %}
+                        {{ counter }} submissions left
+                    {% endtrans %}
+                </div>
+            {% else %}
+                <a class="unselectable button full disabled">{{ _('Submit solution') }}</a>
+                <div class="no-submissions-left submissions-left">{{ _('0 submissions left') }}</div>
+            {% endif %}
+        {% else %}
             <a href="{{ url('problem_submit', problem.code) }}" class="unselectable button full">
                 {{ _('Submit solution') }}
             </a>
-            <div class="submissions-left">
-                {% trans trimmed counter=submissions_left %}
-                    {{ counter }} submission left
-                    {% pluralize %}
-                    {{ counter }} submissions left
-                {% endtrans %}
-            </div>
-        {% else %}
-            <a class="unselectable button full disabled">{{ _('Submit solution') }}</a>
-            <div class="no-submissions-left submissions-left">{{ _('0 submissions left') }}</div>
         {% endif %}
-    {% else %}
-        <a href="{{ url('problem_submit', problem.code) }}" class="unselectable button full">
-            {{ _('Submit solution') }}
-        </a>
     {% endif %}
 
     <hr style="padding-bottom: 0.3em">
@@ -400,4 +470,9 @@
             {% include "comments/list.html" %}
         {% endwith %}
     {% endif %}
+{% endblock %}
+
+{% block body %}
+    {% include "problem/unified_view.html" %}
+
 {% endblock %}

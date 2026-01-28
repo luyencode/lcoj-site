@@ -1,0 +1,231 @@
+<div class="unified-container">
+    <div id="problem-pane" class="split-pane">
+        <div class="tabs-nav unselectable">
+            <div class="tab-link is-active" data-tab="description">
+                <i class="fa fa-file-text-o"></i> {{ _('Description') }}
+            </div>
+            {% if editorial and editorial.is_accessible_by(request.user) %}
+            <div class="tab-link" data-tab="editorial">
+                <i class="fa fa-lightbulb-o"></i> {{ _('Editorial') }}
+            </div>
+            {% endif %}
+            <div class="tab-link" data-tab="submissions">
+                <i class="fa fa-history"></i> {{ _('Submissions') }}
+            </div>
+            {% if not comment_lock %}
+            <div class="tab-link" data-tab="comments">
+                <i class="fa fa-comments-o"></i> {{ _('Comments') }}
+            </div>
+            {% endif %}
+            <button type="button" class="btn-icon is-toggle-left" style="margin-left: auto;" title="{{ _('Toggle Full Width') }}">
+                <i class="fa fa-expand"></i>
+            </button>
+        </div>
+
+        <div class="tab-content-container">
+            <!-- Tab: Description -->
+            <div id="tab-description" class="tab-content is-active">
+                <div class="problem-header-meta">
+                    <h2 class="problem-title">{{ problem.code|upper }} - {{ problem.name }}</h2>
+                    <div class="meta-row">
+                        <span class="meta-item" title="{{ _('Points') }}">
+                            <i class="fa fa-check"></i> {{ problem.points|floatformat(2) }}
+                        </span>
+                        <span class="meta-item" title="{{ _('Time Limit') }}">
+                            <i class="fa fa-clock-o"></i> {{ problem.time_limit }}s
+                        </span>
+                        <span class="meta-item" title="{{ _('Memory Limit') }}">
+                            <i class="fa fa-server"></i> {{ problem.memory_limit|kbsimpleformat }}
+                        </span>
+                        <span class="meta-item" title="{{ _('Input/Output') }}">
+                            <i class="fa fa-exchange"></i>
+                            {% if problem.io_method.method == 'standard' %}Standard{% else %}File{% endif %}
+                        </span>
+                    </div>
+
+                    
+                    <div class="meta-actions">
+                         {% if has_pdf_render %}
+                            <a href="{{ url('problem_pdf', problem.code) }}" class="meta-link"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                        {% endif %}
+                        <!-- Admin Links -->
+                        {% if can_edit_problem %}
+                            <a href="{{ url('problem_edit', problem.code) }}" class="meta-link"><i class="fa fa-pencil"></i> Edit</a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                
+
+                <div class="problem-statement">
+                    {% include "problem/problem-detail.html" %}
+                </div>
+                
+                <div class="problem-footer">
+                    {% if show_languages %}
+                        <div class="footer-item collapsible">
+                             <div class="footer-label" onclick="this.closest('.footer-item').classList.toggle('is-open')">
+                                <span><i class="fa fa-code"></i> {{ _('Allowed languages') }}</span>
+                                <i class="fa fa-chevron-right toggle-icon"></i>
+                             </div>
+                             <div class="footer-content">
+                                 {% with usable=problem.usable_common_names, langs=problem.languages_list() %}
+                                    {% for lang in langs %}
+                                        {%- if lang in usable -%}
+                                            <span class="lang-badge">{{ lang }}</span>
+                                        {%- else -%}
+                                            <span class="lang-badge disabled" title="{{ _('No %(lang)s judge online', lang=lang) }}">{{ lang }}</span>
+                                        {%- endif -%}
+                                    {% endfor %}
+                                {% endwith %}
+                             </div>
+                        </div>
+                    {% endif %}
+                    {% if problem.source %}
+                        <div class="footer-item collapsible">
+                            <div class="footer-label" onclick="this.closest('.footer-item').classList.toggle('is-open')">
+                                <span><i class="fa fa-book"></i> {{ _('Source') }}</span>
+                                <i class="fa fa-chevron-right toggle-icon"></i>
+                            </div>
+                            <div class="footer-content">{{ problem.source }}</div>
+                        </div>
+                    {% endif %}
+                    {% if not contest_problem or not contest_problem.contest.hide_problem_tags %}
+                        {% if problem.types_list %}
+                        <div class="footer-item collapsible">
+                            <div class="footer-label" onclick="this.closest('.footer-item').classList.toggle('is-open')">
+                                <span><i class="fa fa-tag"></i> {{ _('Problem type') }}</span>
+                                <i class="fa fa-chevron-right toggle-icon"></i>
+                            </div>
+                            <div class="footer-content">
+                                {% for type in problem.types_list %}
+                                    <span class="problem-type-badge">{{ type }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                    <div class="footer-item collapsible">
+                        <div class="footer-label" onclick="this.closest('.footer-item').classList.toggle('is-open')">
+                            <span><i class="fa fa-user"></i> {{ _('Author') }}</span>
+                            <i class="fa fa-chevron-right toggle-icon"></i>
+                        </div>
+                         <div class="footer-content">{{ link_users(problem.authors.all()) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Editorial -->
+            {% if editorial %}
+            <div id="tab-editorial" class="tab-content">
+                <div class="editorial-content">
+                    <h3>{{ _('Editorial') }}</h3>
+                    <div class="editorial-spoiler-wrapper">
+                        <div class="editorial-body blurred">
+                            {{ editorial.content|markdown('problem', MATH_ENGINE)|reference|str|safe }}
+                        </div>
+                        <div class="editorial-spoiler-overlay">
+                            <div class="editorial-reveal-button-container">
+                                <button type="button" class="button primary-action" onclick="
+                                    this.closest('.editorial-spoiler-overlay').previousElementSibling.classList.remove('blurred');
+                                    this.closest('.editorial-spoiler-overlay').style.display = 'none';
+                                ">
+                                    <i class="fa fa-eye"></i> {{ _('Reveal Editorial') }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Tab: Submissions -->
+            <div id="tab-submissions" class="tab-content">
+                 <h3>{{ _('My Submissions') }}</h3>
+                 {% if request.user.is_authenticated %}
+                     {% if my_submissions %}
+                         <div id="submissions-table" class="unified-submissions">
+                             {% set profile_id = request.profile.id if request.user.is_authenticated else 0 %}
+                             {% for submission in my_submissions %}
+                                 <div class="submission-row" id="{{ submission.id }}">
+                                     {% with problem_name=false %}
+                                         {% include "submission/row.html" %}
+                                     {% endwith %}
+                                 </div>
+                             {% endfor %}
+                             <div class="view-all-link" style="margin-top: 1rem; text-align: center;">
+                                 <a href="{{ url('user_submissions', problem.code, request.user.username) }}" class="button">{{ _('View All Submissions') }}</a>
+                             </div>
+                         </div>
+                     {% else %}
+                         <p>{{ _('No submissions yet.') }}</p>
+                     {% endif %}
+                 {% else %}
+                     <p>{{ _('Please log in to view submissions.') }}</p>
+                 {% endif %}
+            </div>
+
+            <!-- Tab: Comments -->
+            {% if not comment_lock %}
+            <div id="tab-comments" class="tab-content">
+                {% with comment_warn_code=true %}
+                    {% include "comments/list.html" %}
+                {% endwith %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Pane: Submit -->
+    <div id="submit-pane" class="split-pane">
+        {% include "problem/submit_partial.html" %}
+        {% include "problem/submit_js.html" %}
+
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+    
+    // Tab switching functionality
+    const tabLinks = document.querySelectorAll('.tab-link');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    function switchTab(targetTab) {
+        // Remove active class from all tabs and contents
+        tabLinks.forEach(link => link.classList.remove('is-active'));
+        tabContents.forEach(content => content.classList.remove('is-active'));
+        
+        // Add active class to clicked tab and corresponding content
+        const clickedLink = document.querySelector(`.tab-link[data-tab="${targetTab}"]`);
+        const targetContent = document.getElementById(`tab-${targetTab}`);
+        
+        if (clickedLink && targetContent) {
+            clickedLink.classList.add('is-active');
+            targetContent.classList.add('is-active');
+            
+            // Save active tab to localStorage
+            localStorage.setItem('problem-active-tab', targetTab);
+        }
+    }
+    
+    // Add click event listeners to tab links
+    tabLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetTab = this.getAttribute('data-tab');
+            switchTab(targetTab);
+        });
+    });
+    
+    // Restore last active tab from localStorage
+    const savedTab = localStorage.getItem('problem-active-tab');
+    if (savedTab) {
+        const savedTabExists = document.querySelector(`.tab-link[data-tab="${savedTab}"]`);
+        if (savedTabExists) {
+            switchTab(savedTab);
+        }
+    }
+})();
+</script>

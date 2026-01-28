@@ -1,0 +1,101 @@
+{% if not no_judges %}
+    {% if default_lang not in form.fields.language.queryset %}
+        <div class="alert alert-warning">
+            <strong>{{ _('Warning!') }}</strong>
+            {{ _('Your default language, %(language)s, is unavailable for this problem and has been deselected.', language=bold(default_lang.name)) }}
+        </div>
+    {% endif %}
+
+    {% if request.in_contest and submission_limit %}
+        {% if submissions_left > 0 %}
+            <div class="alert alert-warning">
+                {% trans left=submissions_left -%}
+                    You have {{ left}} submission left
+                    {%- pluralize -%}
+                    You have {{ left }} submissions left
+                {%- endtrans %}
+            </div>
+        {% else %}
+            <div class="alert alert-warning">
+                {{ _('You have 0 submissions left') }}
+            </div>
+        {% endif %}
+    {% endif %}
+{% endif %}
+
+<form id="problem_submit" action="{{ url('problem_submit', problem.code) }}" method="post" class="form-area" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.non_field_errors() }}
+    
+    {# Sticky toolbar with key actions #}
+    {# Header with All Tools #}
+    <div class="editor-header">
+        <div class="header-left">
+            {% if not no_judges %}
+                <div id="language-select-wrapper">
+                    <select id="id_language" name="language" class="form-control">
+                        {% for lang in form.fields.language.queryset %}
+                            <option value="{{ lang.id }}" data-id="{{ lang.id }}" data-name="{{ lang.name }}"
+                                    data-info="{{ lang.info }}" data-ace="{{ lang.ace }}" data-fileonly="{{ lang.file_only }}"
+                                    data-ext="{{ lang.extension }}" data-file-size="{{ lang.file_size_limit }}"
+                                    data-judge-info="{{ runtime_versions(lang.runtime_versions()) }}"
+                                    {% if lang.id == default_lang.id %}selected{% endif %}>{{ lang.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                 <button type="button" class="btn-icon" title="{{ _('Load from file') }}" onclick="document.getElementById('file_select').click()">
+                    <i class="fa fa-upload"></i>
+                </button>
+                <input id="file_select" type="file" onchange="handleFileSelect()" style="display: none;">
+            {% endif %}
+        </div>
+        
+        <div class="header-right">
+            <button type="button" class="btn-icon is-toggle-right" title="{{ _('Toggle Full Width') }}">
+                <i class="fa fa-expand"></i>
+            </button>
+             <button type="button" class="btn-icon" title="{{ _('Full Screen (Esc to exit)') }}" onclick="window.toggleFullscreen()">
+                <i class="fa fa-arrows-alt"></i>
+            </button>
+            
+            {% if not no_judges %}
+                {{ form.judge }}
+                
+                {% if request.user.is_authenticated %}
+                    <button type="submit" class="button primary-action"
+                           {% if request.in_contest and submission_limit and not submissions_left %}disabled{% endif %}>
+                        <i class="fa fa-play"></i> <span>{{ _('Submit') }}</span>
+                    </button>
+                {% else %}
+                    <a href="{{ url('auth_login') }}?next={{ request.get_full_path() }}" class="button primary-action">
+                        <i class="fa fa-sign-in"></i> <span>{{ _('Submit') }}</span>
+                    </a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    {# Editor container #}
+    <div class="editor-container">
+        {% if no_judges %}
+            <div class="alert alert-warning">
+                <strong>{{ _('No judge is available for this problem.') }}</strong>
+            </div>
+        {% else %}
+            <div id="editor" class="hidden">
+                {{ form.source.errors }}
+                {{ form.source }}
+            </div>
+            <div id="file-submit" class="hidden">
+                {{ form.submission_file.errors }}
+                <input id="file_upload" type="file" name="submission_file" style="display: none;" onchange="handleFileChange()">
+                <label for="file_upload" id="file_drag">
+                    <div>
+                        <strong>{{ _("Click to select a file or drag a file into this box") }}</strong>
+                    </div>
+                </label>
+            </div>
+        {% endif %}
+    </div>
+</form>
