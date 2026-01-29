@@ -190,6 +190,12 @@ class ProblemDetail(ProblemMixin, SolvedProblemMixin, CommentedDetailView):
 
     def get_context_data(self, **kwargs):
         context = super(ProblemDetail, self).get_context_data(**kwargs)
+        
+        # Detect mobile user agent
+        ua = self.request.META.get('HTTP_USER_AGENT', '').lower()
+        # 'mobi' covers iPhone, Android mobile, etc. iPad and Android tablets usually exclude 'mobi'.
+        context['is_mobile'] = 'mobi' in ua
+
         user = self.request.user
         authed = user.is_authenticated
         contest_problem = self.contest_problem

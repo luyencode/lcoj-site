@@ -473,6 +473,9 @@
 {% endblock %}
 
 {% block body %}
-    {% include "problem/unified_view.html" %}
-
+    {% if is_mobile %}
+        {{ super() }}
+    {% else %}
+        {% include "problem/unified_view.html" %}
+    {% endif %}
 {% endblock %}
