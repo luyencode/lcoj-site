@@ -205,8 +205,8 @@
             clickedLink.classList.add('is-active');
             targetContent.classList.add('is-active');
             
-            // Save active tab to localStorage
-            localStorage.setItem('problem-active-tab', targetTab);
+            // Save active tab to localStorage - REMOVED to always show Description
+            // localStorage.setItem('problem-active-tab', targetTab);
         }
     }
     
@@ -219,7 +219,8 @@
         });
     });
     
-    // Restore last active tab from localStorage
+    // Restore last active tab from localStorage - REMOVED to always show Description
+    /*
     const savedTab = localStorage.getItem('problem-active-tab');
     if (savedTab) {
         const savedTabExists = document.querySelector(`.tab-link[data-tab="${savedTab}"]`);
@@ -227,5 +228,6 @@
             switchTab(savedTab);
         }
     }
+    */
 })();
 </script>
