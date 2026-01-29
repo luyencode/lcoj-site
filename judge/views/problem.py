@@ -190,7 +190,7 @@ class ProblemDetail(ProblemMixin, SolvedProblemMixin, CommentedDetailView):
 
     def get_context_data(self, **kwargs):
         context = super(ProblemDetail, self).get_context_data(**kwargs)
-        
+
         # Detect mobile user agent
         ua = self.request.META.get('HTTP_USER_AGENT', '').lower()
         # 'mobi' covers iPhone, Android mobile, etc. iPad and Android tablets usually exclude 'mobi'.
@@ -250,7 +250,6 @@ class ProblemDetail(ProblemMixin, SolvedProblemMixin, CommentedDetailView):
         context['meta_description'] = self.object.summary or metadata[0]
         context['og_image'] = self.object.og_image or metadata[1]
 
-
         # Add submit form context for unified view
         # Set default language and theme
         if authed:
@@ -267,21 +266,21 @@ class ProblemDetail(ProblemMixin, SolvedProblemMixin, CommentedDetailView):
         # We pass instance only if authed, or None which implies a new unsaved instance (unbound-ish)
         form = ProblemSubmitForm(
             instance=instance,
-            initial={'language': default_lang} if default_lang else {}
+            initial={'language': default_lang} if default_lang else {},
         )
-        
+
         # Set judge choices if user can edit problem
         if authed and self.object.is_editable_by(user):
             form.fields['judge'].choices = tuple(
-                Judge.objects.filter(online=True, problems=self.object).values_list('name', 'name')
+                Judge.objects.filter(online=True, problems=self.object).values_list('name', 'name'),
             )
-        
+
         # Set language queryset
         form.fields['language'].queryset = (
             self.object.usable_languages.order_by('name', 'key')
             .prefetch_related(Prefetch('runtimeversion_set', RuntimeVersion.objects.order_by('priority')))
         )
-        
+
         # If default_lang is None (guest), try to pick the first one as default to avoid "unavailable" warning
         if not default_lang and form.fields['language'].queryset.exists():
             default_lang = form.fields['language'].queryset.first()
@@ -291,7 +290,7 @@ class ProblemDetail(ProblemMixin, SolvedProblemMixin, CommentedDetailView):
         if default_lang:
             form.fields['source'].widget.mode = default_lang.ace
         form.fields['source'].widget.theme = ace_theme
-        
+
         context['form'] = form
         context['default_lang'] = default_lang
         context['no_judges'] = not form.fields['language'].queryset.exists()
@@ -301,11 +300,11 @@ class ProblemDetail(ProblemMixin, SolvedProblemMixin, CommentedDetailView):
         if authed:
             context['my_submissions'] = Submission.objects.filter(
                 user=user.profile,
-                problem=self.object
+                problem=self.object,
             ).order_by('-date')[:20]  # Limit to 20 for initial view
         else:
             context['my_submissions'] = []
-            
+
         return context
 
 
