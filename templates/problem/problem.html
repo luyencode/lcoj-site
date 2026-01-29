@@ -8,6 +8,20 @@
     {% endif %}
     <style>
         #pdf_button { display: none; }
+        #raw_problem { display: none; }
+        .button {
+            background: #555;
+            color: white !important;
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-align: center;
+            display: inline-block;
+        }
+        .button:hover {
+            background: #444;
+            color: white !important;
+            text-decoration: none;
+        }
     </style>
 {% endblock %}
 
@@ -194,10 +208,10 @@
 {% endblock %}
 
 {% block info_float %}
-    {% if not form %}
+    {% if not form or is_mobile %}
         {% if request.user.is_authenticated and request.in_contest and submission_limit %}
             {% if submissions_left > 0 %}
-                <a href="{{ url('problem_submit', problem.code) }}" class="unselectable button full">
+                <a href="{{ url('problem_submit', problem.code) }}" class="unselectable button full full-width-button">
                     {{ _('Submit solution') }}
                 </a>
                 <div class="submissions-left">
@@ -208,11 +222,11 @@
                     {% endtrans %}
                 </div>
             {% else %}
-                <a class="unselectable button full disabled">{{ _('Submit solution') }}</a>
+                <a class="unselectable button full disabled full-width-button">{{ _('Submit solution') }}</a>
                 <div class="no-submissions-left submissions-left">{{ _('0 submissions left') }}</div>
             {% endif %}
         {% else %}
-            <a href="{{ url('problem_submit', problem.code) }}" class="unselectable button full">
+            <a href="{{ url('problem_submit', problem.code) }}" class="unselectable button full full-width-button">
                 {{ _('Submit solution') }}
             </a>
         {% endif %}
