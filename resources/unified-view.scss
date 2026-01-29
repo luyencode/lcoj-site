@@ -459,6 +459,42 @@
     }
 }
 
+// Reorder Comments Tab
+#tab-comments .comment-area {
+    display: flex;
+    flex-direction: column;
+
+    // Elements with default order (0) will appear first:
+    // - h2 (Title)
+    // - .alert (Guidelines)
+    // - hr, br
+
+    #new-comment {
+        order: 1;
+        margin-bottom: 2rem;
+        padding: 0; // Remove default padding if needed to align left
+
+        // Constrain height of the comment editor
+        #comment-form-body {
+
+            .django-ace-editor,
+            .django-ace-widget,
+            .ace_editor {
+                height: 200px !important;
+                min-height: 200px !important;
+            }
+
+            textarea {
+                height: 200px !important;
+            }
+        }
+    }
+
+    ul.comments {
+        order: 2;
+    }
+}
+
 .spoiler-overlay {
     position: absolute;
     top: 0;
