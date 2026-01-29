@@ -18,6 +18,17 @@ body:has(.unified-container) {
         display: none !important;
     }
 
+    #tab-description pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        margin: 1.5em 0 1.5em 0;
+        padding: 1em;
+        border: 1px solid #ccc;
+        background-color: #f8f8f8;
+        color: #000;
+        border-radius: 4px;
+    }
+
     .unified-container {
         display: flex;
         gap: 0; // Gaps handled by splitjs gutter or internal padding
