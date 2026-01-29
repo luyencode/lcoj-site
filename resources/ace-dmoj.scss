@@ -3,7 +3,8 @@
 .django-ace-widget {
     display: inline-block;
     position: relative;
-    > div {
+
+    >div {
         position: absolute;
         top: 0;
         left: 0;
@@ -17,7 +18,7 @@
 
     /* Scroll bar */
     ::-webkit-scrollbar-track {
-        -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+        -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
         border-radius: 10px;
         background-color: $color_primary5;
     }
@@ -30,7 +31,7 @@
 
     ::-webkit-scrollbar-thumb {
         border-radius: 10px;
-        -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+        -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
         background-color: $color_primary66;
     }
 }
@@ -41,19 +42,19 @@
     color: $color_primary66;
     text-shadow: 0 1px 0 $color_primary0;
     border-bottom: 1px solid $color_primary25;
-    background-image: linear-gradient(rgba(0,0,0,0), $color_primary10);
+    background-image: linear-gradient(rgba(0, 0, 0, 0), $color_primary10);
     background-repeat: repeat-x;
     clear: both;
     overflow: hidden;
 }
 
 .django-ace-max_min {
+    display: none !important;
     float: right;
     padding: 5px;
 
     background: url($path_to_root + '/ace/img/expand.png') no-repeat 5px 5px;
     @include vars-img;
-    display: block;
     height: 16px;
     width: 16px;
 }
