@@ -120,15 +120,20 @@
             <div id="tab-editorial" class="tab-content">
                 <div class="editorial-content">
                     <h3>{{ _('Editorial') }}</h3>
-                    <div class="editorial-spoiler-wrapper">
-                        <div class="editorial-body blurred">
+                    <div class="spoiler-wrapper">
+                        <div class="spoiler-body blurred">
                             {{ editorial.content|markdown('problem', MATH_ENGINE)|reference|str|safe }}
                         </div>
-                        <div class="editorial-spoiler-overlay">
-                            <div class="editorial-reveal-button-container">
-                                <button type="button" class="button primary-action" onclick="
-                                    this.closest('.editorial-spoiler-overlay').previousElementSibling.classList.remove('blurred');
-                                    this.closest('.editorial-spoiler-overlay').style.display = 'none';
+                        <div class="spoiler-overlay">
+                            <div class="spoiler-reveal-container">
+                                <div class="spoiler-warning">
+                                    <i class="fa fa-exclamation-triangle"></i>
+                                    <h3>{{ _('Warning: Spoilers Ahead') }}</h3>
+                                    <p>{{ _('This editorial contains hints and solutions. Are you sure you want to see it?') }}</p>
+                                </div>
+                                <button type="button" class="button primary-action reveal-btn" onclick="
+                                    this.closest('.spoiler-wrapper').querySelector('.spoiler-body').classList.remove('blurred');
+                                    this.closest('.spoiler-overlay').style.display = 'none';
                                 ">
                                     <i class="fa fa-eye"></i> {{ _('Reveal Editorial') }}
                                 </button>
@@ -168,9 +173,28 @@
             <!-- Tab: Comments -->
             {% if not comment_lock %}
             <div id="tab-comments" class="tab-content">
-                {% with comment_warn_code=true %}
-                    {% include "comments/list.html" %}
-                {% endwith %}
+                <div class="spoiler-wrapper">
+                    <div class="spoiler-body blurred">
+                        {% with comment_warn_code=true %}
+                            {% include "comments/list.html" %}
+                        {% endwith %}
+                    </div>
+                    <div class="spoiler-overlay">
+                        <div class="spoiler-reveal-container">
+                            <div class="spoiler-warning">
+                                <i class="fa fa-exclamation-triangle"></i>
+                                <h3>{{ _('Warning: Community Discussion') }}</h3>
+                                <p>{{ _('Comments may contain user-submitted hints and solutions. Proceed with caution.') }}</p>
+                            </div>
+                            <button type="button" class="button primary-action reveal-btn" onclick="
+                                this.closest('.spoiler-wrapper').querySelector('.spoiler-body').classList.remove('blurred');
+                                this.closest('.spoiler-overlay').style.display = 'none';
+                            ">
+                                <i class="fa fa-comments"></i> {{ _('View Comments') }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
             {% endif %}
         </div>
