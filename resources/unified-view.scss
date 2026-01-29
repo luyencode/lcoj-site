@@ -1,0 +1,587 @@
+@use "vars" as *;
+
+body:has(.unified-container) {
+
+    // Unified View Layout
+    #content {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    #content-body {
+        padding: 0 !important;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    #tab-description pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        margin: 1.5em 0 1.5em 0;
+        padding: 1em;
+        border: 1px solid #ccc;
+        background-color: #f8f8f8;
+        color: #000;
+        border-radius: 4px;
+    }
+
+    .unified-container {
+        display: flex;
+        gap: 0; // Gaps handled by splitjs gutter or internal padding
+        height: calc(100vh - 80px) !important; // consistent height
+        margin-top: 1rem;
+        padding: 0 1rem;
+        background: $color_primary0;
+        overflow: hidden;
+        position: relative;
+
+        @media (max-width: 1024px) {
+            flex-direction: column;
+            height: auto !important;
+            padding-bottom: 2rem;
+        }
+
+        &.is-fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 100vh !important;
+            z-index: 9999;
+            margin: 0;
+            padding: 0;
+            background: white;
+
+            .split-pane {
+                height: 100% !important;
+            }
+        }
+
+        // Override Global Buttons within Unified View
+        .button,
+        button,
+        input[type=submit] {
+            background: #555;
+            background: linear-gradient(to bottom, #666 0, #444 100%) repeat-x;
+            border-color: #444;
+            color: white !important;
+
+            &:hover {
+                background: #444;
+                background: linear-gradient(to bottom, #555 0, #333 100%) repeat-x;
+            }
+
+            &:active {
+                background: #333;
+                border-color: #222;
+            }
+
+            &.disabled {
+                background: #ccc !important;
+                border-color: #bbb !important;
+            }
+        }
+
+        // Icon Buttons (Ghost style)
+        .btn-icon {
+            background: transparent !important;
+            border: 1px solid transparent !important;
+            color: $color_primary50 !important;
+            padding: 4px 8px;
+            box-shadow: none !important;
+
+            &:hover {
+                background: $color_primary10 !important;
+                color: $color_primary75 !important;
+            }
+
+            &:active {
+                background: $color_primary25 !important;
+            }
+        }
+    }
+
+    .split-pane {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: $color_primary0;
+
+        &#problem-pane {
+            flex: 0 0 auto;
+            width: 50%;
+            // min-width removed to allow Split.js to handle sizing via minSize
+            background: $color_primary0;
+            border-right: 1px solid $color_primary25;
+        }
+
+        &#submit-pane {
+            flex: 0 0 auto;
+            width: 50%;
+            // min-width removed to allow Split.js to handle sizing via minSize
+            background: $color_primary5;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+    }
+
+    // Ensure the form takes full height
+    #problem_submit {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    // Editor Container Styling
+    .editor-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        // height: 100%; // Removed to prevent overflow with flex: 1
+
+        #editor {
+            flex: 1;
+            height: 100% !important;
+            width: 100% !important;
+            position: absolute !important;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+
+            .django-ace-editor,
+            .django-ace-widget,
+            .ace_editor {
+                height: 100% !important;
+                width: 100% !important;
+            }
+        }
+    }
+
+    // Tabs Navigation
+    .tabs-nav {
+        display: flex;
+        gap: 1.5rem;
+        padding: 0 1rem 0 0;
+        background: $color_primary0;
+        border-bottom: 1px solid $color_primary25;
+        flex-shrink: 0;
+        height: 48px;
+        align-items: center;
+
+        .tab-link {
+            padding: 0 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: $color_primary50;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            height: 100%;
+            border-bottom: 2px solid transparent;
+            font-size: 0.9rem;
+            position: relative;
+            top: 1px;
+
+            i {
+                font-size: 1rem;
+                color: $color_primary33;
+            }
+
+            &:hover {
+                color: $color_primary75;
+
+                i {
+                    color: $color_primary66;
+                }
+            }
+
+            &.is-active {
+                color: $color_primary90; // Dark grey instead of blue
+                border-bottom-color: $color_primary90;
+
+                i {
+                    color: $color_primary90;
+                }
+            }
+        }
+    }
+
+    // Content Areas
+    .tab-content-container {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    .tab-content {
+        display: none;
+        height: 100%;
+        padding: 1.5rem;
+
+        &.is-active {
+            display: block;
+        }
+    }
+
+    // Problem Meta Header
+    .problem-header-meta {
+        margin-bottom: 2rem;
+        border-bottom: 1px solid $color_primary10;
+        padding-bottom: 1.5rem;
+
+        .problem-title {
+            margin: 0 0 1rem 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: $color_primary90;
+        }
+
+        .meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: $color_primary66;
+            font-size: 0.9rem;
+            background: $color_primary5;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+
+            i {
+                color: $color_primary33;
+            }
+        }
+
+        .meta-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+
+            .meta-link {
+                font-size: 0.9rem;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                color: $color_primary66; // Dark grey
+                text-decoration: none;
+
+                &:hover {
+                    text-decoration: underline;
+                    color: $color_primary90;
+                }
+            }
+        }
+    }
+
+    // Problem Footer
+    .problem-footer {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid $color_primary10;
+
+        .footer-item {
+            margin-bottom: 1rem;
+            border: 1px solid $color_primary10;
+            border-radius: 4px;
+            overflow: hidden;
+            background: $color_primary0;
+
+            .footer-label {
+                padding: 0.75rem 1rem;
+                background: $color_primary5;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                font-weight: 500;
+                color: $color_primary75;
+                user-select: none;
+
+                .toggle-icon {
+                    transition: transform 0.2s;
+                    font-size: 0.8rem;
+                    color: $color_primary33;
+                }
+
+                &:hover {
+                    background: $color_primary10;
+                }
+            }
+
+            .footer-content {
+                display: none;
+                padding: 1rem;
+                border-top: 1px solid $color_primary10;
+                font-size: 0.9rem;
+                color: $color_primary66;
+                line-height: 1.6;
+            }
+
+            &.is-open {
+                .footer-label .toggle-icon {
+                    transform: rotate(90deg);
+                }
+
+                .footer-content {
+                    display: block;
+                }
+            }
+        }
+
+        .lang-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: $color_primary5;
+            border: 1px solid $color_primary10;
+            border-radius: 3px;
+            margin: 0 0.25rem 0.25rem 0;
+            font-size: 0.85rem;
+            color: $color_primary66;
+
+            &.disabled {
+                opacity: 0.6;
+                text-decoration: line-through;
+            }
+        }
+    }
+
+    // Editor Overrides
+    #editor-container {
+        border: none !important;
+        border-radius: 0 !important;
+    }
+
+    .ace_editor {
+        border: none !important;
+    }
+
+    // Responsive
+    @media (max-width: 768px) {
+        .tabs-nav {
+            overflow-x: auto;
+            padding: 0 1rem;
+            gap: 1rem;
+
+            .tab-link {
+                white-space: nowrap;
+            }
+        }
+
+        .problem-header-meta {
+            .meta-row {
+                gap: 0.5rem;
+            }
+        }
+    }
+
+    // Split.js Gutter Styles
+    .gutter {
+        background-color: $color_primary10;
+        background-repeat: no-repeat;
+        background-position: 50%;
+        z-index: 50; // Reduced from 9999 to avoid overlapping navbar
+        position: relative;
+
+        &.gutter-horizontal {
+            cursor: col-resize;
+            transition: background-color 0.2s;
+
+            &:hover {
+                background-color: #999; // Neutral grey highlight on hover
+            }
+
+            &.gutter-active {
+                // When dragging
+                background-color: #777;
+            }
+        }
+    }
+
+    // Editor Toolbar Layout
+    .editor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: $color_primary0;
+        border-bottom: 1px solid $color_primary25;
+        height: 48px; // Match tabs-nav height
+        min-height: 48px; // Enforce minimum
+        flex-shrink: 0; // Prevent shrinking
+
+        .header-left,
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            height: 100%;
+        }
+
+        .header-right {
+            margin-left: auto;
+        }
+    }
+
+    // Spoiler Protection (Editorial & Comments)
+    .editorial-content {
+
+        // Keep specific styling for editorial headers if needed, but wrapper is generic
+        h3 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            color: $color_primary90;
+        }
+    }
+
+    .spoiler-wrapper {
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px;
+        border: 1px solid $color_primary10;
+        background: $color_primary0;
+    }
+
+    .spoiler-body {
+        padding: 1.5rem;
+        transition: filter 0.4s ease, opacity 0.4s ease;
+
+        &.blurred {
+            filter: blur(12px);
+            opacity: 0.5;
+            user-select: none;
+            pointer-events: none;
+            max-height: 60vh;
+            overflow: hidden;
+        }
+    }
+
+    // Reorder Comments Tab
+    #tab-comments .comment-area {
+        display: flex;
+        flex-direction: column;
+
+        // Elements with default order (0) will appear first:
+        // - h2 (Title)
+        // - .alert (Guidelines)
+        // - hr, br
+
+        #new-comment {
+            order: 1;
+            margin-bottom: 2rem;
+            padding: 0; // Remove default padding if needed to align left
+
+            // Constrain height of the comment editor
+            #comment-form-body {
+
+                .django-ace-editor,
+                .django-ace-widget,
+                .ace_editor {
+                    height: 200px !important;
+                    min-height: 200px !important;
+                }
+
+                textarea {
+                    height: 200px !important;
+                }
+            }
+        }
+
+        ul.comments {
+            order: 2;
+        }
+    }
+
+    .spoiler-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba($color_primary0, 0.4);
+        backdrop-filter: blur(4px);
+        z-index: 10;
+        padding: 1rem;
+
+        .spoiler-reveal-container {
+            background: $color_primary0;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px $color_primary10;
+            max-width: 420px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 1.5rem;
+            pointer-events: auto;
+            animation: spoiler-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .spoiler-warning {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+
+            i {
+                font-size: 2rem;
+                color: #f59e0b; // Amber 500
+                margin-bottom: 0.5rem;
+            }
+
+            h3 {
+                margin: 0;
+                font-size: 1.15rem;
+                font-weight: 600;
+                color: $color_primary90;
+            }
+
+            p {
+                margin: 0;
+                font-size: 0.9rem;
+                line-height: 1.5;
+                color: $color_primary66;
+            }
+        }
+
+        .reveal-btn {
+            width: 100%;
+            justify-content: center;
+            padding: 0.75rem;
+            font-size: 0.95rem;
+        }
+    }
+
+    @keyframes spoiler-pop {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+}

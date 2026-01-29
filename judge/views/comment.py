@@ -77,7 +77,7 @@ def vote_comment(request, delta):
             # Update vote counts and ranking score
             comment = Comment.objects.get(id=comment_id)
             comment.vote(delta)
-            
+
             # Update upvote/downvote counts
             if delta == 1:
                 comment.upvotes = F('upvotes') + 1
