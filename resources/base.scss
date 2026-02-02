@@ -37,13 +37,6 @@ img {
     width: 100%;
 }
 
-.full-width-button {
-    width: 100%;
-    display: block !important;
-    text-align: center;
-    box-sizing: border-box;
-}
-
 table.sortable thead {
     background-color: $color_primary10;
     color: #666;
@@ -244,8 +237,7 @@ noscript #noscript {
     }
 }
 
-#form-errors,
-.form-errors {
+#form-errors, .form-errors {
     background: rgba(255, 0, 0, 0.3);
     border: 3px solid red;
     border-radius: $widget_border_radius;
