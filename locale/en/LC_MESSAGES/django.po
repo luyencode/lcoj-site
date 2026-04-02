@@ -7292,43 +7292,43 @@ msgid "Check all"
 msgstr ""
 
 
-#: templates/donate-button.html:4
+#: templates/site-toolbar.html:4
 msgid "Donate"
 msgstr "Donate"
 
-#: templates/donate-button.html:12
+#: templates/site-toolbar.html:12
 msgid "Support Luyen Code Online"
 msgstr "Support Luyen Code Online"
 
-#: templates/donate-button.html:15
+#: templates/site-toolbar.html:15
 msgid "Thank you for your interest in supporting us!"
 msgstr "Thank you for your interest in supporting us!"
 
-#: templates/donate-button.html:16
+#: templates/site-toolbar.html:16
 msgid "Your donation will be used to:"
 msgstr "Your donation will be used to:"
 
-#: templates/donate-button.html:18
+#: templates/site-toolbar.html:18
 msgid "Maintain and upgrade servers"
 msgstr "Maintain and upgrade servers"
 
-#: templates/donate-button.html:19
+#: templates/site-toolbar.html:19
 msgid "Expand problem sets and learning materials"
 msgstr "Expand problem sets and learning materials"
 
-#: templates/donate-button.html:20
+#: templates/site-toolbar.html:20
 msgid "Improve user experience"
 msgstr "Improve user experience"
 
-#: templates/donate-button.html:25
+#: templates/site-toolbar.html:25
 msgid "QR Code"
 msgstr "QR Code"
 
-#: templates/donate-button.html:26
+#: templates/site-toolbar.html:26
 msgid "Scan QR code to transfer"
 msgstr "Scan QR code to transfer"
 
-#: templates/donate-button.html:29
+#: templates/site-toolbar.html:29
 msgid "Thank you so much for your support!"
 msgstr "Thank you so much for your support!"
 
@@ -7377,3 +7377,21 @@ msgstr "💡 Tips"
 
 msgid "📘 FAQ"
 msgstr "📘 FAQ"
+
+msgid "Open toolbar"
+msgstr "Open toolbar"
+
+msgid "Support LCOJ"
+msgstr "Support LCOJ"
+
+msgid "AI accounts for devs"
+msgstr "AI accounts for devs"
+
+msgid "Personal finance"
+msgstr "Personal finance"
+
+msgid "Beginner guide"
+msgstr "Beginner guide"
+
+msgid "Technical docs"
+msgstr "Technical docs"

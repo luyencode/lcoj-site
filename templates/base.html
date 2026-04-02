@@ -98,7 +98,7 @@
         {% include "extra_js.html" %}
         <script src="{{ static('common.js') }}"></script>
         <script src="{{ static('event.js') }}"></script>
-        <script src="{{ static('donate.js') }}"></script>
+        <script src="{{ static('site-toolbar.js') }}"></script>
         <script>
             moment.locale('{{ LANGUAGE_CODE }}');
             $(function () {
@@ -395,7 +395,7 @@
         </span>
     </footer>
 
-    {% include "donate-button.html" %}
+    {% include "site-toolbar.html" %}
 </div>
 </body>
 </html>

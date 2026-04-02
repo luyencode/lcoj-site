@@ -1,43 +1,144 @@
-// Donate Button Styles
-.donate-sticky-button {
+.site-toolbar {
     position: fixed;
-    right: 20px;
-    bottom: 20px;
-    width: 56px;
-    height: 56px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    top: 50%;
+    right: 0;
     z-index: 999;
     display: flex;
     align-items: center;
+    transform: translateY(-50%);
+
+    &.is-hovered .site-toolbar-panel,
+    &:focus-within .site-toolbar-panel,
+    &.is-open .site-toolbar-panel {
+        opacity: 1;
+        transform: translateX(0);
+        pointer-events: auto;
+    }
+
+    &.is-hovered .site-toolbar-toggle,
+    &:focus-within .site-toolbar-toggle,
+    &.is-open .site-toolbar-toggle {
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+    }
+}
+
+.site-toolbar-toggle {
+    width: 22px;
+    height: 92px;
+    border: none;
+    border-radius: 10px 0 0 10px;
+    background: rgba(35, 31, 32, 0.68);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
-    
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+    transition: box-shadow 0.2s ease, background 0.2s ease;
+
     &:hover {
-        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-        transform: translateY(-2px);
+        background: rgba(35, 31, 32, 0.82);
     }
-    
+
     i {
-        font-size: 24px;
-        animation: bounce 2s ease-in-out infinite;
+        font-size: 14px;
     }
 }
 
-@keyframes bounce {
-    0%, 100% {
-        transform: translateY(0);
+.site-toolbar-panel {
+    width: 214px;
+    margin-right: 8px;
+    padding: 6px;
+    border: 1px solid rgba(35, 31, 32, 0.36);
+    border-radius: 8px;
+    background: rgba(35, 31, 32, 0.9);
+    box-shadow: 0 10px 24px rgba(17, 13, 13, 0.3);
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(18px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.site-toolbar-action {
+    width: 100%;
+    margin-bottom: 2px;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 6px;
+    background: #231f20;
+    color: #f4ede7;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+    box-sizing: border-box;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    &:last-child {
+        margin-bottom: 0;
     }
-    50% {
-        transform: translateY(-4px);
+
+    &:hover {
+        background: #332d2f;
+        color: #fff9f4;
     }
 }
 
-// Donate Modal Styles
+button.site-toolbar-action {
+    appearance: none;
+}
+
+button.site-toolbar-action,
+button.site-toolbar-action .site-toolbar-label,
+button.site-toolbar-action .site-toolbar-icon {
+    color: #f4ede7;
+}
+
+a.site-toolbar-action {
+    text-decoration: none;
+}
+
+.site-toolbar-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #f7efe8;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 26px;
+
+    i {
+        font-size: 12px;
+    }
+}
+
+.site-toolbar-label {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.site-toolbar-label-title {
+    display: block;
+}
+
+.site-toolbar-label-brand {
+    display: block;
+    margin-top: 1px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.72;
+}
+
 .donate-modal {
     display: none;
     position: fixed;
@@ -48,7 +149,7 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.7);
     animation: fadeIn 0.3s ease;
-    
+
     &.show {
         display: flex;
         align-items: center;
@@ -60,6 +161,7 @@
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -81,6 +183,7 @@
         transform: translateY(-50px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;
@@ -92,7 +195,7 @@
     color: white;
     padding: 20px 30px;
     border-radius: 12px 12px 0 0;
-    
+
     h2 {
         margin: 0;
         font-size: 24px;
@@ -103,16 +206,16 @@
 .donate-modal-body {
     padding: 30px;
     color: #333;
-    
+
     p {
         line-height: 1.6;
         margin-bottom: 15px;
     }
-    
+
     ul {
         margin: 15px 0;
         padding-left: 25px;
-        
+
         li {
             margin-bottom: 8px;
             line-height: 1.5;
@@ -125,7 +228,7 @@
     border-radius: 8px;
     padding: 20px;
     margin: 20px 0;
-    
+
     h3 {
         margin-top: 0;
         margin-bottom: 15px;
@@ -136,17 +239,17 @@
 
 .bank-info {
     margin-bottom: 20px;
-    
+
     p {
         margin: 8px 0;
         font-size: 15px;
-        
+
         strong {
             display: inline-block;
             min-width: 130px;
             color: #555;
         }
-        
+
         span {
             color: #000;
             font-weight: 500;
@@ -157,7 +260,7 @@
 .qr-code {
     text-align: center;
     margin-top: 20px;
-    
+
     img {
         max-width: 250px;
         width: 100%;
@@ -167,7 +270,7 @@
         padding: 10px;
         background: white;
     }
-    
+
     .qr-note {
         margin-top: 10px;
         font-size: 13px;
@@ -185,59 +288,81 @@
     margin-bottom: 0;
 }
 
-// Responsive Design - Hide donate button on mobile
 @media (max-width: 768px) {
-    .donate-sticky-button {
+    .site-toolbar {
         display: none;
     }
-    
+
     .donate-modal-content {
         width: 95%;
         max-height: 95vh;
     }
-    
+
     .donate-modal-header {
         padding: 15px 20px;
-        
+
         h2 {
             font-size: 20px;
         }
     }
-    
+
     .donate-modal-body {
         padding: 20px;
     }
-    
+
     .bank-info p strong {
         display: block;
         margin-bottom: 3px;
     }
 }
 
-// Dark mode support
 @media (prefers-color-scheme: dark) {
+    .site-toolbar-panel {
+        background: rgba(35, 31, 32, 0.92);
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .site-toolbar-toggle {
+        background: rgba(35, 31, 32, 0.72);
+    }
+
+    .site-toolbar-action {
+        color: #f4ede7;
+
+        &:hover {
+            background: #332d2f;
+            color: #fff9f4;
+        }
+    }
+
+    .site-toolbar-icon {
+        background: rgba(255, 255, 255, 0.12);
+        color: #f7efe8;
+    }
+
     .donate-modal-content {
         background-color: #2d2d2d;
     }
-    
+
     .donate-modal-body {
         color: #e0e0e0;
     }
-    
+
     .donate-info {
         background: #3a3a3a;
     }
-    
+
     .bank-info p {
         strong {
             color: #b0b0b0;
         }
-        
+
         span {
             color: #fff;
         }
     }
-    
+
     .qr-code img {
         border-color: #555;
         background: #fff;

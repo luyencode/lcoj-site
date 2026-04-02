@@ -1,0 +1,81 @@
+<div id="site-toolbar" class="site-toolbar">
+    <div id="site-toolbar-panel" class="site-toolbar-panel">
+        <a class="site-toolbar-action" href="https://luyencode.net/post/7-roadmap" title="{{ _('Beginner guide') }}">
+            <span class="site-toolbar-icon"><i class="fa fa-road"></i></span>
+            <span class="site-toolbar-label">
+                <span class="site-toolbar-label-title">{{ _('Beginner guide') }}</span>
+                <span class="site-toolbar-label-brand">LCOJ</span>
+            </span>
+        </a>
+        <button type="button" class="site-toolbar-action js-open-donate" title="{{ _('Support LCOJ') }}">
+            <span class="site-toolbar-icon"><i class="fa fa-coffee"></i></span>
+            <span class="site-toolbar-label">
+                <span class="site-toolbar-label-title">{{ _('Support LCOJ') }}</span>
+            </span>
+        </button>
+        <a class="site-toolbar-action" href=
+            {% if request.resolver_match.view_name == "problem_detail" and problem %}
+                "{{ url('new_problem_ticket', problem.code) }}"
+            {% else %}
+                "/tickets/new?issue_url={{ request.build_absolute_uri()|urlencode }}"
+            {% endif %}
+           title="{{ _('Report issue') }}"
+        >
+            <span class="site-toolbar-icon"><i class="fa fa-exclamation-triangle"></i></span>
+            <span class="site-toolbar-label">
+                <span class="site-toolbar-label-title">{{ _('Report issue') }}</span>
+            </span>
+        </a>
+        <a class="site-toolbar-action" href="https://go.behitek.com/lcoj-behigen" target="_blank" rel="noopener noreferrer" title="{{ _('AI accounts for devs') }}">
+            <span class="site-toolbar-icon"><i class="fa fa-terminal"></i></span>
+            <span class="site-toolbar-label">
+                <span class="site-toolbar-label-title">{{ _('AI accounts for devs') }}</span>
+                <span class="site-toolbar-label-brand">Behigen</span>
+            </span>
+        </a>
+        <a class="site-toolbar-action" href="https://go.behitek.com/behivest" target="_blank" rel="noopener noreferrer" title="{{ _('Personal finance') }}">
+            <span class="site-toolbar-icon"><i class="fa fa-line-chart"></i></span>
+            <span class="site-toolbar-label">
+                <span class="site-toolbar-label-title">{{ _('Personal finance') }}</span>
+                <span class="site-toolbar-label-brand">Behivest</span>
+            </span>
+        </a>
+        <a class="site-toolbar-action" href="https://docs.luyencode.net/#/" target="_blank" rel="noopener noreferrer" title="{{ _('Technical docs') }}">
+            <span class="site-toolbar-icon"><i class="fa fa-file-text-o"></i></span>
+            <span class="site-toolbar-label">
+                <span class="site-toolbar-label-title">{{ _('Technical docs') }}</span>
+                <span class="site-toolbar-label-brand">LCOJ</span>
+            </span>
+        </a>
+    </div>
+    <button id="site-toolbar-toggle" class="site-toolbar-toggle" type="button" aria-expanded="false" aria-controls="site-toolbar-panel" aria-label="{{ _('Open toolbar') }}">
+        <i class="fa fa-angle-double-left"></i>
+    </button>
+</div>
+
+<!-- Donate Modal -->
+<div id="donate-modal" class="donate-modal">
+    <div class="donate-modal-content">
+        <div class="donate-modal-header">
+            <h2>{{ _('Support Luyen Code Online') }}</h2>
+        </div>
+        <div class="donate-modal-body">
+            <p>{{ _('Thank you for your interest in supporting us!') }}</p>
+            <p>{{ _('Your donation will be used to:') }}</p>
+            <ul>
+                <li>{{ _('Maintain and upgrade servers') }}</li>
+                <li>{{ _('Expand problem sets and learning materials') }}</li>
+                <li>{{ _('Improve user experience') }}</li>
+            </ul>
+
+            <div class="donate-info">
+                <div class="qr-code">
+                    <img src="{{ static('donate-qr.png') }}" alt="{{ _('QR Code') }}" onerror="this.style.display='none'">
+                    <p class="qr-note">{{ _('Scan QR code to transfer') }}</p>
+                </div>
+            </div>
+
+            <p class="thank-you">{{ _('Thank you so much for your support!') }} ❤️</p>
+        </div>
+    </div>
+</div>

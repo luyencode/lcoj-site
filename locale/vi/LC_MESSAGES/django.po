@@ -8043,43 +8043,43 @@ msgstr "Hẹn gặp lại bạn! Nếu bạn gặp khó khăn trong việc kích
 msgid "Điều khoản sử dụng"
 msgstr "Điều khoản sử dụng"
 
-#: templates/donate-button.html:4
+#: templates/site-toolbar.html:4
 msgid "Donate"
 msgstr "Ủng hộ"
 
-#: templates/donate-button.html:12
+#: templates/site-toolbar.html:12
 msgid "Support Luyen Code Online"
 msgstr "Ủng hộ Luyện Code Online"
 
-#: templates/donate-button.html:15
+#: templates/site-toolbar.html:15
 msgid "Thank you for your interest in supporting us!"
 msgstr "Cảm ơn bạn đã quan tâm ủng hộ chúng tôi!"
 
-#: templates/donate-button.html:16
+#: templates/site-toolbar.html:16
 msgid "Your donation will be used to:"
 msgstr "Khoản ủng hộ của bạn sẽ được sử dụng để:"
 
-#: templates/donate-button.html:18
+#: templates/site-toolbar.html:18
 msgid "Maintain and upgrade servers"
 msgstr "Duy trì và nâng cấp máy chủ"
 
-#: templates/donate-button.html:19
+#: templates/site-toolbar.html:19
 msgid "Expand problem sets and learning materials"
 msgstr "Mở rộng bộ đề bài và tài liệu học tập"
 
-#: templates/donate-button.html:20
+#: templates/site-toolbar.html:20
 msgid "Improve user experience"
 msgstr "Cải thiện trải nghiệm người dùng"
 
-#: templates/donate-button.html:25
+#: templates/site-toolbar.html:25
 msgid "QR Code"
 msgstr "Mã QR"
 
-#: templates/donate-button.html:26
+#: templates/site-toolbar.html:26
 msgid "Scan QR code to transfer"
 msgstr "Quét mã QR để chuyển khoản"
 
-#: templates/donate-button.html:29
+#: templates/site-toolbar.html:29
 msgid "Thank you so much for your support!"
 msgstr "Cảm ơn bạn rất nhiều vì sự ủng hộ!"
 
@@ -8128,3 +8128,21 @@ msgstr "💡 Mẹo"
 
 msgid "📘 FAQ"
 msgstr "📘 Câu hỏi thường gặp"
+
+msgid "Open toolbar"
+msgstr "Mở thanh công cụ"
+
+msgid "Support LCOJ"
+msgstr "Ủng hộ LCOJ"
+
+msgid "AI accounts for devs"
+msgstr "Tài khoản AI cho dev"
+
+msgid "Personal finance"
+msgstr "Tài chính cá nhân"
+
+msgid "Beginner guide"
+msgstr "Hướng dẫn cho bạn mới"
+
+msgid "Technical docs"
+msgstr "Tài liệu kỹ thuật"
