@@ -23,7 +23,7 @@ from judge.user_translations import gettext as user_gettext
 from judge.utils.url import get_absolute_pdf_url
 
 __all__ = ['ProblemGroup', 'ProblemType', 'Problem', 'ProblemTranslation', 'ProblemClarification', 'License',
-           'Solution', 'SubmissionSourceAccess', 'TranslatedProblemQuerySet']
+           'Solution', 'ProblemEditorialReveal', 'SubmissionSourceAccess', 'TranslatedProblemQuerySet']
 
 
 def disallowed_characters_validator(text):
@@ -698,3 +698,14 @@ class Solution(models.Model):
         )
         verbose_name = _('solution')
         verbose_name_plural = _('solutions')
+
+
+class ProblemEditorialReveal(models.Model):
+    profile = models.ForeignKey(Profile, verbose_name=_('user'), related_name='editorial_reveals', on_delete=CASCADE)
+    problem = models.ForeignKey(Problem, verbose_name=_('problem'), related_name='editorial_reveals', on_delete=CASCADE)
+    created = models.DateTimeField(verbose_name=_('revealed at'), auto_now_add=True)
+
+    class Meta:
+        unique_together = ('profile', 'problem')
+        verbose_name = _('problem editorial reveal')
+        verbose_name_plural = _('problem editorial reveals')

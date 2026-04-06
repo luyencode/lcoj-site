@@ -6302,7 +6302,41 @@ msgid ""
 msgstr ""
 "Nộp một lời giải chính thức trước khi tự giải là một hành động có thể bị ban."
 
-#: templates/problem/editorial.html:30 templates/problem/problem.html:265
+#: templates/problem/editorial.html:29
+msgid "This editorial is hidden until you reveal it."
+msgstr "Lời giải này đang bị ẩn cho đến khi bạn chọn mở ra."
+
+#: templates/problem/editorial.html:30
+msgid ""
+"We recommend trying the problem yourself first. Revealing the solution may "
+"spoil the key idea before you have a chance to solve it."
+msgstr ""
+"Chúng tôi khuyên bạn nên tự thử giải bài trước. Việc mở lời giải có thể làm "
+"lộ mất ý tưởng chính trước khi bạn có cơ hội tự giải."
+
+#: templates/problem/editorial.html:32
+#, python-format
+msgid ""
+"Revealing this editorial before solving the problem will reduce your "
+"contribution score by %(points)s point(s). This penalty is applied only once "
+"per problem."
+msgstr ""
+"Mở lời giải này trước khi giải được bài sẽ làm giảm điểm đóng góp của bạn "
+"%(points)s điểm. Mức trừ này chỉ áp dụng một lần cho mỗi bài."
+
+#: templates/problem/editorial.html:34
+msgid "Reveal solution"
+msgstr "Mở lời giải"
+
+#: templates/problem/editorial.html:35 templates/problem/editorial.html:109
+msgid "You must log in to reveal this editorial."
+msgstr "Bạn phải đăng nhập để mở lời giải này."
+
+#: templates/problem/editorial.html:102
+msgid "Could not reveal the editorial right now. Please try again."
+msgstr "Không thể mở lời giải lúc này. Vui lòng thử lại."
+
+#: templates/problem/editorial.html:37 templates/problem/problem.html:265
 msgid "Author:"
 msgid_plural "Authors:"
 msgstr[0] "Tác giả:"

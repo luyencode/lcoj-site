@@ -5716,7 +5716,33 @@ msgid ""
 "bannable offence."
 msgstr ""
 
-#: templates/problem/editorial.html:30 templates/problem/problem.html:265
+#: templates/problem/editorial.html:29
+msgid "This editorial is hidden until you reveal it."
+msgstr ""
+
+#: templates/problem/editorial.html:30
+msgid ""
+"We recommend trying the problem yourself first. Revealing the solution may "
+"spoil the key idea before you have a chance to solve it."
+msgstr ""
+
+#: templates/problem/editorial.html:32
+#, python-format
+msgid ""
+"Revealing this editorial before solving the problem will reduce your "
+"contribution score by %(points)s point(s). This penalty is applied only once "
+"per problem."
+msgstr ""
+
+#: templates/problem/editorial.html:34
+msgid "Reveal solution"
+msgstr ""
+
+#: templates/problem/editorial.html:102
+msgid "Could not reveal the editorial right now. Please try again."
+msgstr ""
+
+#: templates/problem/editorial.html:37 templates/problem/problem.html:265
 msgid "Author:"
 msgid_plural "Authors:"
 msgstr[0] ""

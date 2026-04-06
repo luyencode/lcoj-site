@@ -24,6 +24,23 @@
                 <b>{{ _('Submitting an official solution before solving the problem yourself is a bannable offence.') }}</b>
             </div>
         {% endif %}
+        {% if should_gate_editorial %}
+            <div class="alert alert-warning editorial-reveal-warning">
+                <p><b>{{ _('This editorial is hidden until you reveal it.') }}</b></p>
+                <p>{{ _('We recommend trying the problem yourself first. Revealing the solution may spoil the key idea before you have a chance to solve it.') }}</p>
+                {% if should_track_editorial_reveal %}
+                    <p>{{ _('Revealing this editorial before solving the problem will reduce your contribution score by %(points)s point(s). This penalty is applied only once per problem.', points=editorial_reveal_penalty) }}</p>
+                {% endif %}
+                {% if editorial_reveal_block_reason == 'login_required' %}
+                    <p>{{ _('You must log in to reveal this editorial.') }}</p>
+                    <a class="button" href="{{ url('auth_login') }}">{{ _('Log in') }}</a>
+                {% elif editorial_reveal_block_reason == 'negative_contribution_points' %}
+                    <p>{{ _('You cannot reveal this editorial while your contribution score is negative.') }}</p>
+                {% else %}
+                    <button type="button" class="button" id="editorial-reveal-button">{{ _('Reveal solution') }}</button>
+                {% endif %}
+            </div>
+        {% endif %}
         {% with authors=solution.authors.all() %}
             {% if authors %}
                 <p>
@@ -36,13 +53,72 @@
                 </p>
             {% endif %}
         {% endwith %}
-        {{ solution.content|markdown('solution', MATH_ENGINE)|reference|str|safe }}
+        <div id="editorial-content" class="editorial-content{% if should_gate_editorial %} editorial-content-gated{% endif %}">
+            {{ solution.content|markdown('solution', MATH_ENGINE)|reference|str|safe }}
+        </div>
     </div>
     <hr>
     {% include "comments/list.html" %}
 {% endblock %}
 
 {% block bodyend %}
+    <style>
+        .editorial-reveal-warning p {
+            margin: 0 0 0.75em;
+        }
+
+        .editorial-reveal-warning p:last-of-type {
+            margin-bottom: 1em;
+        }
+
+        .editorial-content {
+            transition: filter 0.2s ease, opacity 0.2s ease;
+        }
+
+        .editorial-content-gated {
+            filter: blur(14px);
+            opacity: 0.55;
+            pointer-events: none;
+            user-select: none;
+        }
+    </style>
+    {% if should_gate_editorial %}
+        <script>
+            $(function () {
+                var $button = $('#editorial-reveal-button');
+                var $content = $('#editorial-content');
+                var $warning = $('.editorial-reveal-warning');
+
+                function revealEditorial() {
+                    $content.removeClass('editorial-content-gated');
+                    $warning.fadeOut(150);
+                }
+
+                $button.on('click', function () {
+                    if ($button.prop('disabled')) {
+                        return;
+                    }
+
+                    $button.prop('disabled', true);
+                    $.post(window.location.href)
+                        .done(revealEditorial)
+                        .fail(function (xhr) {
+                            var message = {{ _('Could not reveal the editorial right now. Please try again.')|htmltojs }};
+
+                            if (xhr.responseJSON && xhr.responseJSON.error === 'login_required') {
+                                message = {{ _('You must log in to reveal this editorial.')|htmltojs }};
+                            } else if (xhr.responseJSON &&
+                                       xhr.responseJSON.error === 'negative_contribution_points') {
+                                message = {{ _('You cannot reveal this editorial while your contribution score is negative.')|htmltojs }};
+                            }
+
+                            $button.prop('disabled', false);
+                            alert(message);
+                        });
+                });
+            });
+        </script>
+    {% endif %}
     {% if REQUIRE_JAX %}
         {% include "mathjax-load.html" %}
     {% endif %}

@@ -17,6 +17,7 @@ from django.http import (
     HttpResponse,
     HttpResponseForbidden,
     HttpResponseRedirect,
+    JsonResponse,
 )
 from django.shortcuts import get_object_or_404
 from django.template.loader import get_template
@@ -47,6 +48,7 @@ from judge.models import (
     Judge,
     Language,
     Problem,
+    ProblemEditorialReveal,
     ProblemGroup,
     ProblemTranslation,
     ProblemType,
@@ -149,6 +151,26 @@ class ProblemSolution(
     context_object_name = "problem"
     template_name = "problem/editorial.html"
 
+    @staticmethod
+    def get_editorial_reveal_penalty():
+        return getattr(settings, 'VNOJ_CP_EDITORIAL_REVEAL', 1)
+
+    def is_editorial_revealed(self, has_solved_problem):
+        if has_solved_problem:
+            return True
+        if self.profile is None:
+            return False
+        return ProblemEditorialReveal.objects.filter(profile=self.profile, problem=self.object).exists()
+
+    def get_editorial_reveal_block_reason(self, has_solved_problem, has_revealed_editorial):
+        if has_solved_problem or has_revealed_editorial:
+            return None
+        if self.profile is None:
+            return 'login_required'
+        if self.profile.contribution_points < 0:
+            return 'negative_contribution_points'
+        return None
+
     def get_title(self):
         return _("Editorial for {0}").format(self.object.name)
 
@@ -172,7 +194,60 @@ class ProblemSolution(
             raise Http404()
         context["solution"] = solution
         context["has_solved_problem"] = self.object.id in self.get_completed_problems()
+        context["has_revealed_editorial"] = self.is_editorial_revealed(context["has_solved_problem"])
+        context["should_gate_editorial"] = not context["has_revealed_editorial"]
+        context["editorial_reveal_block_reason"] = self.get_editorial_reveal_block_reason(
+            context["has_solved_problem"],
+            context["has_revealed_editorial"],
+        )
+        context["can_reveal_editorial"] = context["should_gate_editorial"] and \
+            context["editorial_reveal_block_reason"] is None
+        context["editorial_reveal_penalty"] = self.get_editorial_reveal_penalty()
+        context["should_track_editorial_reveal"] = context["can_reveal_editorial"] and self.profile is not None
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        solution = get_object_or_404(Solution, problem=self.object)
+
+        if not solution.is_accessible_by(request.user) or request.in_contest:
+            raise Http404()
+
+        if self.profile is None:
+            return JsonResponse({
+                'revealed': False,
+                'tracked': False,
+                'already_revealed': False,
+                'error': 'login_required',
+            }, status=403)
+
+        has_solved_problem = self.object.id in self.get_completed_problems()
+        if has_solved_problem:
+            return JsonResponse({'revealed': True, 'tracked': False, 'already_revealed': True})
+
+        if self.profile.contribution_points < 0:
+            return JsonResponse({
+                'revealed': False,
+                'tracked': False,
+                'already_revealed': False,
+                'error': 'negative_contribution_points',
+            }, status=403)
+
+        with transaction.atomic():
+            _, created = ProblemEditorialReveal.objects.get_or_create(
+                profile=self.profile,
+                problem=self.object,
+            )
+            if created:
+                self.profile.calculate_contribution_points()
+
+        return JsonResponse({
+            'revealed': True,
+            'tracked': True,
+            'already_revealed': not created,
+            'contribution_points': self.profile.contribution_points,
+            'penalty': self.get_editorial_reveal_penalty(),
+        })
 
     def get_comment_page(self):
         return "s:" + self.object.code
