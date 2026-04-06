@@ -3,15 +3,15 @@
     top: 50%;
     right: 0;
     z-index: 999;
-    display: flex;
-    align-items: center;
     transform: translateY(-50%);
+    width: 22px;
+    height: 92px;
 
     &.is-hovered .site-toolbar-panel,
     &:focus-within .site-toolbar-panel,
     &.is-open .site-toolbar-panel {
         opacity: 1;
-        transform: translateX(0);
+        transform: translate(0, -50%);
         pointer-events: auto;
     }
 
@@ -46,8 +46,10 @@
 }
 
 .site-toolbar-panel {
+    position: absolute;
+    top: 50%;
+    right: calc(100% + 8px);
     width: 214px;
-    margin-right: 8px;
     padding: 6px;
     border: 1px solid rgba(35, 31, 32, 0.36);
     border-radius: 8px;
@@ -56,7 +58,7 @@
     backdrop-filter: blur(10px);
     opacity: 0;
     pointer-events: none;
-    transform: translateX(18px);
+    transform: translate(18px, -50%);
     transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
