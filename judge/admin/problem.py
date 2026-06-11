@@ -203,7 +203,9 @@ class ProblemAdmin(NoBatchDeleteMixin, VersionAdmin):
                                             count) % count)
 
     def get_queryset(self, request):
-        return Problem.get_editable_problems(request.user).prefetch_related('authors__user').distinct()
+        return Problem.get_editable_problems(request.user).filter(
+            date__isnull=False,
+        ).prefetch_related('authors__user').distinct()
 
     def has_change_permission(self, request, obj=None):
         if obj is None:
@@ -221,6 +223,8 @@ class ProblemAdmin(NoBatchDeleteMixin, VersionAdmin):
         return form
 
     def save_model(self, request, obj, form, change):
+        if not obj.date:
+            obj.date = timezone.now()
         super(ProblemAdmin, self).save_model(request, obj, form, change)
         if (
             form.changed_data and
