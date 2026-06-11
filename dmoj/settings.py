@@ -424,6 +424,7 @@ INSTALLED_APPS += (
     'martor',
     'adminsortable2',
     'django_cleanup.apps.CleanupConfig',
+    'quiz',
 )
 
 MIDDLEWARE = (
