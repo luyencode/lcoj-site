@@ -246,3 +246,64 @@ class QuizListNoCategoryLevelTest(TestCase):
         self.assertNotContains(resp, 'name="level"')
         # Quiz name still appears
         self.assertContains(resp, 'listtest1')
+
+
+class QuizEditDynamicFormsetTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.editor = create_user(
+            username='dyneditor', user_permissions=('edit_own_quiz',))
+        cls.q1 = create_question(title='dyn q1', code='dynq1',
+                                  authors=(cls.editor.profile,))
+        cls.q2 = create_question(title='dyn q2', code='dynq2',
+                                  authors=(cls.editor.profile,))
+        cls.quiz = create_quiz(code='dynquiz1',
+                               questions=((cls.q1, 2.0), (cls.q2, 1.0)))
+        cls.quiz.authors.add(cls.editor.profile)
+
+    def test_create_page_has_empty_formset_and_template_row(self):
+        self.client.force_login(self.editor)
+        resp = self.client.get(reverse('quiz_create'))
+        self.assertEqual(resp.status_code, 200)
+        # No pre-filled rows (extra=0)
+        self.assertNotContains(resp, 'question_links-0-question')
+        # Management form present
+        self.assertContains(resp, 'id_question_links-TOTAL_FORMS')
+        # Template row for JS cloning
+        self.assertContains(resp, '__prefix__')
+        # Add button
+        self.assertContains(resp, 'add-question-btn')
+
+    def test_create_quiz_with_questions_via_post(self):
+        self.client.force_login(self.editor)
+        resp = self.client.post(reverse('quiz_create'), {
+            'code': 'postquiz1',
+            'name': 'Post Quiz',
+            'question_links-TOTAL_FORMS': '2',
+            'question_links-INITIAL_FORMS': '0',
+            'question_links-MIN_NUM_FORMS': '0',
+            'question_links-MAX_NUM_FORMS': '1000',
+            'question_links-0-question': self.q1.id,
+            'question_links-0-points': '2.0',
+            'question_links-0-order': '1',
+            'question_links-1-question': self.q2.id,
+            'question_links-1-points': '1.0',
+            'question_links-1-order': '2',
+        })
+        self.assertEqual(resp.status_code, 302)
+        quiz = Quiz.objects.get(code='postquiz1')
+        self.assertEqual(quiz.question_links.count(), 2)
+        self.assertEqual(
+            list(quiz.question_links.order_by('order')
+                 .values_list('question_id', flat=True)),
+            [self.q1.id, self.q2.id])
+
+    def test_edit_page_shows_existing_question_rows(self):
+        self.client.force_login(self.editor)
+        resp = self.client.get(reverse('quiz_edit', kwargs={'quiz': 'dynquiz1'}))
+        self.assertEqual(resp.status_code, 200)
+        # Existing rows rendered
+        self.assertContains(resp, 'question_links-0-question')
+        self.assertContains(resp, 'question_links-1-question')
+        # Template row still present for adding new questions
+        self.assertContains(resp, '__prefix__')

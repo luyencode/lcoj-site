@@ -117,6 +117,7 @@ class QuizEdit(QuizEditorObjectMixin, TemplateView):
         if 'form' not in context:
             context['form'], context['formset'] = self.get_forms()
         context['editing'] = self.quiz is not None
+        context['quiz'] = self.quiz
         return context
 
     def post(self, request, *args, **kwargs):
