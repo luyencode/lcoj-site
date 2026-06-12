@@ -1,0 +1,157 @@
+from django import forms
+from django.forms import inlineformset_factory
+from django.utils.translation import gettext_lazy as _
+
+from judge.widgets import HeavySelect2Widget
+from quiz.importers.base import correct_to_spec, parse_correct_spec
+from quiz.models import Quiz, QuizQuestion, QuizQuestionLink
+
+
+class QuestionForm(forms.ModelForm):
+    # Hidden fields populated by JS
+    choices_text = forms.CharField(
+        label=_('Choices'), required=False,
+        widget=forms.HiddenInput(),
+        help_text=_('One choice per line (MC/MA only).'))
+    choice_explanations_text = forms.CharField(
+        label=_('Choice explanations'), required=False,
+        widget=forms.HiddenInput(),
+        help_text=_('Optional explanation per choice, one per line.'))
+    correct_spec = forms.CharField(
+        label=_('Correct answer'), required=False,
+        widget=forms.HiddenInput(),
+        help_text=_('MC: choice number (e.g. 2). MA: comma list (1,3). '
+                    'TF: true/false. SA: answers separated by |, '
+                    'prefix re: for regex, cs: for case-sensitive.'))
+    # SA: one regex pattern per line (use (?i) prefix for case-insensitive)
+    sa_patterns = forms.CharField(
+        label=_('Regex patterns'), required=False,
+        widget=forms.HiddenInput(),
+        help_text=_('One regex pattern per line. Any match = correct.'))
+
+    class Meta:
+        model = QuizQuestion
+        fields = ('code', 'type', 'title', 'content', 'category', 'level',
+                  'explanation', 'shuffle_choices', 'ma_grading_strategy',
+                  'is_public')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['choices_text'].initial = '\n'.join(
+                self.instance.choices or [])
+            self.fields['choice_explanations_text'].initial = '\n'.join(
+                self.instance.choice_explanations or [])
+            self.fields['correct_spec'].initial = correct_to_spec(
+                self.instance.type, self.instance.correct_answers)
+            if self.instance.type == 'SA':
+                patterns = []
+                for a in (self.instance.correct_answers or []):
+                    if isinstance(a, dict):
+                        patterns.append(a.get('text', ''))
+                    else:
+                        patterns.append(str(a))
+                self.fields['sa_patterns'].initial = '\n'.join(patterns)
+
+    def clean(self):
+        cleaned = super().clean()
+        qtype = cleaned.get('type')
+        choices = [line.strip() for line in
+                   (cleaned.get('choices_text') or '').splitlines()
+                   if line.strip()]
+
+        if qtype in ('MC', 'MA') and len(choices) < 2:
+            self.add_error('choices_text',
+                           _('Provide at least 2 choices.'))
+
+        if qtype:
+            # For SA: build correct_spec from sa_answers + sa_regex + sa_case_sensitive
+            if qtype == 'SA':
+                parts = [p.strip() for p in
+                         (cleaned.get('sa_patterns') or '').splitlines()
+                         if p.strip()]
+                spec = ' | '.join(parts)
+                cleaned['correct_spec'] = spec
+            else:
+                spec = cleaned.get('correct_spec', '')
+
+            correct, errors = parse_correct_spec(
+                qtype, spec, len(choices))
+            for error in errors:
+                self.add_error('correct_spec', error)
+            cleaned['parsed_choices'] = choices \
+                if qtype in ('MC', 'MA') else []
+            cleaned['parsed_correct'] = correct
+
+        return cleaned
+
+    def save(self, commit=True):
+        cleaned_data = self.cleaned_data
+        self.instance.choices = cleaned_data['parsed_choices']
+        self.instance.correct_answers = cleaned_data['parsed_correct']
+        # Parse and save choice_explanations, padded/trimmed to match choices
+        raw_explanations = [
+            line.strip() for line in
+            (cleaned_data.get('choice_explanations_text') or '').splitlines()
+        ]
+        num_choices = len(cleaned_data['parsed_choices'])
+        # Pad or trim to match number of choices
+        if len(raw_explanations) < num_choices:
+            raw_explanations += [''] * (num_choices - len(raw_explanations))
+        else:
+            raw_explanations = raw_explanations[:num_choices]
+        self.instance.choice_explanations = raw_explanations
+        return super().save(commit)
+
+
+class QuizForm(forms.ModelForm):
+    class Meta:
+        model = Quiz
+        fields = ('code', 'name', 'description', 'category', 'level',
+                  'time_limit', 'max_attempts', 'shuffle_questions',
+                  'show_correctness', 'show_answers',
+                  'is_public', 'is_organization_private', 'organizations',
+                  'curators', 'testers')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['code'].disabled = True
+
+
+class QuizImportForm(forms.Form):
+    file = forms.FileField(label=_('XLSX or JSON file'))
+    create_quiz = forms.BooleanField(
+        label=_('Also create a quiz from these questions'), required=False)
+    quiz_code = forms.SlugField(label=_('Quiz code'), required=False)
+    quiz_name = forms.CharField(label=_('Quiz name'), required=False,
+                                max_length=100)
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get('create_quiz'):
+            if not cleaned.get('quiz_code') or not cleaned.get('quiz_name'):
+                raise forms.ValidationError(
+                    _('Quiz code and name are required '
+                      'when creating a quiz.'))
+            if Quiz.objects.filter(code=cleaned['quiz_code']).exists():
+                raise forms.ValidationError(
+                    _('A quiz with this code already exists.'))
+        return cleaned
+
+
+class QuizQuestionLinkForm(forms.ModelForm):
+    class Meta:
+        model = QuizQuestionLink
+        fields = ('question', 'points', 'order')
+        widgets = {
+            'question': HeavySelect2Widget(
+                data_view='quiz_question_select2',
+                attrs={'style': 'width: 100%'},
+            ),
+        }
+
+
+QuizQuestionLinkFormSet = inlineformset_factory(
+    Quiz, QuizQuestionLink, form=QuizQuestionLinkForm,
+    extra=3, can_delete=True)

@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from django.urls import reverse
 
 from quiz.models import Quiz, QuizCategory, QuizQuestion
 from quiz.tests.util import (create_organization, create_question, create_quiz,
@@ -169,3 +170,48 @@ class QuizCodeValidatorTest(TestCase):
     def test_lowercase_alphanumeric_accepted(self):
         q = Quiz(code='validcode123', name='test')
         q.full_clean()  # should not raise
+
+
+class Select2CodeSearchTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.editor = create_user(
+            username='s2editor', user_permissions=('edit_own_quiz',))
+        cls.question = create_question(
+            title='Python loops', code='pyloops1',
+            authors=(cls.editor.profile,))
+
+    def test_search_by_code_prefix(self):
+        self.client.force_login(self.editor)
+        resp = self.client.get(
+            reverse('quiz_question_select2'), {'term': 'pyloops'})
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        ids = [r['id'] for r in data['results']]
+        self.assertIn(self.question.id, ids)
+
+    def test_result_text_includes_code(self):
+        self.client.force_login(self.editor)
+        resp = self.client.get(
+            reverse('quiz_question_select2'), {'term': 'pyloops1'})
+        data = resp.json()
+        result = next(r for r in data['results']
+                      if r['id'] == self.question.id)
+        self.assertIn('pyloops1', result['text'])
+
+
+class QuestionBankCodeSearchTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.editor = create_user(
+            username='bankcodeeditor', user_permissions=('edit_own_quiz',))
+        cls.question = create_question(
+            title='Mutable types', code='muttype1',
+            authors=(cls.editor.profile,))
+
+    def test_bank_search_by_code(self):
+        self.client.force_login(self.editor)
+        resp = self.client.get(
+            reverse('quiz_question_bank'), {'search': 'muttype1'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'muttype1')
