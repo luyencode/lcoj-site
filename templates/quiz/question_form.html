@@ -191,6 +191,17 @@
 {{ form.correct_spec }}
 {{ form.sa_patterns }}
 
+{# ── 0. Code ── #}
+<div class="qf-section">
+    <h3>{{ _('Question Code') }}</h3>
+    <div class="field-row{% if form.code.errors %} has-error{% endif %}">
+        <label for="{{ form.code.id_for_label }}">{{ _('Code') }} <span class="req">*</span></label>
+        {{ form.code }}
+        {% for e in form.code.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+        <div class="field-hint">{{ _('Unique short identifier, e.g. py101q1 — lowercase letters and digits only') }}</div>
+    </div>
+</div>
+
 {# ── 1. Type ── #}
 <div class="qf-section">
     <h3>{{ _('Question Type') }}</h3>
