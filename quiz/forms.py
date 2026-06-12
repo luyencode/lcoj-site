@@ -3,7 +3,7 @@ from django.core.validators import RegexValidator
 from django.forms import inlineformset_factory
 from django.utils.translation import gettext_lazy as _
 
-from judge.widgets import HeavySelect2Widget
+from judge.widgets import HeavySelect2MultipleWidget, HeavySelect2Widget
 from quiz.importers.base import correct_to_spec, parse_correct_spec
 from quiz.models import Quiz, QuizQuestion, QuizQuestionLink
 
@@ -113,6 +113,17 @@ class QuizForm(forms.ModelForm):
                   'show_correctness', 'show_answers',
                   'is_public', 'is_organization_private', 'organizations',
                   'curators', 'testers')
+        widgets = {
+            'organizations': HeavySelect2MultipleWidget(
+                data_view='organization_select2',
+                attrs={'style': 'width: 100%'}),
+            'curators': HeavySelect2MultipleWidget(
+                data_view='profile_select2',
+                attrs={'style': 'width: 100%'}),
+            'testers': HeavySelect2MultipleWidget(
+                data_view='profile_select2',
+                attrs={'style': 'width: 100%'}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
