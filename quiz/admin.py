@@ -74,12 +74,12 @@ class QuizCategoryAdmin(admin.ModelAdmin):
 class QuizQuestionAdmin(admin.ModelAdmin):
     form = QuizQuestionAdminForm
     change_list_template = 'admin/quiz/quizquestion/change_list.html'
-    list_display = ('title', 'type', 'category', 'level', 'is_public')
+    list_display = ('code', 'title', 'type', 'category', 'level', 'is_public')
     list_filter = ('type', 'level', 'category', 'is_public')
-    search_fields = ('title', 'content')
+    search_fields = ('code', 'title', 'content')
     fieldsets = (
         (None, {
-            'fields': ('title', 'type', 'content', 'explanation',
+            'fields': ('code', 'title', 'type', 'content', 'explanation',
                        'category', 'level', 'shuffle_choices',
                        'ma_grading_strategy'),
         }),
@@ -110,6 +110,26 @@ class QuizQuestionAdmin(admin.ModelAdmin):
                     questions = json_fmt.parse(uploaded.read())
                 else:
                     questions = xlsx_fmt.parse(uploaded)
+                # Check for code duplicates within the batch
+                seen_codes = {}
+                for q in questions:
+                    if q.code:
+                        if q.code in seen_codes:
+                            q.errors.append(
+                                f'Duplicate code {q.code!r} in this file '
+                                f'(first seen on row {seen_codes[q.code]})')
+                        else:
+                            seen_codes[q.code] = q.row
+                # Check for code conflicts with existing DB records
+                batch_codes = {q.code for q in questions if q.code and not q.errors}
+                if batch_codes:
+                    db_conflicts = set(
+                        QuizQuestion.objects.filter(code__in=batch_codes)
+                        .values_list('code', flat=True))
+                    for q in questions:
+                        if q.code in db_conflicts:
+                            q.errors.append(
+                                f'Code {q.code!r} already exists in the question bank')
                 has_errors = any(q.errors for q in questions) or not questions
                 if not has_errors:
                     request.session[SESSION_KEY] = {
@@ -159,6 +179,7 @@ class QuizQuestionAdmin(admin.ModelAdmin):
             created = []
             for parsed in questions:
                 question = QuizQuestion.objects.create(
+                    code=parsed.code,
                     type=parsed.type, title=parsed.title,
                     content=parsed.content,
                     choices=parsed.choices,

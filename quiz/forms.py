@@ -1,4 +1,5 @@
 from django import forms
+from django.core.validators import RegexValidator
 from django.forms import inlineformset_factory
 from django.utils.translation import gettext_lazy as _
 
@@ -123,7 +124,11 @@ class QuizImportForm(forms.Form):
     file = forms.FileField(label=_('XLSX or JSON file'))
     create_quiz = forms.BooleanField(
         label=_('Also create a quiz from these questions'), required=False)
-    quiz_code = forms.SlugField(label=_('Quiz code'), required=False)
+    quiz_code = forms.CharField(
+        label=_('Quiz code'), required=False, max_length=32,
+        validators=[RegexValidator('^[a-z0-9]+$',
+                                   _('Quiz code must be ^[a-z0-9]+$'))],
+    )
     quiz_name = forms.CharField(label=_('Quiz name'), required=False,
                                 max_length=100)
 
