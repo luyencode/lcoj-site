@@ -279,6 +279,7 @@ class QuizEditDynamicFormsetTest(TestCase):
         resp = self.client.post(reverse('quiz_create'), {
             'code': 'postquiz1',
             'name': 'Post Quiz',
+            'result_feedback': 'full',
             'question_links-TOTAL_FORMS': '2',
             'question_links-INITIAL_FORMS': '0',
             'question_links-MIN_NUM_FORMS': '0',

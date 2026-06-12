@@ -84,7 +84,7 @@ class QuizQuestionAdmin(admin.ModelAdmin):
                        'ma_grading_strategy'),
         }),
         (_l('Choices & Answer'), {
-            'fields': ('choices', 'choice_explanations', 'correct_answers'),
+            'fields': ('choices', 'correct_answers'),
         }),
         (_l('Access'), {
             'fields': ('is_public', 'authors', 'curators'),
@@ -218,7 +218,7 @@ class QuizQuestionAdmin(admin.ModelAdmin):
 class QuizQuestionLinkInline(admin.TabularInline):
     model = QuizQuestionLink
     extra = 1
-    raw_id_fields = ('question',)
+    autocomplete_fields = ('question',)
     fields = ('question', 'order', 'points')
 
 
@@ -235,7 +235,7 @@ class QuizAdmin(admin.ModelAdmin):
         }),
         (_l('Settings'), {
             'fields': ('time_limit', 'max_attempts', 'shuffle_questions',
-                       'show_correctness', 'show_answers'),
+                       'result_feedback'),
         }),
         (_l('Access'), {
             'fields': ('is_public', 'is_organization_private',

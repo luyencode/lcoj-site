@@ -32,6 +32,12 @@ MA_STRATEGY_CHOICES = [
 ]
 
 
+class ResultFeedback(models.TextChoices):
+    SCORE_ONLY  = 'score_only',  _('Score only')
+    CORRECTNESS = 'correctness', _('Show correctness (no answer key)')
+    FULL        = 'full',        _('Show correct answers and explanations')
+
+
 class QuizCategory(models.Model):
     name = models.CharField(max_length=100, verbose_name=_('name'), unique=True)
     slug = models.SlugField(max_length=100, verbose_name=_('slug'), unique=True)
@@ -53,15 +59,13 @@ class QuizQuestion(models.Model):
                                    _('Question code must be ^[a-z0-9]+$'))],
     )
     type = models.CharField(max_length=2, verbose_name=_('question type'),
-                            choices=QuestionType.choices)
+                            choices=QuestionType.choices,
+                            default=QuestionType.MULTIPLE_CHOICE)
     title = models.CharField(max_length=200, verbose_name=_('title'),
                              help_text=_('Short name to identify this question in the bank.'))
     content = models.TextField(verbose_name=_('question body'))
     choices = models.JSONField(verbose_name=_('choices'), default=list, blank=True,
                                help_text=_('List of choice texts (MC/MA only).'))
-    choice_explanations = models.JSONField(
-        verbose_name=_('choice explanations'), default=list, blank=True,
-        help_text=_('Optional explanation per choice, shown to students after submitting.'))
     correct_answers = models.JSONField(
         verbose_name=_('correct answers'), null=True, blank=True,
         help_text=_('MC/TF: choice index. MA: list of indices. '
@@ -150,10 +154,17 @@ class Quiz(models.Model):
         help_text=_('Leave blank for unlimited attempts.'))
     shuffle_questions = models.BooleanField(
         verbose_name=_('shuffle questions'), default=False)
-    show_correctness = models.BooleanField(
-        verbose_name=_('show correctness on result'), default=True)
-    show_answers = models.BooleanField(
-        verbose_name=_('show correct answers on result'), default=True)
+    result_feedback = models.CharField(
+        max_length=11, choices=ResultFeedback.choices,
+        default=ResultFeedback.FULL,
+        verbose_name=_('result feedback'),
+        help_text=_(
+            'Controls what students see on the result page after submitting. '
+            '"Score only" — total score, no per-question detail. '
+            '"Show correctness" — green/red per question, answer key hidden. '
+            '"Show correct answers and explanations" — full feedback.'
+        ),
+    )
     is_public = models.BooleanField(
         verbose_name=_('publicly visible'), default=False)
     is_organization_private = models.BooleanField(

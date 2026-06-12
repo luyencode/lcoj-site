@@ -349,18 +349,20 @@ def parse(file_obj):
 
         q.title = str(data['title'] or '').strip()
         q.content = str(data['content'] or '')
-        q.choices = [
+        raw_choices = [
             str(data['choice_%d' % i]).strip()
             for i in range(1, MAX_CHOICES + 1)
             if data['choice_%d' % i] not in (None, '')
         ]
-        # Populate choice_explanations in parallel with choices
         all_explanations = [
             str(data.get('choice_explanation_%d' % i) or '').strip()
             for i in range(1, MAX_CHOICES + 1)
         ]
-        # Trim to match number of choices
-        q.choice_explanations = all_explanations[:len(q.choices)]
+        all_explanations = all_explanations[:len(raw_choices)]
+        q.choices = [
+            {'text': text, 'explanation': expl}
+            for text, expl in zip(raw_choices, all_explanations)
+        ]
 
         q.points = data['points'] if data['points'] is not None else 1.0
 
@@ -399,9 +401,15 @@ def write(questions):
         correct_text = (_sa_correct_to_cell(q.correct)
                         if q.type == grading.SA
                         else correct_to_spec(q.type, q.correct))
-        choices = list(q.choices) + [None] * (MAX_CHOICES - len(q.choices))
-        expls = list(getattr(q, 'choice_explanations', []))
-        expls += [None] * (MAX_CHOICES - len(expls))
+        raw_choices = q.choices or []
+        if raw_choices and isinstance(raw_choices[0], dict):
+            choice_texts = [c.get('text', '') for c in raw_choices]
+            expls = [c.get('explanation', '') or None for c in raw_choices]
+        else:
+            choice_texts = [str(c) for c in raw_choices]
+            expls = [None] * len(choice_texts)
+        choices = choice_texts + [None] * (MAX_CHOICES - len(choice_texts))
+        expls = expls + [None] * (MAX_CHOICES - len(expls))
         interleaved = []
         for i in range(MAX_CHOICES):
             interleaved += [choices[i] or None, expls[i] or None]

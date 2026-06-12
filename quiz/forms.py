@@ -3,7 +3,9 @@ from django.core.validators import RegexValidator
 from django.forms import inlineformset_factory
 from django.utils.translation import gettext_lazy as _
 
-from judge.widgets import HeavySelect2MultipleWidget, HeavySelect2Widget
+from django.urls import reverse_lazy
+
+from judge.widgets import HeavySelect2MultipleWidget, HeavySelect2Widget, MartorWidget
 from quiz.importers.base import correct_to_spec, parse_correct_spec
 from quiz.models import Quiz, QuizQuestion, QuizQuestionLink
 
@@ -17,7 +19,7 @@ class QuestionForm(forms.ModelForm):
     choice_explanations_text = forms.CharField(
         label=_('Choice explanations'), required=False,
         widget=forms.HiddenInput(),
-        help_text=_('Optional explanation per choice, one per line.'))
+        help_text=_('Optional explanation per choice, one per line (used when editing choices).'))
     correct_spec = forms.CharField(
         label=_('Correct answer'), required=False,
         widget=forms.HiddenInput(),
@@ -39,10 +41,15 @@ class QuestionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance.pk:
-            self.fields['choices_text'].initial = '\n'.join(
-                self.instance.choices or [])
-            self.fields['choice_explanations_text'].initial = '\n'.join(
-                self.instance.choice_explanations or [])
+            choices = self.instance.choices or []
+            if choices and isinstance(choices[0], dict):
+                self.fields['choices_text'].initial = '\n'.join(
+                    c.get('text', '') for c in choices)
+                self.fields['choice_explanations_text'].initial = '\n'.join(
+                    c.get('explanation', '') for c in choices)
+            else:
+                self.fields['choices_text'].initial = '\n'.join(choices)
+                self.fields['choice_explanations_text'].initial = ''
             self.fields['correct_spec'].initial = correct_to_spec(
                 self.instance.type, self.instance.correct_answers)
             if self.instance.type == 'SA':
@@ -88,20 +95,22 @@ class QuestionForm(forms.ModelForm):
 
     def save(self, commit=True):
         cleaned_data = self.cleaned_data
-        self.instance.choices = cleaned_data['parsed_choices']
-        self.instance.correct_answers = cleaned_data['parsed_correct']
-        # Parse and save choice_explanations, padded/trimmed to match choices
+        parsed_choices = cleaned_data['parsed_choices']
         raw_explanations = [
             line.strip() for line in
             (cleaned_data.get('choice_explanations_text') or '').splitlines()
         ]
-        num_choices = len(cleaned_data['parsed_choices'])
-        # Pad or trim to match number of choices
+        # Pad or trim explanations to match number of choices
+        num_choices = len(parsed_choices)
         if len(raw_explanations) < num_choices:
             raw_explanations += [''] * (num_choices - len(raw_explanations))
         else:
             raw_explanations = raw_explanations[:num_choices]
-        self.instance.choice_explanations = raw_explanations
+        self.instance.choices = [
+            {'text': text, 'explanation': expl}
+            for text, expl in zip(parsed_choices, raw_explanations)
+        ]
+        self.instance.correct_answers = cleaned_data['parsed_correct']
         return super().save(commit)
 
 
@@ -110,10 +119,12 @@ class QuizForm(forms.ModelForm):
         model = Quiz
         fields = ('code', 'name', 'description',
                   'time_limit', 'max_attempts', 'shuffle_questions',
-                  'show_correctness', 'show_answers',
+                  'result_feedback',
                   'is_public', 'is_organization_private', 'organizations',
                   'curators', 'testers')
         widgets = {
+            'description': MartorWidget(
+                attrs={'data-markdownfy-url': reverse_lazy('quiz_preview')}),
             'organizations': HeavySelect2MultipleWidget(
                 data_view='organization_select2',
                 attrs={'style': 'width: 100%'}),

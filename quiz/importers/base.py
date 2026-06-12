@@ -21,7 +21,6 @@ class ParsedQuestion:
     title: str = ''
     content: str = ''
     choices: list = dataclasses.field(default_factory=list)
-    choice_explanations: list = dataclasses.field(default_factory=list)
     correct: object = None
     points: float = 1.0
     category: str = ''

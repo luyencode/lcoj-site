@@ -2,20 +2,23 @@ import json
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Max, Q
+from django.db.models import Count, Max, Q, Sum
 from django.http import Http404, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from django.views.generic import ListView, TemplateView, View
 
+from judge.utils.views import TitleMixin
 from quiz.models import Quiz, QuizAttempt, QuizQuestion
 
 
-class QuizList(ListView):
+class QuizList(TitleMixin, ListView):
     model = Quiz
     template_name = 'quiz/list.html'
     context_object_name = 'quizzes'
     paginate_by = 50
+    title = gettext_lazy('Quizzes')
 
     def get_queryset(self):
         queryset = Quiz.get_visible_quizzes(self.request.user) \
@@ -24,20 +27,46 @@ class QuizList(ListView):
         if search:
             queryset = queryset.filter(
                 Q(name__icontains=search) | Q(code__icontains=search))
+        if self.request.GET.get('hide_attempted') and \
+                self.request.user.is_authenticated:
+            attempted_ids = QuizAttempt.objects.filter(
+                user=self.request.profile, is_submitted=True,
+            ).values_list('quiz_id', flat=True).distinct()
+            queryset = queryset.exclude(id__in=attempted_ids)
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['search'] = self.request.GET.get('search', '')
+        context['hide_attempted'] = bool(
+            self.request.GET.get('hide_attempted'))
+        quiz_ids = [q.pk for q in context['quizzes']]
+
         best_scores = {}
         if self.request.user.is_authenticated:
-            quiz_ids = [q.pk for q in context['quizzes']]
             rows = QuizAttempt.objects.filter(
                 user=self.request.profile, is_submitted=True,
                 quiz_id__in=quiz_ids,
             ).values('quiz_id').annotate(best=Max('score'))
             best_scores = {row['quiz_id']: row['best'] for row in rows}
         context['best_scores'] = best_scores
+
+        max_score_rows = Quiz.objects.filter(pk__in=quiz_ids).annotate(
+            max_score=Sum('question_links__points'),
+            question_count=Count('question_links'),
+        ).values('pk', 'max_score', 'question_count')
+        context['max_scores'] = {row['pk']: row['max_score'] or 0 for row in max_score_rows}
+        context['question_counts'] = {row['pk']: row['question_count'] for row in max_score_rows}
+
+        stats_rows = QuizAttempt.objects.filter(
+            quiz_id__in=quiz_ids, is_submitted=True,
+        ).values('quiz_id').annotate(
+            attempts=Count('id'),
+            users=Count('user', distinct=True),
+        )
+        context['attempt_counts'] = {row['quiz_id']: row['attempts'] for row in stats_rows}
+        context['user_counts'] = {row['quiz_id']: row['users'] for row in stats_rows}
+
         return context
 
 
@@ -56,8 +85,11 @@ class QuizMixin:
         return context
 
 
-class QuizDetail(QuizMixin, TemplateView):
+class QuizDetail(TitleMixin, QuizMixin, TemplateView):
     template_name = 'quiz/detail.html'
+
+    def get_title(self):
+        return self.quiz.name
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -124,8 +156,11 @@ class AttemptMixin(QuizMixin):
         return super(QuizMixin, self).dispatch(request, *args, **kwargs)
 
 
-class QuizTake(LoginRequiredMixin, AttemptMixin, TemplateView):
+class QuizTake(TitleMixin, LoginRequiredMixin, AttemptMixin, TemplateView):
     template_name = 'quiz/take.html'
+
+    def get_title(self):
+        return self.quiz.name
 
     def get(self, request, *args, **kwargs):
         if self.attempt.is_submitted:
@@ -212,9 +247,12 @@ class QuizSaveAnswer(LoginRequiredMixin, AttemptMixin, View):
         return JsonResponse({'saved': True})
 
 
-class QuizResult(LoginRequiredMixin, AttemptMixin, TemplateView):
+class QuizResult(TitleMixin, LoginRequiredMixin, AttemptMixin, TemplateView):
     template_name = 'quiz/result.html'
     allow_editor = True
+
+    def get_title(self):
+        return _('%s — Result') % self.quiz.name
 
     def get(self, request, *args, **kwargs):
         if not self.attempt.is_submitted:
@@ -225,8 +263,11 @@ class QuizResult(LoginRequiredMixin, AttemptMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         can_edit = self.quiz.is_editable_by(self.request.user)
-        show_correctness = self.quiz.show_correctness or can_edit
-        show_answers = self.quiz.show_answers or can_edit
+        feedback = self.quiz.result_feedback
+        if can_edit:
+            feedback = 'full'
+        show_correctness = feedback in ('correctness', 'full')
+        show_answers = feedback == 'full'
         questions = {q.id: q for q in QuizQuestion.objects.filter(
             id__in=self.attempt.question_order)}
         answers = {a.question_id: a
@@ -256,8 +297,11 @@ class QuizResult(LoginRequiredMixin, AttemptMixin, TemplateView):
         return context
 
 
-class QuizRanking(QuizMixin, TemplateView):
+class QuizRanking(TitleMixin, QuizMixin, TemplateView):
     template_name = 'quiz/ranking.html'
+
+    def get_title(self):
+        return _('%s — Ranking') % self.quiz.name
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

@@ -2,9 +2,10 @@ from django.contrib import messages
 from django.db import IntegrityError, transaction
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from django.views.generic import FormView, View
 
+from judge.utils.views import TitleMixin
 from quiz.forms import QuizImportForm
 from quiz.importers import json_fmt, xlsx_fmt
 from quiz.importers.base import ParsedQuestion
@@ -15,9 +16,10 @@ SESSION_KEY = 'quiz_import_pending'
 XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
 
-class QuizImport(EditorPermissionMixin, FormView):
+class QuizImport(TitleMixin, EditorPermissionMixin, FormView):
     form_class = QuizImportForm
     template_name = 'quiz/import.html'
+    title = gettext_lazy('Import Questions')
 
     def form_valid(self, form):
         uploaded = form.cleaned_data['file']
