@@ -2,10 +2,12 @@
 
 {% block media %}
     {{ formset.media.css }}
+    <link rel="stylesheet" href="{{ static('vnoj/jquery-ui/jquery-ui.min.css') }}">
 {% endblock %}
 
 {% block js_media %}
     {{ formset.media.js }}
+    <script type="text/javascript" src="{{ static('vnoj/jquery-ui/jquery-ui.min.js') }}"></script>
 {% endblock %}
 
 {% block body %}
