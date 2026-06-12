@@ -123,3 +123,94 @@ class QuizAttemptTestCase(TestCase):
             [a.user_id for a in ranking],
             [fast.profile.id, slow.profile.id, low.profile.id])
         self.assertEqual(ranking[0].score, 3.0)
+
+
+class TestQuizResultFeedbackModes(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.student = create_user(username='rfstudent')
+        cls.q = create_question(
+            title='rf_q', code='rfq1', qtype='MC',
+            choices=[
+                {'text': 'Option A', 'explanation': 'Why A'},
+                {'text': 'Option B', 'explanation': ''},
+                {'text': 'Option C', 'explanation': 'Why C'},
+                {'text': 'Option D', 'explanation': ''},
+            ],
+            correct_answers=0,
+            explanation='This is the question explanation.',
+        )
+
+    def _make_attempt(self, feedback):
+        quiz = create_quiz(
+            code='rfquiz_' + feedback,
+            questions=[(self.q, 1.0)],
+            result_feedback=feedback,
+        )
+        attempt = quiz.attempts.create(
+            user=self.student.profile,
+            question_order=[self.q.id],
+            is_submitted=True,
+            score=0.0,
+        )
+        attempt.answers.create(
+            question=self.q, answer=1, points=0.0, is_correct=False)
+        return quiz, attempt
+
+    def test_score_only_hides_correctness_and_answers(self):
+        """score_only: no per-question points, no choice list, no explanation."""
+        quiz, attempt = self._make_attempt('score_only')
+        self.client.force_login(self.student)
+        resp = self.client.get(f'/quizzes/{quiz.code}/attempt/{attempt.id}/result')
+        self.assertEqual(resp.status_code, 200)
+        # Student's answer text (Option B, index 1) is shown
+        self.assertContains(resp, 'Option B')
+        # Per-question points breakdown should NOT appear (only in correctness/full)
+        # Pattern: "/ N.N)" appears only in correctness/full h4
+        self.assertNotContains(resp, '/ 1.0)')
+        # Full choice list (<ul class="quiz-choices-result">) should NOT appear
+        self.assertNotContains(resp, '<ul class="quiz-choices-result">')
+        # Explanation should NOT appear
+        self.assertNotContains(resp, 'This is the question explanation.')
+
+    def test_correctness_shows_points_not_answers(self):
+        """correctness: per-question points shown, but no choice list or explanation."""
+        quiz, attempt = self._make_attempt('correctness')
+        self.client.force_login(self.student)
+        resp = self.client.get(f'/quizzes/{quiz.code}/attempt/{attempt.id}/result')
+        self.assertEqual(resp.status_code, 200)
+        # Per-question points should appear in the h4 (points are floats)
+        self.assertContains(resp, '/ 1.0)')
+        # Full choice list should NOT appear
+        self.assertNotContains(resp, '<ul class="quiz-choices-result">')
+        # Explanation should NOT appear
+        self.assertNotContains(resp, 'This is the question explanation.')
+
+    def test_full_shows_choices_and_explanation(self):
+        """full: correct choices highlighted, Why? toggle, explanation shown."""
+        quiz, attempt = self._make_attempt('full')
+        self.client.force_login(self.student)
+        resp = self.client.get(f'/quizzes/{quiz.code}/attempt/{attempt.id}/result')
+        self.assertEqual(resp.status_code, 200)
+        # Full choice list rendered as <ul>
+        self.assertContains(resp, '<ul class="quiz-choices-result">')
+        # All choices including Option A (correct) and Option B (selected)
+        self.assertContains(resp, 'Option A')
+        # Explanation shown
+        self.assertContains(resp, 'This is the question explanation.')
+        # Why? toggle for Option A's choice-level explanation
+        self.assertContains(resp, 'Why A')
+
+    def test_editor_always_gets_full(self):
+        """Editor always sees full feedback even when quiz is score_only."""
+        editor = create_user(username='rfeditor',
+                             user_permissions=('edit_own_quiz',))
+        quiz, attempt = self._make_attempt('score_only')
+        quiz.authors.add(editor.profile)
+        self.client.force_login(editor)
+        resp = self.client.get(f'/quizzes/{quiz.code}/attempt/{attempt.id}/result')
+        self.assertEqual(resp.status_code, 200)
+        # Editor sees full mode: choice list and explanation present
+        self.assertContains(resp, '<ul class="quiz-choices-result">')
+        self.assertContains(resp, 'This is the question explanation.')

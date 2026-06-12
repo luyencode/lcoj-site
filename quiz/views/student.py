@@ -263,11 +263,10 @@ class QuizResult(TitleMixin, LoginRequiredMixin, AttemptMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         can_edit = self.quiz.is_editable_by(self.request.user)
-        feedback = self.quiz.result_feedback
+        from quiz.models import ResultFeedback
+        result_feedback = self.quiz.result_feedback
         if can_edit:
-            feedback = 'full'
-        show_correctness = feedback in ('correctness', 'full')
-        show_answers = feedback == 'full'
+            result_feedback = ResultFeedback.FULL
         questions = {q.id: q for q in QuizQuestion.objects.filter(
             id__in=self.attempt.question_order)}
         answers = {a.question_id: a
@@ -291,8 +290,7 @@ class QuizResult(TitleMixin, LoginRequiredMixin, AttemptMixin, TemplateView):
             'attempt': self.attempt,
             'rows': rows,
             'total_points': self.quiz.total_points,
-            'show_correctness': show_correctness,
-            'show_answers': show_answers,
+            'result_feedback': result_feedback,
         })
         return context
 
