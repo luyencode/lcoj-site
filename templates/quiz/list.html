@@ -1,0 +1,26 @@
+{% extends "common-content.html" %}
+
+{% block body %}
+<form method="get" style="margin-bottom: 1em">
+    <input type="text" name="search" value="{{ search }}" placeholder="{{ _('Search quizzes...') }}">
+    <button type="submit">{{ _('Filter') }}</button>
+</form>
+<table class="table">
+    <thead>
+        <tr>
+            <th>{{ _('Quiz') }}</th>
+            <th>{{ _('Your best') }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for quiz in quizzes %}
+        <tr>
+            <td><a href="{{ url('quiz_detail', quiz.code) }}">{{ quiz.name }}</a></td>
+            <td>{{ best_scores.get(quiz.id, '') }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="2">{{ _('No quizzes found.') }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

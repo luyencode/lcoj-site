@@ -231,3 +231,18 @@ class QuizNoCategoryLevelTest(TestCase):
     def test_create_quiz_without_category_level(self):
         quiz = Quiz.objects.create(code='testnocatlvl', name='Test')
         self.assertEqual(quiz.name, 'Test')
+
+
+class QuizListNoCategoryLevelTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.quiz = create_quiz(code='listtest1')
+
+    def test_list_renders_without_category_level_filters(self):
+        resp = self.client.get(reverse('quiz_list'))
+        self.assertEqual(resp.status_code, 200)
+        # Category and level filter dropdowns must be gone
+        self.assertNotContains(resp, 'name="category"')
+        self.assertNotContains(resp, 'name="level"')
+        # Quiz name still appears
+        self.assertContains(resp, 'listtest1')

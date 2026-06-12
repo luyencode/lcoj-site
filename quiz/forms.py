@@ -154,9 +154,10 @@ class QuizQuestionLinkForm(forms.ModelForm):
                 data_view='quiz_question_select2',
                 attrs={'style': 'width: 100%'},
             ),
+            'order': forms.HiddenInput(attrs={'class': 'order-field'}),
         }
 
 
 QuizQuestionLinkFormSet = inlineformset_factory(
     Quiz, QuizQuestionLink, form=QuizQuestionLinkForm,
-    extra=3, can_delete=True)
+    extra=0, can_delete=True)
