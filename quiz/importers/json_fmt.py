@@ -29,8 +29,10 @@ def parse(data):
         question.title = str(entry.get('title', ''))
         question.content = str(entry.get('content', ''))
         question.choices = [
-            {'text': str(c), 'explanation': ''}
-            for c in entry.get('choices') or []
+            {'text': str(c.get('text', '') if isinstance(c, dict) else c),
+             'explanation': str(c.get('explanation', '') or '')
+                            if isinstance(c, dict) else ''}
+            for c in (entry.get('choices') or [])
         ]
         question.points = entry.get('points', 1.0)
         question.category = str(entry.get('category', '') or '')
