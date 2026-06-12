@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
@@ -75,39 +75,45 @@ class QuizImportConfirm(EditorPermissionMixin, View):
         if any(q.errors for q in questions):
             messages.error(request, _('Import file has errors.'))
             return redirect('quiz_import')
-        with transaction.atomic():
-            categories = {}
-            for parsed in questions:
-                if parsed.category and parsed.category not in categories:
-                    categories[parsed.category], _created = \
-                        QuizCategory.objects.get_or_create(
-                            slug=parsed.category,
-                            defaults={'name': parsed.category.replace(
-                                '-', ' ').title()})
-            created = []
-            for parsed in questions:
-                question = QuizQuestion.objects.create(
-                    code=parsed.code,
-                    type=parsed.type, title=parsed.title,
-                    content=parsed.content,
-                    choices=parsed.choices,
-                    correct_answers=parsed.correct,
-                    explanation=parsed.explanation,
-                    category=categories.get(parsed.category),
-                    level=parsed.level,
-                    shuffle_choices=parsed.shuffle,
-                    ma_grading_strategy=parsed.ma_strategy)
-                question.authors.add(request.profile)
-                created.append((question, parsed.points))
-            if payload['create_quiz']:
-                quiz = Quiz.objects.create(
-                    code=payload['quiz_code'],
-                    name=payload['quiz_name'])
-                quiz.authors.add(request.profile)
-                for order, (question, points) in enumerate(created):
-                    QuizQuestionLink.objects.create(
-                        quiz=quiz, question=question,
-                        points=points, order=order)
+        try:
+            with transaction.atomic():
+                categories = {}
+                for parsed in questions:
+                    if parsed.category and parsed.category not in categories:
+                        categories[parsed.category], _created = \
+                            QuizCategory.objects.get_or_create(
+                                slug=parsed.category,
+                                defaults={'name': parsed.category.replace(
+                                    '-', ' ').title()})
+                created = []
+                for parsed in questions:
+                    question = QuizQuestion.objects.create(
+                        code=parsed.code,
+                        type=parsed.type, title=parsed.title,
+                        content=parsed.content,
+                        choices=parsed.choices,
+                        correct_answers=parsed.correct,
+                        explanation=parsed.explanation,
+                        category=categories.get(parsed.category),
+                        level=parsed.level,
+                        shuffle_choices=parsed.shuffle,
+                        ma_grading_strategy=parsed.ma_strategy)
+                    question.authors.add(request.profile)
+                    created.append((question, parsed.points))
+                if payload['create_quiz']:
+                    quiz = Quiz.objects.create(
+                        code=payload['quiz_code'],
+                        name=payload['quiz_name'])
+                    quiz.authors.add(request.profile)
+                    for order, (question, points) in enumerate(created):
+                        QuizQuestionLink.objects.create(
+                            quiz=quiz, question=question,
+                            points=points, order=order)
+        except IntegrityError:
+            messages.error(request,
+                           _('Import failed: a question code conflict occurred. '
+                             'Please re-upload and check for duplicate codes.'))
+            return redirect('quiz_import')
         messages.success(request,
                          _('Imported %d questions.') % len(created))
         if payload['create_quiz']:

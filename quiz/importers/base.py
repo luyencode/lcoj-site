@@ -109,6 +109,8 @@ def validate_question(question):
     if not question.code or not _CODE_RE.match(question.code):
         question.errors.append(
             'Question code is required and must match ^[a-z0-9]+$')
+    elif len(question.code) > 32:
+        question.errors.append('Question code must be 32 characters or fewer')
     if question.type not in TYPES:
         question.errors.append('Unknown question type %r' % (question.type,))
         return
