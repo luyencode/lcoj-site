@@ -219,3 +219,15 @@ class QuestionBankCodeSearchTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'muttype1')
         self.assertNotContains(resp, 'immtype1')
+
+
+class QuizNoCategoryLevelTest(TestCase):
+    def test_quiz_has_no_category_field(self):
+        self.assertFalse(hasattr(Quiz, 'category'))
+
+    def test_quiz_has_no_level_field(self):
+        self.assertFalse(hasattr(Quiz, 'level'))
+
+    def test_create_quiz_without_category_level(self):
+        quiz = Quiz.objects.create(code='testnocatlvl', name='Test')
+        self.assertEqual(quiz.name, 'Test')

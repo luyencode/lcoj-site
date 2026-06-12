@@ -142,12 +142,6 @@ class Quiz(models.Model):
                                    _('Quiz code must be ^[a-z0-9]+$'))])
     name = models.CharField(max_length=100, verbose_name=_('quiz name'))
     description = models.TextField(verbose_name=_('description'), blank=True)
-    category = models.ForeignKey(
-        QuizCategory, verbose_name=_('category'), null=True, blank=True,
-        on_delete=models.SET_NULL, related_name='quizzes')
-    level = models.CharField(
-        max_length=6, verbose_name=_('level'), choices=QuizLevel.choices,
-        default=QuizLevel.EASY)
     time_limit = models.PositiveIntegerField(
         verbose_name=_('time limit (minutes)'), null=True, blank=True,
         help_text=_('Leave blank for unlimited time.'))

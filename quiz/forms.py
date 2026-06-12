@@ -108,7 +108,7 @@ class QuestionForm(forms.ModelForm):
 class QuizForm(forms.ModelForm):
     class Meta:
         model = Quiz
-        fields = ('code', 'name', 'description', 'category', 'level',
+        fields = ('code', 'name', 'description',
                   'time_limit', 'max_attempts', 'shuffle_questions',
                   'show_correctness', 'show_answers',
                   'is_public', 'is_organization_private', 'organizations',

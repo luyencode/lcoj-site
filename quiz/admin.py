@@ -225,14 +225,13 @@ class QuizQuestionLinkInline(admin.TabularInline):
 @admin.register(Quiz)
 class QuizAdmin(admin.ModelAdmin):
     form = QuizAdminForm
-    list_display = ('code', 'name', 'category', 'level', 'time_limit',
-                    'is_public')
-    list_filter = ('level', 'category', 'is_public', 'is_organization_private')
+    list_display = ('code', 'name', 'time_limit', 'is_public')
+    list_filter = ('is_public', 'is_organization_private')
     search_fields = ('code', 'name')
     inlines = (QuizQuestionLinkInline,)
     fieldsets = (
         (None, {
-            'fields': ('code', 'name', 'description', 'category', 'level'),
+            'fields': ('code', 'name', 'description'),
         }),
         (_l('Settings'), {
             'fields': ('time_limit', 'max_attempts', 'shuffle_questions',
