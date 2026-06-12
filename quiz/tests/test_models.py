@@ -208,6 +208,9 @@ class QuestionBankCodeSearchTest(TestCase):
         cls.question = create_question(
             title='Mutable types', code='muttype1',
             authors=(cls.editor.profile,))
+        cls.other = create_question(
+            title='Immutable types', code='immtype1',
+            authors=(cls.editor.profile,))
 
     def test_bank_search_by_code(self):
         self.client.force_login(self.editor)
@@ -215,3 +218,4 @@ class QuestionBankCodeSearchTest(TestCase):
             reverse('quiz_question_bank'), {'search': 'muttype1'})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'muttype1')
+        self.assertNotContains(resp, 'immtype1')

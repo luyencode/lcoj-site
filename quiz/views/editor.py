@@ -126,6 +126,9 @@ class QuizEdit(QuizEditorObjectMixin, TemplateView):
             if self.quiz is None:
                 quiz.authors.add(request.profile)
                 formset = QuizQuestionLinkFormSet(request.POST, instance=quiz)
+                for link_form in formset.forms:
+                    link_form.fields['question'].queryset = \
+                        QuizQuestion.get_bank_questions(request.user)
             if formset.is_valid():
                 formset.save()
                 messages.success(request, _('Quiz saved.'))
