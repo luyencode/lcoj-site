@@ -1,0 +1,105 @@
+{% extends "common-content.html" %}
+
+{% block body %}
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p() }}
+    <h3>{{ _('Questions') }}</h3>
+    {{ formset.management_form }}
+    <table class="table">
+        <tr><th>{{ _('Question') }}</th><th>{{ _('Points') }}</th><th>{{ _('Order') }}</th><th>{{ _('Delete') }}</th></tr>
+        {% for link_form in formset %}
+        <tr>
+            {% for hidden in link_form.hidden_fields() %}{{ hidden }}{% endfor %}
+            <td>{{ link_form.question }}</td>
+            <td>{{ link_form.points }}</td>
+            <td>{{ link_form.order }}</td>
+            <td>{{ link_form.DELETE if link_form.instance.pk else '' }}</td>
+        </tr>
+        {% if link_form.errors %}<tr><td colspan="4" style="color:#c00">{{ link_form.errors }}</td></tr>{% endif %}
+        {% endfor %}
+    </table>
+    <button type="submit">{{ _('Save quiz') }}</button>
+</form>
+{% if editing %}
+<p>
+    <a href="{{ url('quiz_detail', quiz.code) }}">{{ _('View quiz') }}</a> &middot;
+    <a href="{{ url('quiz_attempts', quiz.code) }}">{{ _('Attempts & regrade') }}</a>
+</p>
+{% endif %}
+<style>
+.md-editor { border: 1px solid #ccc; border-radius: 4px; overflow: hidden; margin-top: 4px; }
+.md-tabs { display: flex; background: #f5f5f5; border-bottom: 1px solid #ccc; }
+.md-tab {
+    background: none; border: none; padding: 5px 14px;
+    font-size: 12px; font-weight: 600; color: #666; cursor: pointer;
+    border-right: 1px solid #e0e0e0;
+}
+.md-tab.active { background: #fff; color: #417690; border-bottom: 2px solid #417690; margin-bottom: -1px; }
+.md-tab:hover:not(.active) { background: #eee; }
+.md-pane-write textarea { border: none !important; border-radius: 0 !important; display: block; margin: 0; width: 100%; box-sizing: border-box; }
+.md-pane-preview { min-height: 60px; padding: 10px 12px; font-size: 14px; line-height: 1.6; background: #fff; }
+.md-preview-loading, .md-preview-empty { color: #aaa; font-style: italic; font-size: 13px; }
+</style>
+<script>
+(function () {
+'use strict';
+
+var PREVIEW_URL = {{ url('quiz_preview')|tojson }};
+var CSRF = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+var textarea = document.getElementById('id_description');
+if (!textarea) return;
+
+var wrapper = document.createElement('div');
+wrapper.className = 'md-editor';
+wrapper.innerHTML =
+    '<div class="md-tabs">' +
+    '<button type="button" class="md-tab active" data-pane="write">{{ _("Write") }}</button>' +
+    '<button type="button" class="md-tab" data-pane="preview">{{ _("Preview") }}</button>' +
+    '</div>' +
+    '<div class="md-pane-write"></div>' +
+    '<div class="md-pane-preview" style="display:none;"></div>';
+
+textarea.parentNode.insertBefore(wrapper, textarea);
+wrapper.querySelector('.md-pane-write').appendChild(textarea);
+
+var previewPane = wrapper.querySelector('.md-pane-preview');
+
+wrapper.querySelectorAll('.md-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+        wrapper.querySelectorAll('.md-tab').forEach(function (t) { t.classList.remove('active'); });
+        tab.classList.add('active');
+
+        if (tab.dataset.pane === 'write') {
+            textarea.parentNode.style.display = '';
+            previewPane.style.display = 'none';
+        } else {
+            textarea.parentNode.style.display = 'none';
+            previewPane.style.display = '';
+            var content = textarea.value.trim();
+            if (!content) {
+                previewPane.innerHTML = '<span class="md-preview-empty">{{ _("Nothing to preview.") }}</span>';
+                return;
+            }
+            previewPane.innerHTML = '<span class="md-preview-loading">{{ _("Loading…") }}</span>';
+            fetch(PREVIEW_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': CSRF,
+                },
+                body: 'content=' + encodeURIComponent(content),
+            })
+            .then(function (r) { return r.text(); })
+            .then(function (html) { previewPane.innerHTML = html; })
+            .catch(function () {
+                previewPane.innerHTML = '<span class="md-preview-empty">{{ _("Preview failed.") }}</span>';
+            });
+        }
+    });
+});
+
+})();
+</script>
+{% endblock %}
