@@ -14,7 +14,12 @@ def create_question(title='question', qtype='MC', code=None, **kwargs):
             suffix += 1
     defaults = {
         'content': 'Body of %s' % title,
-        'choices': ['a', 'b', 'c', 'd'],
+        'choices': [
+            {'text': 'a', 'explanation': ''},
+            {'text': 'b', 'explanation': ''},
+            {'text': 'c', 'explanation': ''},
+            {'text': 'd', 'explanation': ''},
+        ],
         'correct_answers': 0,
     }
     defaults.update(kwargs)

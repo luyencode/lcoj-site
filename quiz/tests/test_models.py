@@ -120,7 +120,9 @@ class QuizQuestionCodeTest(TestCase):
     def _make(self, code, **kwargs):
         defaults = {
             'type': 'MC', 'title': code, 'content': 'body',
-            'choices': ['a', 'b'], 'correct_answers': 0,
+            'choices': [{'text': 'a', 'explanation': ''},
+                        {'text': 'b', 'explanation': ''}],
+            'correct_answers': 0,
         }
         defaults.update(kwargs)
         return QuizQuestion(code=code, **defaults)
@@ -132,7 +134,9 @@ class QuizQuestionCodeTest(TestCase):
     def test_code_required(self):
         q = QuizQuestion(
             type='MC', title='t', content='b',
-            choices=['a', 'b'], correct_answers=0)
+            choices=[{'text': 'a', 'explanation': ''},
+                     {'text': 'b', 'explanation': ''}],
+            correct_answers=0)
         with self.assertRaises(ValidationError):
             q.full_clean()
 
@@ -147,7 +151,10 @@ class QuizQuestionCodeTest(TestCase):
         from django.db import IntegrityError
         QuizQuestion.objects.create(
             code='dupcode', type='MC', title='dup',
-            content='body', choices=['a', 'b'], correct_answers=0)
+            content='body',
+            choices=[{'text': 'a', 'explanation': ''},
+                     {'text': 'b', 'explanation': ''}],
+            correct_answers=0)
         q = self._make('dupcode', title='dup2')
         with self.assertRaises(IntegrityError):
             q.save()
