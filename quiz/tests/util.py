@@ -6,7 +6,12 @@ from quiz.models import Quiz, QuizCategory, QuizQuestion, QuizQuestionLink
 
 def create_question(title='question', qtype='MC', code=None, **kwargs):
     if code is None:
-        code = _re.sub('[^a-z0-9]', '', title.lower()) or 'q1'
+        base = _re.sub('[^a-z0-9]', '', title.lower()) or 'q1'
+        code = base
+        suffix = 2
+        while QuizQuestion.objects.filter(code=code).exists():
+            code = f'{base}{suffix}'
+            suffix += 1
     defaults = {
         'content': 'Body of %s' % title,
         'choices': ['a', 'b', 'c', 'd'],

@@ -24,6 +24,7 @@ class QuizQuestionTestCase(TestCase):
             authors=(cls.teacher.profile,))
 
     def test_str(self):
+        # create_question auto-generates code from title: 'loops' -> code='loops'
         self.assertEqual(str(self.question), 'loops: loops')
 
     def test_grade_delegates_to_grading_engine(self):
@@ -142,11 +143,12 @@ class QuizQuestionCodeTest(TestCase):
                     q.full_clean()
 
     def test_duplicate_code_rejected(self):
+        from django.db import IntegrityError
         QuizQuestion.objects.create(
             code='dupcode', type='MC', title='dup',
             content='body', choices=['a', 'b'], correct_answers=0)
         q = self._make('dupcode', title='dup2')
-        with self.assertRaises(Exception):
+        with self.assertRaises(IntegrityError):
             q.save()
 
     def test_str_includes_code(self):

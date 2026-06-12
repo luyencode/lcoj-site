@@ -29,6 +29,7 @@ class Migration(migrations.Migration):
             preserve_default=False,
         ),
         # Step B: populate deterministic codes for all existing rows
+        # noop reverse: rolling back would leave codes set, which is safe on dev branch
         migrations.RunPython(set_question_codes, migrations.RunPython.noop),
         # Step C: add unique constraint and drop default
         migrations.AlterField(
