@@ -23,4 +23,6 @@
         {% endfor %}
     </tbody>
 </table>
+{% set page_prefix = '?search=' ~ search ~ '&page=' %}
+{% include "list-pages.html" %}
 {% endblock %}
