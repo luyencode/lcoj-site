@@ -1,28 +1,171 @@
 {% extends "common-content.html" %}
 
+{% block media %}
+<style>
+    #quiz-table th {
+        padding: 0;
+    }
+    #quiz-table th a {
+        display: block;
+        padding: 6px 10px;
+        color: inherit;
+    }
+    .quiz-best-score {
+        font-weight: bold;
+        color: #2a7a2a;
+    }
+    .quiz-no-score {
+        color: #aaa;
+        font-style: italic;
+    }
+    .quiz-code-col {
+        white-space: nowrap;
+        width: 1%;
+    }
+    .quiz-stat-col {
+        white-space: nowrap;
+        width: 1%;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block js_media %}
+{% compress js %}
+<script>
+    $(function () {
+        var $form = $('form#filter-form');
+        var $search = $('#search');
+
+        function clean_submit() {
+            $search.prop('disabled', !$search.val());
+            $form.submit();
+        }
+
+        $search.keypress(function (e) {
+            if (e.keyCode === 13) clean_submit();
+        });
+
+        $('#go').click(clean_submit);
+
+        $('#hide_attempted').on('change', function () {
+            $search.prop('disabled', !$search.val());
+            $form.submit();
+        });
+
+        var info_float = $('.info-float');
+        var container = $('#content-right');
+        if (!featureTest('position', 'sticky')) {
+            fix_div(info_float, 55);
+            $(window).resize(function () {
+                info_float.width(container.width());
+            });
+            info_float.width(container.width());
+        }
+    });
+</script>
+{% endcompress %}
+{% endblock %}
+
+{% block title_ruler %}{% endblock %}
+
 {% block body %}
-<form method="get" style="margin-bottom: 1em">
-    <input type="text" name="search" value="{{ search }}" placeholder="{{ _('Search quizzes...') }}">
-    <button type="submit">{{ _('Filter') }}</button>
-</form>
-<table class="table">
-    <thead>
-        <tr>
-            <th>{{ _('Quiz') }}</th>
-            <th>{{ _('Your best') }}</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for quiz in quizzes %}
-        <tr>
-            <td><a href="{{ url('quiz_detail', quiz.code) }}">{{ quiz.name }}</a></td>
-            <td>{{ best_scores.get(quiz.id, '') }}</td>
-        </tr>
-        {% else %}
-        <tr><td colspan="2">{{ _('No quizzes found.') }}</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% set page_prefix = '?search=' ~ search ~ '&page=' %}
-{% include "list-pages.html" %}
+{% if page_obj.has_other_pages() %}
+<div class="top-pagination-bar">{% include "list-pages.html" %}</div>
+{% endif %}
+
+<div id="common-content">
+    <div id="content-right" class="problems">
+        <div class="info-float">
+            <div class="sidebox">
+                <h3>{{ _('Search') }} <i class="fa fa-search"></i></h3>
+                <div class="sidebox-content">
+                    <form id="filter-form" action="" method="get">
+                        <div>
+                            <input id="search" type="text" name="search"
+                                   value="{{ search }}"
+                                   placeholder="{{ _('Search quizzes...') }}">
+                        </div>
+                        {% if request.user.is_authenticated %}
+                        <div>
+                            <input type="checkbox" id="hide_attempted"
+                                   name="hide_attempted" value="1"
+                                   {% if hide_attempted %}checked{% endif %}>
+                            <label for="hide_attempted">{{ _('Hide attempted') }}</label>
+                        </div>
+                        {% endif %}
+                        <div class="form-submit-group">
+                            <a id="go" class="button">{{ _('Go') }}</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="content-left" class="problems h-scrollable-table">
+        <table id="quiz-table" class="table striped">
+            <thead>
+                <tr>
+                    <th class="quiz-code-col">
+                        <a>{{ _('Code') }}</a>
+                    </th>
+                    <th class="problem-name">
+                        <a>{{ _('Quiz') }}</a>
+                    </th>
+                    <th class="quiz-stat-col">
+                        <a>{{ _('Questions') }}</a>
+                    </th>
+                    <th class="quiz-stat-col">
+                        <a>{{ _('Max score') }}</a>
+                    </th>
+                    <th class="quiz-stat-col">
+                        <a>{{ _('Attempts') }}</a>
+                    </th>
+                    <th class="quiz-stat-col">
+                        <a>{{ _('Participants') }}</a>
+                    </th>
+                    {% if request.user.is_authenticated %}
+                    <th class="points">
+                        <a>{{ _('Your best') }}</a>
+                    </th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for quiz in quizzes %}
+                <tr>
+                    <td class="quiz-code-col">{{ quiz.code }}</td>
+                    <td class="problem-name">
+                        <a href="{{ url('quiz_detail', quiz.code) }}">{{ quiz.name }}</a>
+                    </td>
+                    <td class="quiz-stat-col">{{ question_counts.get(quiz.id, 0) }}</td>
+                    <td class="quiz-stat-col">{{ max_scores.get(quiz.id, 0) }}</td>
+                    <td class="quiz-stat-col">{{ attempt_counts.get(quiz.id, 0) }}</td>
+                    <td class="quiz-stat-col">{{ user_counts.get(quiz.id, 0) }}</td>
+                    {% if request.user.is_authenticated %}
+                    <td class="p">
+                        {% if best_scores.get(quiz.id) is not none %}
+                            <span class="quiz-best-score">{{ best_scores.get(quiz.id) }}</span>
+                        {% else %}
+                            <span class="quiz-no-score">—</span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="{{ 7 if request.user.is_authenticated else 6 }}">
+                        {{ _('No quizzes found.') }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if page_obj.has_other_pages() %}
+<div class="bottom-pagination-bar">{% include "list-pages.html" %}</div>
+{% endif %}
 {% endblock %}

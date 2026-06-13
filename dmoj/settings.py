@@ -323,6 +323,15 @@ else:
             },
             'custom_menu': [
                 {
+                    'model': 'quiz.Quiz',
+                    'icon': 'fa-graduation-cap',
+                    'children': [
+                        'quiz.QuizQuestion',
+                        'quiz.QuizCategory',
+                        'quiz.QuizAttempt',
+                    ],
+                },
+                {
                     'model': 'judge.Problem',
                     'icon': 'fa-question-circle',
                     'children': [

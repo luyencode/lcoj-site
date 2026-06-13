@@ -35,8 +35,8 @@ class QuestionForm(forms.ModelForm):
     class Meta:
         model = QuizQuestion
         fields = ('code', 'type', 'title', 'content', 'category', 'level',
-                  'explanation', 'shuffle_choices', 'ma_grading_strategy',
-                  'is_public')
+                  'explanation', 'answer_display', 'shuffle_choices',
+                  'ma_grading_strategy', 'is_public')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

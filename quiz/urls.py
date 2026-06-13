@@ -2,10 +2,12 @@ from django.urls import include, path
 
 from quiz.views import editor, importer, student
 from quiz.views.preview import QuizMarkdownPreviewView
+from quiz.views.select2 import QuizQuestionSelect2View
 
 urlpatterns = [
     path('/', student.QuizList.as_view(), name='quiz_list'),
     path('/preview', QuizMarkdownPreviewView.as_view(), name='quiz_preview'),
+    path('/select2/question', QuizQuestionSelect2View.as_view(), name='quiz_question_select2'),
     path('/questions', include([
         path('/', editor.QuestionBank.as_view(), name='quiz_question_bank'),
         path('/new', editor.QuestionCreate.as_view(), name='quiz_question_create'),

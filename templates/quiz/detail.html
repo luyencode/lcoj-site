@@ -1,0 +1,235 @@
+{% extends "common-content.html" %}
+
+{% block media %}
+<style>
+    .quiz-detail-header {
+        margin-bottom: 1.5em;
+    }
+    .quiz-detail-header h2 {
+        margin: 0 0 0.25em;
+        font-size: 1.6em;
+    }
+    .quiz-meta-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1em;
+        margin: 1em 0;
+    }
+    .quiz-meta-item {
+        background: #f8f8f8;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 0.6em 1em;
+        text-align: center;
+        min-width: 100px;
+    }
+    .quiz-meta-item .meta-value {
+        display: block;
+        font-size: 1.4em;
+        font-weight: bold;
+        color: #231f20;
+        line-height: 1.2;
+    }
+    .quiz-meta-item .meta-label {
+        display: block;
+        font-size: 0.75em;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-top: 0.2em;
+    }
+    .quiz-description {
+        border-left: 3px solid #5b80b9;
+        padding: 0.6em 1em;
+        background: #f4f7fb;
+        margin: 1em 0;
+        border-radius: 0 4px 4px 0;
+    }
+    .quiz-action-bar {
+        margin: 1.5em 0;
+        display: flex;
+        align-items: center;
+        gap: 1em;
+        flex-wrap: wrap;
+    }
+    .btn-start-quiz {
+        display: inline-block;
+        padding: 0.65em 1.8em;
+        background: #1958c1;
+        color: #fff !important;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 1em;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .btn-start-quiz:hover {
+        background: #0645ad;
+        color: #fff !important;
+    }
+    .btn-resume-quiz {
+        background: #2a7a2a;
+    }
+    .btn-resume-quiz:hover {
+        background: #1f5c1f;
+    }
+    .quiz-edit-link {
+        color: #5b80b9;
+        font-size: 0.9em;
+    }
+    .quiz-attempts-section {
+        margin-top: 2em;
+    }
+    .quiz-attempts-section h3 {
+        font-size: 1.1em;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 0.4em;
+        margin-bottom: 0.8em;
+    }
+    .quiz-attempts-table td, .quiz-attempts-table th {
+        padding: 6px 10px;
+    }
+    .attempt-in-progress {
+        color: #863;
+        font-style: italic;
+    }
+    .attempt-score {
+        font-weight: bold;
+    }
+    .quiz-login-notice {
+        background: #f4f7fb;
+        border: 1px solid #c9d8f0;
+        border-radius: 4px;
+        padding: 1em 1.5em;
+        color: #444;
+    }
+    .quiz-links {
+        margin-top: 1em;
+        font-size: 0.9em;
+    }
+    .quiz-links a {
+        margin-right: 1em;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="quiz-detail-header">
+    <div class="quiz-links">
+        <a href="{{ url('quiz_ranking', quiz.code) }}">
+            <i class="fa fa-trophy"></i> {{ _('Ranking') }}
+        </a>
+        {% if can_edit %}
+        <a href="{{ url('quiz_edit', quiz.code) }}" class="quiz-edit-link">
+            <i class="fa fa-edit"></i> {{ _('Edit quiz') }}
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if quiz.description %}
+<div class="quiz-description">
+    {{ quiz.description|markdown('default') }}
+</div>
+{% endif %}
+
+<div class="quiz-meta-grid">
+    <div class="quiz-meta-item">
+        <span class="meta-value">{{ question_count }}</span>
+        <span class="meta-label">{{ _('Questions') }}</span>
+    </div>
+    <div class="quiz-meta-item">
+        <span class="meta-value">{{ total_points|floatformat(0) }}</span>
+        <span class="meta-label">{{ _('Points') }}</span>
+    </div>
+    <div class="quiz-meta-item">
+        {% if quiz.time_limit %}
+        <span class="meta-value">{{ quiz.time_limit }}'</span>
+        {% else %}
+        <span class="meta-value"><i class="fa fa-infinity" style="font-size:0.8em"></i></span>
+        {% endif %}
+        <span class="meta-label">{{ _('Time limit') }}</span>
+    </div>
+    <div class="quiz-meta-item">
+        {% if quiz.max_attempts %}
+        <span class="meta-value">{{ quiz.max_attempts }}</span>
+        {% else %}
+        <span class="meta-value">&#8734;</span>
+        {% endif %}
+        <span class="meta-label">{{ _('Max attempts') }}</span>
+    </div>
+</div>
+
+{% if request.user.is_authenticated %}
+    <div class="quiz-action-bar">
+        {% if in_progress %}
+            <form action="{{ url('quiz_start', quiz.code) }}" method="post" style="margin:0">
+                {% csrf_token %}
+                <button type="submit" class="btn-start-quiz btn-resume-quiz">
+                    <i class="fa fa-play"></i> {{ _('Resume attempt') }}
+                </button>
+            </form>
+        {% elif attempts_left is none or attempts_left > 0 %}
+            <form action="{{ url('quiz_start', quiz.code) }}" method="post" style="margin:0">
+                {% csrf_token %}
+                <button type="submit" class="btn-start-quiz">
+                    <i class="fa fa-play"></i> {{ _('Start quiz') }}
+                </button>
+            </form>
+            {% if attempts_left is not none %}
+            <span style="color:#666;font-size:0.9em">
+                ({{ attempts_left }} {{ _('attempt(s) remaining') }})
+            </span>
+            {% endif %}
+        {% else %}
+            <span style="color:#944;font-weight:bold">
+                <i class="fa fa-ban"></i> {{ _('No attempts remaining.') }}
+            </span>
+        {% endif %}
+    </div>
+
+    {% if attempts %}
+    <div class="quiz-attempts-section">
+        <h3>{{ _('Your attempts') }}</h3>
+        <table class="table quiz-attempts-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>{{ _('Started') }}</th>
+                    <th>{{ _('Score') }}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attempt in attempts %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ attempt.started_at|date('DATETIME_FORMAT') }}</td>
+                    <td>
+                        {% if attempt.is_submitted %}
+                            <span class="attempt-score">{{ attempt.score }} / {{ total_points }}</span>
+                        {% else %}
+                            <span class="attempt-in-progress">{{ _('in progress') }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url('quiz_result', quiz.code, attempt.id) if attempt.is_submitted else url('quiz_take', quiz.code, attempt.id) }}">
+                            {{ _('view') if attempt.is_submitted else _('continue') }}
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+{% else %}
+    <div class="quiz-login-notice">
+        <i class="fa fa-lock"></i>
+        {{ _('Please') }} <a href="{{ url('auth_login') }}?next={{ request.get_full_path() }}">{{ _('log in') }}</a>
+        {{ _('to take this quiz.') }}
+    </div>
+{% endif %}
+{% endblock %}

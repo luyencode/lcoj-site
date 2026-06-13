@@ -255,7 +255,7 @@
             <div class="md-pane-preview" style="display:none;"></div>
         </div>
         {% for e in form.content.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
-        <div class="field-hint">{{ _('Supports Markdown — **bold**, *italic*, `code`, $math$') }}</div>
+        <div class="field-hint">{{ _('Supports Markdown — **bold**, *italic*, `code`, ~inline math~, $$display math$$') }}</div>
     </div>
 
     <div class="field-row">
@@ -327,6 +327,13 @@
         <code>3|three</code> — {{ _('matches "3" or "three"') }}<br>
         <code>\d+</code> — {{ _('any sequence of digits') }}<br>
         <code>(?i)(true|yes)</code> — {{ _('case-insensitive True, TRUE, yes, YES') }}
+    </div>
+
+    <div class="field-row" style="margin-top:14px;">
+        <label for="{{ form.answer_display.id_for_label }}">{{ _('Display answer') }}</label>
+        {{ form.answer_display }}
+        <div class="field-hint">{{ _('What students see as "Correct answer" on the result page. Leave blank to show the raw patterns instead.') }}</div>
+        {% for e in form.answer_display.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
     </div>
 </div>
 
@@ -482,7 +489,7 @@ function addSa(val) {
     var div = document.createElement('div');
     div.className = 'sa-row';
     div.innerHTML =
-        '<input type="text" placeholder="{{ _("Regex pattern, e.g.  (?i)python  or  \\\\d+") }}" value="'+esc(val||'')+'">'+
+        '<input type="text" placeholder="{{ _("Regex pattern, e.g.  (?i)python  or  \\d+") }}" value="'+esc(val||'')+'">'+
         '<button type="button" class="del-btn" title="{{ _("Remove") }}">×</button>';
     div.querySelector('.del-btn').addEventListener('click', function() {
         if (document.querySelectorAll('#sa-rows .sa-row').length > 1) div.remove();
@@ -610,7 +617,12 @@ document.querySelectorAll('.md-editor').forEach(function (editor) {
                     body: 'content=' + encodeURIComponent(content),
                 })
                 .then(function (r) { return r.text(); })
-                .then(function (html) { previewPane.innerHTML = html; })
+                .then(function (html) {
+                    previewPane.innerHTML = html;
+                    if (window.MathJax && MathJax.typesetPromise) {
+                        MathJax.typesetPromise([previewPane]);
+                    }
+                })
                 .catch(function () {
                     previewPane.innerHTML = '<span class="md-preview-empty">{{ _("Preview failed.") }}</span>';
                 });

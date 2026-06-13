@@ -78,9 +78,13 @@
                 {% if row.answer is none or row.answer.answer is none %}<i>{{ _('(no answer)') }}</i>
                 {% else %}{{ row.answer.answer }}{% endif %}
             </p>
-            <p>{{ _('Accepted answers') }}:
-                {% for acc in row.question.correct_answers %}{{ acc.text if acc is mapping else acc }}{% if not loop.last %} | {% endif %}{% endfor %}
-            </p>
+            {% if row.question.answer_display %}
+                <p>{{ _('Correct answer') }}: {{ row.question.answer_display }}</p>
+            {% else %}
+                <p>{{ _('Accepted patterns') }}:
+                    {% for acc in row.question.correct_answers %}{{ acc.text if acc is mapping else acc }}{% if not loop.last %} | {% endif %}{% endfor %}
+                </p>
+            {% endif %}
         {% endif %}
 
         {% if row.question.explanation %}

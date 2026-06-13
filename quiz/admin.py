@@ -84,7 +84,7 @@ class QuizQuestionAdmin(admin.ModelAdmin):
                        'ma_grading_strategy'),
         }),
         (_l('Choices & Answer'), {
-            'fields': ('choices', 'correct_answers'),
+            'fields': ('choices', 'correct_answers', 'answer_display'),
         }),
         (_l('Access'), {
             'fields': ('is_public', 'authors', 'curators'),

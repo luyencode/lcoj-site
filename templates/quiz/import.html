@@ -1,0 +1,38 @@
+{% extends "common-content.html" %}
+
+{% block body %}
+{% if preview is defined %}
+    <h3>{{ _('Preview') }}</h3>
+    {% if new_categories %}
+        <p>{{ _('These categories will be created') }}: <b>{{ new_categories|join(', ') }}</b></p>
+    {% endif %}
+    {% for question in preview %}
+        <div style="border:1px solid {{ '#c44' if question.errors else '#ddd' }}; padding:0.8em; margin-bottom:0.8em">
+            <b>{{ _('Row') }} {{ question.row }}: [{{ question.type }}] {{ question.title }}</b>
+            {% if question.errors %}
+                <ul style="color:#c00">{% for error in question.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+            {% else %}
+                <div>{{ question.content|markdown('default') }}</div>
+                {% if question.choices %}<ol>{% for choice in question.choices %}<li>{{ choice }}</li>{% endfor %}</ol>{% endif %}
+            {% endif %}
+        </div>
+    {% endfor %}
+    {% if not has_errors %}
+        <form action="{{ url('quiz_import_confirm') }}" method="post">
+            {% csrf_token %}
+            <button type="submit">{{ _('Confirm import') }}</button>
+        </form>
+    {% else %}
+        <p style="color:#c00">{{ _('Fix the errors above and re-upload. Nothing was imported.') }}</p>
+    {% endif %}
+    <hr>
+{% endif %}
+<h3>{{ _('Upload') }}</h3>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p() }}
+    <button type="submit">{{ _('Upload and preview') }}</button>
+</form>
+<p><a href="{{ url('quiz_import_template') }}">{{ _('Download the XLSX template') }}</a>
+   &mdash; {{ _('or import JSON: a list of objects with type, title, content, choices, correct, category, level, points, explanation, shuffle, ma_strategy.') }}</p>
+{% endblock %}

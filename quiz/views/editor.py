@@ -5,8 +5,10 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 
+from judge.utils.views import TitleMixin
 from quiz.forms import QuestionForm, QuizForm, QuizQuestionLinkFormSet
 from quiz.models import QuestionType, Quiz, QuizCategory, QuizLevel, QuizQuestion
 
@@ -22,10 +24,11 @@ class EditorPermissionMixin(LoginRequiredMixin):
         return super().dispatch(request, *args, **kwargs)
 
 
-class QuestionBank(EditorPermissionMixin, ListView):
+class QuestionBank(TitleMixin, EditorPermissionMixin, ListView):
     template_name = 'quiz/question_bank.html'
     context_object_name = 'questions'
     paginate_by = 50
+    title = gettext_lazy('Question Bank')
 
     def get_queryset(self):
         queryset = QuizQuestion.get_bank_questions(
@@ -53,10 +56,14 @@ class QuestionBank(EditorPermissionMixin, ListView):
         return context
 
 
-class QuestionCreate(EditorPermissionMixin, CreateView):
+class QuestionCreate(TitleMixin, EditorPermissionMixin, CreateView):
     model = QuizQuestion
     form_class = QuestionForm
     template_name = 'quiz/question_form.html'
+    title = gettext_lazy('New Question')
+
+    def get_initial(self):
+        return {'type': QuestionType.MULTIPLE_CHOICE}
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -67,11 +74,14 @@ class QuestionCreate(EditorPermissionMixin, CreateView):
         return reverse('quiz_question_edit', args=(self.object.id,))
 
 
-class QuestionEdit(EditorPermissionMixin, UpdateView):
+class QuestionEdit(TitleMixin, EditorPermissionMixin, UpdateView):
     model = QuizQuestion
     form_class = QuestionForm
     template_name = 'quiz/question_form.html'
     pk_url_kwarg = 'question'
+
+    def get_title(self):
+        return _('Edit Question: %s') % self.object.title
 
     def get_object(self, queryset=None):
         question = get_object_or_404(QuizQuestion, id=self.kwargs['question'])
@@ -97,8 +107,13 @@ class QuizEditorObjectMixin(EditorPermissionMixin):
         return super().dispatch(request, *args, **kwargs)
 
 
-class QuizEdit(QuizEditorObjectMixin, TemplateView):
+class QuizEdit(TitleMixin, QuizEditorObjectMixin, TemplateView):
     template_name = 'quiz/quiz_form.html'
+
+    def get_title(self):
+        if self.quiz:
+            return _('Edit Quiz: %s') % self.quiz.name
+        return gettext_lazy('New Quiz')
 
     def get_forms(self):
         kwargs = {'instance': self.quiz} if self.quiz else {}
@@ -139,8 +154,11 @@ class QuizEdit(QuizEditorObjectMixin, TemplateView):
             self.get_context_data(form=form, formset=formset))
 
 
-class QuizAttempts(QuizEditorObjectMixin, TemplateView):
+class QuizAttempts(TitleMixin, QuizEditorObjectMixin, TemplateView):
     template_name = 'quiz/attempts.html'
+
+    def get_title(self):
+        return _('%s — Attempts') % self.quiz.name
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

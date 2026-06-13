@@ -1,0 +1,98 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Import Questions" %} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:quiz_quizquestion_changelist' %}">{% trans 'Quiz questions' %}</a>
+    &rsaquo; {% trans 'Import' %}
+</div>
+{% endblock %}
+
+{% block content_title %}<h1>{% trans "Import Questions" %}</h1>{% endblock %}
+
+{% block content %}
+{% if messages %}
+<ul class="messagelist">
+    {% for message in messages %}
+    <li class="{{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<div class="module aligned">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <fieldset class="module aligned">
+            <h2>{% trans "Upload file" %}</h2>
+            {% for field in form %}
+            <div class="form-row{% if field.errors %} errors{% endif %}">
+                {{ field.errors }}
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}<p class="help">{{ field.help_text }}</p>{% endif %}
+            </div>
+            {% endfor %}
+        </fieldset>
+        <div class="submit-row">
+            <input type="submit" value="{% trans 'Preview import' %}" class="default">
+            <a href="{% url 'admin:quiz_quizquestion_import_template' %}" class="button">
+                {% trans "Download template" %}
+            </a>
+        </div>
+    </form>
+</div>
+
+{% if preview %}
+<div class="module">
+    <h2>
+        {% if has_errors %}
+            {% trans "Import preview — errors found, fix file and re-upload" %}
+        {% else %}
+            {% blocktrans count n=preview|length %}Preview — {{ n }} question{% plural %}Preview — {{ n }} questions{% endblocktrans %}
+        {% endif %}
+    </h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Row" %}</th>
+                <th>{% trans "Type" %}</th>
+                <th>{% trans "Title" %}</th>
+                <th>{% trans "Category" %}</th>
+                <th>{% trans "Level" %}</th>
+                <th>{% trans "Errors" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for q in preview %}
+            <tr class="{% if q.errors %}errornote{% endif %}">
+                <td>{{ q.row }}</td>
+                <td>{{ q.type }}</td>
+                <td>{{ q.title }}</td>
+                <td>{{ q.category }}</td>
+                <td>{{ q.level }}</td>
+                <td>
+                    {% if q.errors %}
+                        {% for e in q.errors %}<span class="errornote">{{ e }}</span><br>{% endfor %}
+                    {% else %}—{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if not has_errors %}
+    <form method="post" action="{% url 'admin:quiz_quizquestion_import_confirm' %}">
+        {% csrf_token %}
+        <div class="submit-row">
+            <input type="submit" value="{% trans 'Confirm import' %}" class="default">
+            <a href="{% url 'admin:quiz_quizquestion_changelist' %}">{% trans "Cancel" %}</a>
+        </div>
+    </form>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

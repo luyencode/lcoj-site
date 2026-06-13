@@ -73,6 +73,10 @@ class QuizQuestion(models.Model):
     explanation = models.TextField(
         verbose_name=_('explanation'), blank=True,
         help_text=_('Shown on the result page when the quiz allows it.'))
+    answer_display = models.CharField(
+        max_length=500, blank=True, verbose_name=_('answer display'),
+        help_text=_('SA only: human-readable answer shown to students on the '
+                    'result page. Leave blank to show the raw patterns.'))
     category = models.ForeignKey(
         QuizCategory, verbose_name=_('category'), null=True, blank=True,
         on_delete=models.SET_NULL, related_name='questions')
