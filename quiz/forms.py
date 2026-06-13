@@ -119,7 +119,7 @@ class QuizForm(forms.ModelForm):
         model = Quiz
         fields = ('code', 'name', 'description',
                   'time_limit', 'max_attempts', 'shuffle_questions',
-                  'result_feedback',
+                  'result_feedback', 'integrity_monitoring',
                   'is_public', 'is_organization_private', 'organizations',
                   'curators', 'testers')
         widgets = {

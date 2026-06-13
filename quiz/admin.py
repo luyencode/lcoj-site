@@ -12,7 +12,7 @@ from quiz.forms import QuizImportForm
 from quiz.importers import json_fmt, xlsx_fmt
 from quiz.importers.base import ParsedQuestion
 from quiz.models import (Quiz, QuizAnswer, QuizAttempt, QuizCategory,
-                         QuizQuestion, QuizQuestionLink)
+                         QuizQuestion, QuizQuestionLink, QuizViolation)
 
 XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 SESSION_KEY = 'quiz_admin_import_pending'
@@ -236,7 +236,7 @@ class QuizAdmin(admin.ModelAdmin):
         }),
         (_l('Settings'), {
             'fields': ('time_limit', 'max_attempts', 'shuffle_questions',
-                       'result_feedback'),
+                       'result_feedback', 'integrity_monitoring'),
         }),
         (_l('Access'), {
             'fields': ('is_public', 'is_organization_private',
@@ -262,3 +262,13 @@ class QuizAttemptAdmin(admin.ModelAdmin):
     readonly_fields = ('quiz', 'user', 'started_at', 'submitted_at',
                        'score', 'question_order', 'choice_orders')
     inlines = (QuizAnswerInline,)
+
+
+@admin.register(QuizViolation)
+class QuizViolationAdmin(admin.ModelAdmin):
+    list_display = ('attempt', 'type', 'occurred_at')
+    list_filter = ('type',)
+    readonly_fields = ('attempt', 'type', 'occurred_at', 'extra_data')
+
+    def has_add_permission(self, request):
+        return False
