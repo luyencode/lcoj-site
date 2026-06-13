@@ -159,7 +159,7 @@ class QuizViolationLogTest(TestCase):
 
     def test_author_can_view_log(self):
         self.client.force_login(self.teacher)
-        resp = self.client.get(self.log_url)
+        resp = self.client.get(self.log_url, HTTP_ACCEPT_LANGUAGE='en')
         self.assertEqual(resp.status_code, 200)
         data = json.loads(resp.content)
         self.assertEqual(data['attempt_id'], self.attempt.id)

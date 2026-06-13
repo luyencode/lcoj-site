@@ -225,6 +225,18 @@ class ProblemSolution(
         if has_solved_problem:
             return JsonResponse({'revealed': True, 'tracked': False, 'already_revealed': True})
 
+        already_revealed = ProblemEditorialReveal.objects.filter(
+            profile=self.profile, problem=self.object,
+        ).exists()
+        if already_revealed:
+            return JsonResponse({
+                'revealed': True,
+                'tracked': True,
+                'already_revealed': True,
+                'contribution_points': self.profile.contribution_points,
+                'penalty': self.get_editorial_reveal_penalty(),
+            })
+
         if self.profile.contribution_points < 0:
             return JsonResponse({
                 'revealed': False,
