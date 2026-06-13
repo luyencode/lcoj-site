@@ -7973,6 +7973,10 @@ msgstr "Tải thất bại."
 msgid "Edit quiz"
 msgstr "Chỉnh sửa bài kiểm tra"
 
+#: templates/quiz/detail.html:210
+msgid "All attempts"
+msgstr "Tất cả lượt làm"
+
 #: templates/quiz/detail.html:221 templates/quiz/list.html:117
 #: templates/quiz/quiz_form.html:32 templates/quiz/take.html:428
 msgid "Questions"
@@ -8095,7 +8099,7 @@ msgstr "Tìm kỳ thi..."
 
 #: templates/quiz/list.html:94
 msgid "Hide attempted"
-msgstr "code mẫu"
+msgstr "Ẩn đã làm"
 
 #: templates/quiz/list.html:114
 msgid "Quiz"

@@ -205,6 +205,9 @@
         <a href="{{ url('quiz_edit', quiz.code) }}" class="quiz-edit-link">
             <i class="fa fa-edit"></i> {{ _('Edit quiz') }}
         </a>
+        <a href="{{ url('quiz_attempts', quiz.code) }}" class="quiz-edit-link">
+            <i class="fa fa-list"></i> {{ _('All attempts') }}
+        </a>
         {% endif %}
     </div>
 </div>
