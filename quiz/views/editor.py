@@ -179,7 +179,8 @@ class QuizAttempts(TitleMixin, QuizEditorObjectMixin, TemplateView):
 class QuizViolationLog(QuizEditorObjectMixin, View):
     def get(self, request, *args, **kwargs):
         attempt = get_object_or_404(
-            QuizAttempt, id=kwargs['attempt'], quiz=self.quiz)
+            QuizAttempt.objects.select_related('user__user'),
+            id=kwargs['attempt'], quiz=self.quiz)
         violations = attempt.violations.all()
         return JsonResponse({
             'student': attempt.user.user.username,
