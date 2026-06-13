@@ -173,9 +173,9 @@
     }
     .btn-modal-cancel {
         padding: 0.55em 1.2em;
-        border: 1px solid #999;
+        border: 1px solid #bbb;
         border-radius: 4px;
-        background: #fff;
+        background: #f0f0f0;
         color: #444;
         cursor: pointer;
         font-size: 0.95em;
@@ -190,7 +190,7 @@
         font-size: 0.95em;
         font-weight: bold;
     }
-    .btn-modal-cancel:hover { background: #f4f4f4; }
+    .btn-modal-cancel:hover { background: #e0e0e0; }
     .btn-modal-confirm:hover { background: #0645ad; }
 </style>
 {% endblock %}
@@ -325,11 +325,11 @@
             <li>{{ _('PrintScreen key will be recorded') }}</li>
         </ul>
         <p class="notice-footer">
-            {{ _('Violations are visible to the teacher but do <strong>NOT</strong> affect your score.')|safe }}
+            {{ _('Violations are visible to the teacher but do') }} <strong>{{ _('NOT') }}</strong> {{ _('affect your score.') }}
         </p>
         <div class="modal-actions">
-            <button class="btn-modal-cancel" id="integrity-cancel">{{ _('Cancel') }}</button>
-            <button class="btn-modal-confirm" id="integrity-confirm">{{ _('I understand, start →') }}</button>
+            <button type="button" class="btn-modal-cancel" id="integrity-cancel">{{ _('Cancel') }}</button>
+            <button type="button" class="btn-modal-confirm" id="integrity-confirm">{{ _('I understand, start →') }}</button>
         </div>
     </div>
 </div>

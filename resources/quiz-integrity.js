@@ -45,15 +45,24 @@
         }).catch(function () {});
     }
 
+    /* Suppress false positives during quiz submission / page navigation */
+    var submitting = false;
+    window.addEventListener('beforeunload', function () { submitting = true; });
+    document.addEventListener('submit', function () {
+        submitting = true;
+        setTimeout(function () { submitting = false; }, 1000);
+    }, true);
+
     /* Tab switch */
     document.addEventListener('visibilitychange', function () {
-        if (document.hidden) {
+        if (document.hidden && !submitting) {
             record('tab_switch', '⚠ Tab switch detected. This has been recorded.');
         }
     });
 
     /* Window blur */
     window.addEventListener('blur', function () {
+        if (submitting) return;
         record('window_blur', '⚠ Window blur detected. This has been recorded.');
     });
 
