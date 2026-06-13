@@ -1,16 +1,16 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
-from django.http import Http404
+from django.db.models import Count, Q
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
-from django.views.generic import CreateView, ListView, TemplateView, UpdateView
+from django.views.generic import CreateView, ListView, TemplateView, UpdateView, View
 
 from judge.utils.views import TitleMixin
 from quiz.forms import QuestionForm, QuizForm, QuizQuestionLinkFormSet
-from quiz.models import QuestionType, Quiz, QuizCategory, QuizLevel, QuizQuestion
+from quiz.models import QuestionType, Quiz, QuizAttempt, QuizCategory, QuizLevel, QuizQuestion
 
 
 class EditorPermissionMixin(LoginRequiredMixin):
@@ -164,7 +164,9 @@ class QuizAttempts(TitleMixin, QuizEditorObjectMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['quiz'] = self.quiz
         context['attempts'] = self.quiz.attempts.select_related(
-            'user__user').order_by('-started_at')
+            'user__user').annotate(
+            violation_count=Count('violations'),
+        ).order_by('-started_at')
         context['total_points'] = self.quiz.total_points
         return context
 
@@ -172,3 +174,22 @@ class QuizAttempts(TitleMixin, QuizEditorObjectMixin, TemplateView):
         count = self.quiz.regrade_attempts()
         messages.success(request, _('Regraded %d attempts.') % count)
         return redirect('quiz_attempts', quiz=self.quiz.code)
+
+
+class QuizViolationLog(QuizEditorObjectMixin, View):
+    def get(self, request, *args, **kwargs):
+        attempt = get_object_or_404(
+            QuizAttempt, id=kwargs['attempt'], quiz=self.quiz)
+        violations = attempt.violations.all()
+        return JsonResponse({
+            'student': attempt.user.user.username,
+            'attempt_id': attempt.id,
+            'violations': [
+                {
+                    'type': v.type,
+                    'label': v.get_type_display(),
+                    'occurred_at': v.occurred_at.isoformat(),
+                }
+                for v in violations
+            ],
+        })

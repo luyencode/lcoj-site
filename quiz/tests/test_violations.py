@@ -123,3 +123,58 @@ class QuizRecordViolationTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         v = self.attempt.violations.first()
         self.assertEqual(v.extra_data, {'window_delta': 200})
+
+
+class QuizViolationLogTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        from django.utils import timezone
+        cls.student = create_user(username='vl_student')
+        cls.teacher = create_user(
+            username='vl_teacher', user_permissions=('edit_own_quiz',))
+        cls.other_teacher = create_user(
+            username='vl_other', user_permissions=('edit_own_quiz',))
+        cls.q = create_question(title='vlq1')
+        cls.quiz = create_quiz(code='vlquiz', questions=((cls.q, 1.0),))
+        cls.quiz.authors.add(cls.teacher.profile)
+        cls.attempt = QuizAttempt.start(cls.quiz, cls.student.profile)
+        cls.violation = QuizViolation.objects.create(
+            attempt=cls.attempt,
+            type=ViolationType.TAB_SWITCH,
+            occurred_at=timezone.now(),
+            extra_data={},
+        )
+        cls.log_url = reverse('quiz_violation_log', kwargs={
+            'quiz': 'vlquiz', 'attempt': cls.attempt.id})
+
+    def test_student_cannot_view_log(self):
+        self.client.force_login(self.student)
+        resp = self.client.get(self.log_url)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_non_author_editor_cannot_view_log(self):
+        self.client.force_login(self.other_teacher)
+        resp = self.client.get(self.log_url)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_author_can_view_log(self):
+        self.client.force_login(self.teacher)
+        resp = self.client.get(self.log_url)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertEqual(data['attempt_id'], self.attempt.id)
+        self.assertEqual(data['student'], 'vl_student')
+        self.assertEqual(len(data['violations']), 1)
+        self.assertEqual(data['violations'][0]['type'], 'tab_switch')
+        self.assertEqual(data['violations'][0]['label'], 'Tab switch')
+        self.assertIn('occurred_at', data['violations'][0])
+
+    def test_empty_log_returns_empty_list(self):
+        empty_attempt = QuizAttempt.start(self.quiz, self.student.profile)
+        url = reverse('quiz_violation_log', kwargs={
+            'quiz': 'vlquiz', 'attempt': empty_attempt.id})
+        self.client.force_login(self.teacher)
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertEqual(data['violations'], [])

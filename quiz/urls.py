@@ -33,6 +33,7 @@ urlpatterns = [
             path('', student.QuizTake.as_view(), name='quiz_take'),
             path('/save', student.QuizSaveAnswer.as_view(), name='quiz_save'),
             path('/violation', student.QuizRecordViolation.as_view(), name='quiz_violation'),
+            path('/violations', editor.QuizViolationLog.as_view(), name='quiz_violation_log'),
             path('/submit', student.QuizSubmit.as_view(), name='quiz_submit'),
             path('/result', student.QuizResult.as_view(), name='quiz_result'),
         ])),
