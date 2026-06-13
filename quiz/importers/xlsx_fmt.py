@@ -111,12 +111,45 @@ HEADER_NOTES = {
         'Example: if patterns are  (?i)paris , write  Paris  here.'
     ),
     'Level': 'Difficulty — choose from dropdown: Easy, Medium, Hard',
-    'Explanation 1': 'Optional explanation for choice 1, shown to students after submitting.',
-    'Explanation 2': 'Optional explanation for choice 2, shown to students after submitting.',
-    'Explanation 3': 'Optional explanation for choice 3, shown to students after submitting.',
-    'Explanation 4': 'Optional explanation for choice 4, shown to students after submitting.',
-    'Explanation 5': 'Optional explanation for choice 5, shown to students after submitting.',
-    'Explanation 6': 'Optional explanation for choice 6, shown to students after submitting.',
+    'Question': (
+        'Question body shown to students. Markdown is supported:\n'
+        '  **bold**   _italic_   `inline code`   $math$\n'
+        '  Fenced code blocks, tables, and lists are also supported.'
+    ),
+    'Choice 1': 'Choice text for option 1. Markdown is supported (**bold**, _italic_, `code`, etc.).',
+    'Choice 2': 'Choice text for option 2. Markdown is supported (**bold**, _italic_, `code`, etc.).',
+    'Choice 3': 'Choice text for option 3. Markdown is supported (**bold**, _italic_, `code`, etc.).',
+    'Choice 4': 'Choice text for option 4. Markdown is supported (**bold**, _italic_, `code`, etc.).',
+    'Choice 5': 'Choice text for option 5. Markdown is supported (**bold**, _italic_, `code`, etc.).',
+    'Choice 6': 'Choice text for option 6. Markdown is supported (**bold**, _italic_, `code`, etc.).',
+    'Explanation 1': (
+        'Optional per-choice explanation for option 1, shown via a "Why?" toggle after submitting.\n'
+        'Markdown is supported (**bold**, _italic_, `code`, etc.).'
+    ),
+    'Explanation 2': (
+        'Optional per-choice explanation for option 2, shown via a "Why?" toggle after submitting.\n'
+        'Markdown is supported (**bold**, _italic_, `code`, etc.).'
+    ),
+    'Explanation 3': (
+        'Optional per-choice explanation for option 3, shown via a "Why?" toggle after submitting.\n'
+        'Markdown is supported (**bold**, _italic_, `code`, etc.).'
+    ),
+    'Explanation 4': (
+        'Optional per-choice explanation for option 4, shown via a "Why?" toggle after submitting.\n'
+        'Markdown is supported (**bold**, _italic_, `code`, etc.).'
+    ),
+    'Explanation 5': (
+        'Optional per-choice explanation for option 5, shown via a "Why?" toggle after submitting.\n'
+        'Markdown is supported (**bold**, _italic_, `code`, etc.).'
+    ),
+    'Explanation 6': (
+        'Optional per-choice explanation for option 6, shown via a "Why?" toggle after submitting.\n'
+        'Markdown is supported (**bold**, _italic_, `code`, etc.).'
+    ),
+    'Explanation': (
+        'Overall question explanation shown at the bottom of the result page.\n'
+        'Markdown is supported: **bold**, _italic_, `code`, tables, lists, etc.'
+    ),
 }
 
 # 23 columns: A through W

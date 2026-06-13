@@ -10,9 +10,11 @@
     .quiz-choices-result li { padding: 0.3em 0.5em; margin: 0.2em 0; border-radius: 3px; }
     .quiz-choices-result li.choice-correct  { background: #e6f4e6; font-weight: bold; }
     .quiz-choices-result li.choice-selected { outline: 2px solid #666; }
-    details.why-toggle { display: inline-block; margin-left: 0.5em; }
+    .quiz-choices-result li p { margin: 0 !important; }
+    details.why-toggle { display: block; margin-top: 0.2em; }
     details.why-toggle summary { cursor: pointer; color: #666; font-size: 0.88em; }
-    details.why-toggle p { margin: 0.2em 0 0 1em; font-size: 0.9em; color: #444; }
+    details.why-toggle .why-body { margin: 0.2em 0 0 1em; font-size: 0.9em; color: #444; }
+    details.why-toggle .why-body p { margin: 0 !important; }
 </style>
 {% endblock %}
 
@@ -35,10 +37,10 @@
     {% if not reveal_answer %}
         <p>{{ _('Your answer') }}:
             {% if row.answer is none or row.answer.answer is none %}<i>{{ _('(no answer)') }}</i>
-            {% elif row.question.type == 'MC' %}{{ row.question.choices[row.answer.answer]['text'] }}
+            {% elif row.question.type == 'MC' %}{{ row.question.choices[row.answer.answer]['text']|markdown('default', strip_paragraphs=True) }}
             {% elif row.question.type == 'TF' %}{{ _('True') if row.answer.answer == 0 else _('False') }}
             {% elif row.question.type == 'MA' %}
-                {% for idx in row.answer.answer %}{{ row.question.choices[idx]['text'] }}{% if not loop.last %}; {% endif %}{% endfor %}
+                {% for idx in row.answer.answer %}{{ row.question.choices[idx]['text']|markdown('default', strip_paragraphs=True) }}{% if not loop.last %}; {% endif %}{% endfor %}
             {% else %}{{ row.answer.answer }}
             {% endif %}
         </p>
@@ -55,12 +57,12 @@
                 {% set was_selected = row.answer and row.answer.answer is not none and (
                     (row.question.type == 'MC' and row.answer.answer == idx) or
                     (row.question.type == 'MA' and idx in (row.answer.answer or []))) %}
-                <li class="{% if is_correct %}choice-correct{% endif %} {% if was_selected %}choice-selected{% endif %}">
-                    {{ ch['text'] }}
+                <li class="content-description {% if is_correct %}choice-correct{% endif %} {% if was_selected %}choice-selected{% endif %}">
+                    {{ ch['text']|markdown('default') }}
                     {% if ch['explanation'] %}
                         <details class="why-toggle">
                             <summary>{{ _('Why?') }}</summary>
-                            <p>{{ ch['explanation'] }}</p>
+                            <div class="why-body content-description">{{ ch['explanation']|markdown('default') }}</div>
                         </details>
                     {% endif %}
                 </li>

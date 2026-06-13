@@ -13,7 +13,7 @@
                 <ul style="color:#c00">{% for error in question.errors %}<li>{{ error }}</li>{% endfor %}</ul>
             {% else %}
                 <div>{{ question.content|markdown('default') }}</div>
-                {% if question.choices %}<ol>{% for choice in question.choices %}<li>{{ choice }}</li>{% endfor %}</ol>{% endif %}
+                {% if question.choices %}<ol>{% for choice in question.choices %}<li>{{ choice['text']|markdown('default') }}</li>{% endfor %}</ol>{% endif %}
             {% endif %}
         </div>
     {% endfor %}
