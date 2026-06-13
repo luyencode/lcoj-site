@@ -16,11 +16,6 @@ class Migration(migrations.Migration):
             name='integrity_monitoring',
             field=models.BooleanField(default=True, help_text='Track suspicious behavior during this quiz.', verbose_name='integrity monitoring'),
         ),
-        migrations.AlterField(
-            model_name='quiz',
-            name='result_feedback',
-            field=models.CharField(choices=[('score_only', 'Score only'), ('correctness', 'Show correctness (no answer key)'), ('full', 'Show correct answers and explanations')], default='full', help_text='Controls what students see on the result page after submitting. "Score only" — total score, no per-question detail. "Show correctness" — green/red per question, answer key hidden. "Show correct answers and explanations" — full feedback.', max_length=11, verbose_name='result feedback'),
-        ),
         migrations.CreateModel(
             name='QuizViolation',
             fields=[

@@ -196,13 +196,13 @@ class Quiz(models.Model):
         help_text=_('These users can take the quiz while it is private.'))
     questions = models.ManyToManyField(
         QuizQuestion, through='QuizQuestionLink', related_name='quizzes')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     integrity_monitoring = models.BooleanField(
         verbose_name=_('integrity monitoring'),
         default=True,
         help_text=_('Track suspicious behavior during this quiz.'),
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ('-created_at',)
