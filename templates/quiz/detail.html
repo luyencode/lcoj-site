@@ -325,8 +325,7 @@
             <li>{{ _('PrintScreen key will be recorded') }}</li>
         </ul>
         <p class="notice-footer">
-            {{ _('Violations are visible to the teacher but do') }}
-            <strong>{{ _('NOT') }}</strong> {{ _('affect your score.') }}
+            {{ _('Violations are visible to the teacher but do <strong>NOT</strong> affect your score.')|safe }}
         </p>
         <div class="modal-actions">
             <button class="btn-modal-cancel" id="integrity-cancel">{{ _('Cancel') }}</button>
