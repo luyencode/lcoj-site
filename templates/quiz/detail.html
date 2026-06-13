@@ -112,6 +112,86 @@
     .quiz-links a {
         margin-right: 1em;
     }
+    /* ── Integrity modal ────────────────────────────────────── */
+    .integrity-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.55);
+        backdrop-filter: blur(2px);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+    }
+    .integrity-overlay.active {
+        display: flex;
+    }
+    .integrity-modal {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+        max-width: 440px;
+        width: 90%;
+        padding: 2em 2em 1.5em;
+        position: relative;
+    }
+    .integrity-modal-icon {
+        text-align: center;
+        font-size: 2.4em;
+        margin-bottom: 0.4em;
+        color: #d97706;
+    }
+    .integrity-modal h3 {
+        text-align: center;
+        font-size: 1.15em;
+        margin: 0 0 0.8em;
+        color: #1a1a1a;
+    }
+    .integrity-modal p {
+        color: #444;
+        font-size: 0.92em;
+        margin: 0 0 0.8em;
+    }
+    .integrity-modal ul {
+        margin: 0 0 1em 1.2em;
+        padding: 0;
+        color: #444;
+        font-size: 0.92em;
+    }
+    .integrity-modal ul li {
+        margin-bottom: 0.35em;
+    }
+    .integrity-modal .notice-footer {
+        font-size: 0.85em;
+        color: #666;
+        margin-bottom: 1.4em;
+    }
+    .integrity-modal .modal-actions {
+        display: flex;
+        gap: 0.75em;
+        justify-content: flex-end;
+    }
+    .btn-modal-cancel {
+        padding: 0.55em 1.2em;
+        border: 1px solid #999;
+        border-radius: 4px;
+        background: #fff;
+        color: #444;
+        cursor: pointer;
+        font-size: 0.95em;
+    }
+    .btn-modal-confirm {
+        padding: 0.55em 1.4em;
+        border: none;
+        border-radius: 4px;
+        background: #1958c1;
+        color: #fff;
+        cursor: pointer;
+        font-size: 0.95em;
+        font-weight: bold;
+    }
+    .btn-modal-cancel:hover { background: #f4f4f4; }
+    .btn-modal-confirm:hover { background: #0645ad; }
 </style>
 {% endblock %}
 
@@ -231,5 +311,56 @@
         {{ _('Please') }} <a href="{{ url('auth_login') }}?next={{ request.get_full_path() }}">{{ _('log in') }}</a>
         {{ _('to take this quiz.') }}
     </div>
+{% endif %}
+{% if quiz.integrity_monitoring and not in_progress and request.user.is_authenticated %}
+<div class="integrity-overlay" id="integrity-overlay" role="dialog" aria-modal="true">
+    <div class="integrity-modal">
+        <div class="integrity-modal-icon">⚠</div>
+        <h3>{{ _('Academic Integrity Notice') }}</h3>
+        <p>{{ _('This quiz monitors for suspicious behavior. During the attempt:') }}</p>
+        <ul>
+            <li>{{ _('Copying text is disabled') }}</li>
+            <li>{{ _('Tab switches will be recorded') }}</li>
+            <li>{{ _('DevTools open will be recorded') }}</li>
+            <li>{{ _('PrintScreen key will be recorded') }}</li>
+        </ul>
+        <p class="notice-footer">
+            {{ _('Violations are visible to the teacher but do') }}
+            <strong>{{ _('NOT') }}</strong> {{ _('affect your score.') }}
+        </p>
+        <div class="modal-actions">
+            <button class="btn-modal-cancel" id="integrity-cancel">{{ _('Cancel') }}</button>
+            <button class="btn-modal-confirm" id="integrity-confirm">{{ _('I understand, start →') }}</button>
+        </div>
+    </div>
+</div>
+<script>
+(function () {
+    var overlay = document.getElementById('integrity-overlay');
+    var confirmBtn = document.getElementById('integrity-confirm');
+    var cancelBtn = document.getElementById('integrity-cancel');
+    var startForm = document.querySelector('form[action*="start"]');
+
+    if (!startForm || !overlay) return;
+
+    startForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        overlay.classList.add('active');
+    });
+
+    confirmBtn.addEventListener('click', function () {
+        overlay.classList.remove('active');
+        startForm.submit();
+    });
+
+    cancelBtn.addEventListener('click', function () {
+        overlay.classList.remove('active');
+    });
+
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) overlay.classList.remove('active');
+    });
+}());
+</script>
 {% endif %}
 {% endblock %}
