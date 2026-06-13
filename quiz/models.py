@@ -33,15 +33,15 @@ MA_STRATEGY_CHOICES = [
 
 
 class ResultFeedback(models.TextChoices):
-    SCORE_ONLY  = 'score_only',  _('Score only')
+    SCORE_ONLY = 'score_only', _('Score only')
     CORRECTNESS = 'correctness', _('Show correctness (no answer key)')
-    FULL        = 'full',        _('Show correct answers and explanations')
+    FULL = 'full', _('Show correct answers and explanations')
 
 
 class ViolationType(models.TextChoices):
-    TAB_SWITCH   = 'tab_switch',   _('Tab switch')
-    WINDOW_BLUR  = 'window_blur',  _('Window blur')
-    DEVTOOLS     = 'devtools',     _('DevTools opened')
+    TAB_SWITCH = 'tab_switch', _('Tab switch')
+    WINDOW_BLUR = 'window_blur', _('Window blur')
+    DEVTOOLS = 'devtools', _('DevTools opened')
     PRINT_SCREEN = 'print_screen', _('PrintScreen key')
     COPY_ATTEMPT = 'copy_attempt', _('Copy attempt')
 
@@ -174,7 +174,7 @@ class Quiz(models.Model):
             'Controls what students see on the result page after submitting. '
             '"Score only" — total score, no per-question detail. '
             '"Show correctness" — green/red per question, answer key hidden. '
-            '"Show correct answers and explanations" — full feedback.'
+            '"Show correct answers and explanations" — full feedback.',
         ),
     )
     is_public = models.BooleanField(

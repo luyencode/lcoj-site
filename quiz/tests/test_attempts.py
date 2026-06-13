@@ -105,7 +105,7 @@ class QuizAttemptTestCase(TestCase):
         low = create_user(username='rank_low')
         now = timezone.now()
         for user, score, minutes in ((fast, 3.0, 3), (slow, 3.0, 7),
-                                      (low, 1.0, 2)):
+                                     (low, 1.0, 2)):
             attempt = QuizAttempt.start(self.quiz, user.profile)
             attempt.started_at = now
             attempt.score = score

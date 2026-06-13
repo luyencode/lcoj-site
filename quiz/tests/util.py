@@ -1,7 +1,7 @@
 import re as _re
 
 from judge.models.tests.util import create_organization, create_user  # noqa: F401
-from quiz.models import Quiz, QuizCategory, QuizQuestion, QuizQuestionLink
+from quiz.models import Quiz, QuizQuestion, QuizQuestionLink
 
 
 def create_question(title='question', qtype='MC', code=None, **kwargs):

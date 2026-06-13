@@ -3,7 +3,6 @@ import io
 from django.test import TestCase
 
 from quiz.importers import xlsx_fmt
-from quiz.importers.base import ParsedQuestion
 from quiz.tests.util import create_question, create_user
 
 

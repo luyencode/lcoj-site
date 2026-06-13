@@ -70,6 +70,7 @@ HEADER_LABELS = (
     'Answer Display',
 )
 
+
 # Pre-compute column letters (A=0, B=1, ...)
 def _col_letter(header_key):
     return chr(ord('A') + HEADERS.index(header_key))
@@ -173,6 +174,7 @@ COL_WIDTHS = {
 #            ch1, ex1, ch2, ex2, ch3, ex3, ch4, ex4, ch5, ex5, ch6, ex6,
 #            correct, points, category, level, explanation, shuffle, ma_strategy
 
+
 def _mc(code, title, content, choices_expls, correct_1based, points,
         category, level, explanation, shuffle=False):
     """choices_expls: list of (text, explanation) tuples."""
@@ -248,7 +250,7 @@ EXAMPLE_ROWS = (
              '`append()` modifies in place and returns `None`; `+` concatenation creates a new list.'),
         ],
         correct_1based=3, points=1, category='Python Iterables', level='Easy',
-        explanation='`list.append(x)` adds `x` as a single element to the end of the list, regardless of `x`\'s type. To merge all elements of an iterable into the list, use `extend()` instead.',
+        explanation="`list.append(x)` adds `x` as a single element to the end of the list, regardless of `x`'s type. To merge all elements of an iterable into the list, use `extend()` instead.",
         shuffle=True,
     ),
 
@@ -384,12 +386,12 @@ EXAMPLE_ROWS = (
         ),
         choices_expls=[
             ('"A"', '`A.greet` is further up the MRO than `B.greet`; Python searches left-to-right so `B` is checked before `A`.'),
-            ('"B"', '✓ Python\'s C3 linearisation MRO for `C` is `[C, B, A, object]`. The first class that defines `greet` is `B`.'),
+            ('"B"', "✓ Python's C3 linearisation MRO for `C` is `[C, B, A, object]`. The first class that defines `greet` is `B`."),
             ('"C"', '`C` does not define `greet`, so it cannot return `"C"`.'),
             ('An `AttributeError`', '`greet` is inherited from `B`; no `AttributeError` is raised.'),
         ],
         correct_1based=2, points=3, category='Python OOP', level='Hard',
-        explanation='Python uses the C3 linearisation algorithm to compute the MRO. For `class C(B, A)`, the MRO is `C → B → A → object`. Python walks this list left-to-right and calls the first `greet` it finds, which belongs to `B`. You can inspect any class\'s MRO with `C.__mro__`.',
+        explanation="Python uses the C3 linearisation algorithm to compute the MRO. For `class C(B, A)`, the MRO is `C → B → A → object`. Python walks this list left-to-right and calls the first `greet` it finds, which belongs to `B`. You can inspect any class's MRO with `C.__mro__`.",
         shuffle=False,
     ),
 
@@ -463,7 +465,7 @@ EXAMPLE_ROWS = (
         content='Which of the following are **direct or indirect base classes** of `ValueError`?',
         choices_expls=[
             ('`Exception`',    '✓ `ValueError` inherits from `Exception`, the base for all non-system-exiting exceptions.'),
-            ('`BaseException`','✓ `BaseException` is the root of the entire exception hierarchy; every exception is a subclass.'),
+            ('`BaseException`', '✓ `BaseException` is the root of the entire exception hierarchy; every exception is a subclass.'),
             ('`RuntimeError`', '`RuntimeError` and `ValueError` are sibling subclasses of `Exception`; neither inherits from the other.'),
             ('`LookupError`',  '`LookupError` is the base of `KeyError`/`IndexError`, not `ValueError`.'),
             ('`object`',       '✓ In Python, every class ultimately inherits from `object`, including all exceptions.'),
@@ -479,7 +481,7 @@ EXAMPLE_ROWS = (
         content='Which dunder methods should a class implement to support the `+` operator **both ways** (i.e. `a + b` and `b + a` when `b` is a different type)?',
         choices_expls=[
             ('`__add__`',  '✓ `__add__` handles left-hand-side `a + b`; Python calls `a.__add__(b)` first.'),
-            ('`__radd__`', '✓ `__radd__` is the reflected addition, called when the left operand\'s `__add__` returns `NotImplemented`.'),
+            ('`__radd__`', "✓ `__radd__` is the reflected addition, called when the left operand's `__add__` returns `NotImplemented`."),
             ('`__iadd__`', '`__iadd__` handles *in-place* addition (`a += b`), not plain `+` with a foreign type on the left.'),
             ('`__sum__`',  'There is no `__sum__` dunder method in Python; `sum()` uses `__add__` internally.'),
             ('`__pos__`',  '`__pos__` is the unary plus operator (`+a`), not binary addition.'),
@@ -511,7 +513,7 @@ EXAMPLE_ROWS = (
         title='Tuple containing a list is fully immutable',
         content='A tuple that contains a list is fully immutable — neither the tuple nor any of its elements can be changed.',
         correct_bool=False, points=2, category='Python Data Types', level='Medium',
-        explanation='A tuple\'s *references* are immutable — you cannot replace, add, or remove elements from the tuple itself. However, if a tuple element is a mutable object (like a list), that object\'s internal state *can* be changed. For example, `t = ([1, 2],); t[0].append(3)` works fine.',
+        explanation="A tuple's *references* are immutable — you cannot replace, add, or remove elements from the tuple itself. However, if a tuple element is a mutable object (like a list), that object's internal state *can* be changed. For example, `t = ([1, 2],); t[0].append(3)` works fine.",
     ),
 
     _tf(
@@ -519,7 +521,7 @@ EXAMPLE_ROWS = (
         title='Assignment inside function creates local variable',
         content='Without the `global` keyword, assigning to a variable inside a function **always** creates a new local variable, even if a global variable with the same name exists.',
         correct_bool=True, points=2, category='Python Functions', level='Medium',
-        explanation='Python\'s scoping rule (LEGB) means that any assignment inside a function makes that name local to the function by default. Without `global x`, writing `x = value` inside a function shadows the global `x` rather than modifying it. The `global` keyword is needed to rebind a global variable from within a function.',
+        explanation="Python's scoping rule (LEGB) means that any assignment inside a function makes that name local to the function by default. Without `global x`, writing `x = value` inside a function shadows the global `x` rather than modifying it. The `global` keyword is needed to rebind a global variable from within a function.",
     ),
 
     # ── Short Answer (3) ──────────────────────────────────────────────────────
@@ -737,9 +739,9 @@ def _apply_header_style(ws):
     from openpyxl.comments import Comment
     from openpyxl.styles import Alignment, Font, PatternFill
 
-    hdr_font  = Font(bold=True, color='FFFFFF', size=11)
-    hdr_fill  = PatternFill(start_color='1B5E20', end_color='1B5E20',
-                            fill_type='solid')
+    hdr_font = Font(bold=True, color='FFFFFF', size=11)
+    hdr_fill = PatternFill(start_color='1B5E20', end_color='1B5E20',
+                           fill_type='solid')
     hdr_align = Alignment(horizontal='center', vertical='center',
                           wrap_text=True)
 

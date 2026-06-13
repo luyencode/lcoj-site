@@ -1,9 +1,8 @@
 from django import forms
 from django.core.validators import RegexValidator
 from django.forms import inlineformset_factory
-from django.utils.translation import gettext_lazy as _
-
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
 from judge.widgets import HeavySelect2MultipleWidget, HeavySelect2Widget, MartorWidget
 from quiz.importers.base import correct_to_spec, parse_correct_spec

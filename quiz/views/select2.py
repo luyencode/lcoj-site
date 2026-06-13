@@ -18,7 +18,7 @@ class QuizQuestionSelect2View(Select2View):
         return QuizQuestion.get_bank_questions(self.request.user).filter(
             Q(code__icontains=self.term) |
             Q(title__icontains=self.term) |
-            Q(content__icontains=self.term)
+            Q(content__icontains=self.term),
         ).only('id', 'code', 'title', 'type')
 
     def get_name(self, obj):

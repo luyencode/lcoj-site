@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.db import IntegrityError, transaction
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.utils.translation import gettext_lazy
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import FormView, View
 
 from judge.utils.views import TitleMixin
@@ -19,7 +19,7 @@ XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 class QuizImport(TitleMixin, EditorPermissionMixin, FormView):
     form_class = QuizImportForm
     template_name = 'quiz/import.html'
-    title = gettext_lazy('Import Questions')
+    title = _('Import Questions')
 
     def form_valid(self, form):
         uploaded = form.cleaned_data['file']

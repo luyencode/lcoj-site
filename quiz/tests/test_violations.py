@@ -3,7 +3,7 @@ import json
 from django.test import TestCase
 from django.urls import reverse
 
-from quiz.models import Quiz, QuizAttempt, QuizViolation, ViolationType
+from quiz.models import QuizAttempt, QuizViolation, ViolationType
 from quiz.tests.util import create_question, create_quiz, create_user
 
 

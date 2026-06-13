@@ -261,9 +261,9 @@ class QuizEditDynamicFormsetTest(TestCase):
         cls.editor = create_user(
             username='dyneditor', user_permissions=('edit_own_quiz',))
         cls.q1 = create_question(title='dyn q1', code='dynq1',
-                                  authors=(cls.editor.profile,))
+                                 authors=(cls.editor.profile,))
         cls.q2 = create_question(title='dyn q2', code='dynq2',
-                                  authors=(cls.editor.profile,))
+                                 authors=(cls.editor.profile,))
         cls.quiz = create_quiz(code='dynquiz1',
                                questions=((cls.q1, 2.0), (cls.q2, 1.0)))
         cls.quiz.authors.add(cls.editor.profile)
