@@ -36,8 +36,79 @@
     .imp-instr code { background: #e8e8e8; border-radius: 3px; padding: 1px 5px; font-size: 12px; }
     .imp-instr h3 { margin: 14px 0 6px; font-size: 13px; color: #333; }
     .imp-instr .tip-box { background: #f0f4ff; border: 1px solid #c5d0ef; border-radius: 4px; padding: 10px 14px; font-size: 12px; margin-top: 10px; }
+    #btn-copy-md { display:inline-flex; align-items:center; gap:6px; border:1px solid #417690; border-radius:4px; background:#f0f6f9; color:#417690; font-size:12px; font-weight:600; padding:5px 11px; cursor:pointer; }
+    #btn-copy-md:hover { background:#417690; color:#fff; }
+    #btn-copy-md.copied { background:#2a7a40; border-color:#2a7a40; color:#fff; }
     </style>
     <div class="imp-instr">
+
+        <button type="button" id="btn-copy-md">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6z"/><path d="M2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2z"/></svg>
+            {% trans "Copy prompt for Claude.ai" %}
+        </button>
+        <script>
+        (function () {
+            var MD = [
+                "I need quiz questions for this system. Please generate questions following the format below.\n",
+                "**My request:** [Describe your topic, number of questions, and difficulty level here]\n",
+                "---\n",
+                "## Quiz Import Format\n",
+                "Output one question per row. The columns (left to right) are:\n",
+                "| Column | Required | Notes |",
+                "|--------|----------|-------|",
+                "| Code | Yes | Unique ID — lowercase letters + digits only, max 32 chars. E.g. `py101q1` |",
+                "| Type | Yes | `Multiple Choice`, `Multiple Answer`, `True/False`, or `Short Answer` |",
+                "| Title | Yes | Short display title |",
+                "| Question | Yes | Full question text (Markdown supported: bold, code, lists) |",
+                "| Choice 1 | MC/MA | First answer choice (MC and MA need at least 2) |",
+                "| Explanation 1 | No | Why Choice 1 is right or wrong — shown after submission |",
+                "| Choice 2 | MC/MA | Second answer choice |",
+                "| Explanation 2 | No | Why Choice 2 is right or wrong |",
+                "| Choice 3–6 / Explanation 3–6 | No | Up to 6 choices; leave unused columns blank |",
+                "| Correct Answer | Yes | See syntax table below |",
+                "| Points | No | Numeric score. Default: 1 |",
+                "| Category | No | Topic label (created automatically if new) |",
+                "| Level | No | `Easy`, `Medium`, or `Hard`. Default: Easy |",
+                "| Explanation | No | General explanation shown after submission (Markdown ok) |",
+                "| Shuffle Choices | No | `Yes` or `No` |",
+                "| MA Strategy | MA only | `All or nothing`, `Partial credit`, `Right minus wrong`, or `Correct only` |",
+                "| Answer Display | SA only | Human-readable answer shown to students (e.g. `Paris`). Leave blank to show raw patterns. |\n",
+                "## Correct Answer Syntax\n",
+                "| Type | Format | Example |",
+                "|------|--------|---------|",
+                "| Multiple Choice | Choice number (1-based) | `2` |",
+                "| Multiple Answer | Comma-separated numbers | `1,3,5` |",
+                "| True/False | `True` or `False` | `False` |",
+                "| Short Answer | Regex patterns separated by `\\|` | `(?i)paris \\| (?i)paris france` |\n",
+                "## Short Answer Regex Tips\n",
+                "- `(?i)` prefix = case-insensitive (recommended for most text answers)",
+                "- `\\d+` = one or more digits",
+                "- `\\w+` = one or more word characters",
+                "- Use `|` to accept alternative forms: `(?i)python | (?i)py`",
+                "- Set **Answer Display** to the clean readable answer (e.g. `Paris`) so students see it on the result page.\n",
+                "## Output Instructions\n",
+                "- Output a **Markdown table** with all columns in the order listed above.",
+                "- One question per row.",
+                "- Leave cells blank (empty) when a column does not apply.",
+                "- For choice explanations: mark the correct one with ✓ and briefly explain why wrong ones are incorrect.",
+                "- After the table, list any assumptions you made about the topic.\n"
+            ].join("\n");
+
+            document.getElementById('btn-copy-md').addEventListener('click', function () {
+                var btn = this;
+                navigator.clipboard.writeText(MD).then(function () {
+                    btn.classList.add('copied');
+                    btn.querySelector('svg').style.display = 'none';
+                    btn.childNodes[btn.childNodes.length - 1].textContent = ' Copied!';
+                    setTimeout(function () {
+                        btn.classList.remove('copied');
+                        btn.querySelector('svg').style.display = '';
+                        btn.childNodes[btn.childNodes.length - 1].textContent = ' {% trans "Copy prompt for Claude.ai" %}';
+                    }, 2500);
+                });
+            });
+        })();
+        </script>
 
         <h3>{% trans "Spreadsheet columns" %}</h3>
         <table>
