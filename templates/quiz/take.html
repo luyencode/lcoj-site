@@ -519,7 +519,13 @@ window.quizConfig = {
         var msg = unanswered > 0
             ? '{{ _("You have") }} ' + unanswered + ' {{ _("unanswered question(s).") }}\n{{ _("Submit the quiz now?") }}'
             : '{{ _("Submit the quiz now?") }}';
-        if (confirm(msg)) {
+        // Suppress the window.blur that fires when the confirm dialog steals focus.
+        // The blur event is queued while JS is paused inside confirm(); setTimeout(0)
+        // runs after that queued event, so the flag stays true long enough to suppress it.
+        window.quizConfirmOpen = true;
+        var ok = confirm(msg);
+        setTimeout(function () { window.quizConfirmOpen = false; }, 0);
+        if (ok) {
             document.getElementById('quiz-submit-form').submit();
         }
     }

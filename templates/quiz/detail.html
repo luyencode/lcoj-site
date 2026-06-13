@@ -228,7 +228,7 @@
         {% if quiz.time_limit %}
         <span class="meta-value">{{ quiz.time_limit }}'</span>
         {% else %}
-        <span class="meta-value"><i class="fa fa-infinity" style="font-size:0.8em"></i></span>
+        <span class="meta-value">&#8734;</span>
         {% endif %}
         <span class="meta-label">{{ _('Time limit') }}</span>
     </div>
@@ -296,7 +296,7 @@
                     </td>
                     <td>
                         <a href="{{ url('quiz_result', quiz.code, attempt.id) if attempt.is_submitted else url('quiz_take', quiz.code, attempt.id) }}">
-                            {{ _('view') if attempt.is_submitted else _('continue') }}
+                            {{ _('view') if attempt.is_submitted else _('Continue') }}
                         </a>
                     </td>
                 </tr>
@@ -317,15 +317,15 @@
     <div class="integrity-modal">
         <div class="integrity-modal-icon">⚠</div>
         <h3>{{ _('Academic Integrity Notice') }}</h3>
-        <p>{{ _('This quiz monitors for suspicious behavior. During the attempt:') }}</p>
+        <p>{{ _('To ensure a fair exam, please follow these rules during the attempt:') }}</p>
         <ul>
-            <li>{{ _('Copying text is disabled') }}</li>
-            <li>{{ _('Tab switches will be recorded') }}</li>
-            <li>{{ _('DevTools open will be recorded') }}</li>
-            <li>{{ _('PrintScreen key will be recorded') }}</li>
+            <li>{{ _('Stay on this tab — do not switch to other tabs or windows') }}</li>
+            <li>{{ _('Do not take screenshots or photograph the screen') }}</li>
+            <li>{{ _('Do not open DevTools or use browser extensions') }}</li>
+            <li>{{ _('Do not copy questions or share answers with others') }}</li>
         </ul>
         <p class="notice-footer">
-            {{ _('Violations are visible to the teacher but do') }} <strong>{{ _('NOT') }}</strong> {{ _('affect your score.') }}
+            {{ _('Suspicious activity is visible to the teacher but does') }} <strong>{{ _('NOT') }}</strong> {{ _('affect your score.') }}
         </p>
         <div class="modal-actions">
             <button type="button" class="btn-modal-cancel" id="integrity-cancel">{{ _('Cancel') }}</button>
@@ -354,10 +354,14 @@
 
     cancelBtn.addEventListener('click', function () {
         overlay.classList.remove('active');
+        startForm.querySelector('button[type="submit"]').disabled = false;
     });
 
     overlay.addEventListener('click', function (e) {
-        if (e.target === overlay) overlay.classList.remove('active');
+        if (e.target === overlay) {
+            overlay.classList.remove('active');
+            startForm.querySelector('button[type="submit"]').disabled = false;
+        }
     });
 }());
 </script>

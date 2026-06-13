@@ -62,7 +62,7 @@
 
     /* Window blur */
     window.addEventListener('blur', function () {
-        if (submitting) return;
+        if (submitting || window.quizConfirmOpen) return;
         record('window_blur', '⚠ Window blur detected. This has been recorded.');
     });
 
