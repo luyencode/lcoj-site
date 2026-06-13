@@ -38,6 +38,14 @@ class ResultFeedback(models.TextChoices):
     FULL        = 'full',        _('Show correct answers and explanations')
 
 
+class ViolationType(models.TextChoices):
+    TAB_SWITCH   = 'tab_switch',   _('Tab switch')
+    WINDOW_BLUR  = 'window_blur',  _('Window blur')
+    DEVTOOLS     = 'devtools',     _('DevTools opened')
+    PRINT_SCREEN = 'print_screen', _('PrintScreen key')
+    COPY_ATTEMPT = 'copy_attempt', _('Copy attempt')
+
+
 class QuizCategory(models.Model):
     name = models.CharField(max_length=100, verbose_name=_('name'), unique=True)
     slug = models.SlugField(max_length=100, verbose_name=_('slug'), unique=True)
@@ -190,6 +198,11 @@ class Quiz(models.Model):
         QuizQuestion, through='QuizQuestionLink', related_name='quizzes')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    integrity_monitoring = models.BooleanField(
+        verbose_name=_('integrity monitoring'),
+        default=True,
+        help_text=_('Track suspicious behavior during this quiz.'),
+    )
 
     class Meta:
         ordering = ('-created_at',)
@@ -403,3 +416,21 @@ class QuizAnswer(models.Model):
         unique_together = ('attempt', 'question')
         verbose_name = _('quiz answer')
         verbose_name_plural = _('quiz answers')
+
+
+class QuizViolation(models.Model):
+    attempt = models.ForeignKey(
+        QuizAttempt, on_delete=models.CASCADE, related_name='violations')
+    type = models.CharField(
+        max_length=20, choices=ViolationType.choices)
+    occurred_at = models.DateTimeField()
+    extra_data = models.JSONField(default=dict)
+
+    class Meta:
+        ordering = ['occurred_at']
+        indexes = [models.Index(fields=['attempt'])]
+        verbose_name = _('quiz violation')
+        verbose_name_plural = _('quiz violations')
+
+    def __str__(self):
+        return '%s — %s' % (self.attempt, self.get_type_display())
