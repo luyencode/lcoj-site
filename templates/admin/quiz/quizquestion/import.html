@@ -86,12 +86,15 @@
                 "- `\\w+` = one or more word characters",
                 "- Use `|` to accept alternative forms: `(?i)python | (?i)py`",
                 "- Set **Answer Display** to the clean readable answer (e.g. `Paris`) so students see it on the result page.\n",
-                "## Output Instructions\n",
-                "- Output a **Markdown table** with all columns in the order listed above.",
-                "- One question per row.",
-                "- Leave cells blank (empty) when a column does not apply.",
-                "- For choice explanations: mark the correct one with ✓ and briefly explain why wrong ones are incorrect.",
-                "- After the table, list any assumptions you made about the topic.\n"
+                "## What to do\n",
+                "I have attached the XLSX template file. Please:\n",
+                "1. Read the attached template (it already has styled headers and example rows).",
+                "2. Generate the questions described above — follow the column format exactly.",
+                "3. Use Python with `openpyxl` to **append the new question rows** after the existing example rows in the template.",
+                "   - Keep all existing rows (headers + examples) intact.",
+                "   - Leave a cell empty when a column does not apply to that question type.",
+                "   - For choice explanations, mark the correct choice with ✓ and briefly explain why wrong choices are incorrect.",
+                "4. Save the workbook and **output the completed XLSX file** so I can download and import it directly."
             ].join("\n");
 
             document.getElementById('btn-copy-md').addEventListener('click', function () {
