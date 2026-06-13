@@ -181,185 +181,353 @@ def _sa(code, title, content, patterns, points, category, level, explanation,
     return tuple(row)
 
 
-# ── Example questions (diverse topics) ───────────────────────────────────────
+# ── Example questions: Python programming (20 questions, all types) ───────────
 
 EXAMPLE_ROWS = (
-    # ── Multiple Choice ───────────────────────────────────────────────────────
+    # ── Multiple Choice: Easy (3) ─────────────────────────────────────────────
     _mc(
-        code='pylistlen',
-        title='Python – list length',
-        content='What is the output of `len([1, 2, 3, 4, 5])`?',
+        code='pymcfloordiv',
+        title='Floor division operator result',
+        content='What is the result of `7 // 2` in Python?',
         choices_expls=[
-            ('3', 'Incorrect — 3 is the length of [1, 2, 3], not a 5-element list.'),
-            ('4', 'Incorrect — off by one; the list contains 5 elements.'),
-            ('5', '✓ `len()` returns the number of items in the list, which is 5.'),
-            ('6', 'Incorrect — there is no hidden element; the list has exactly 5 items.'),
+            ('3.5', 'This is regular division (`7 / 2`), not floor division.'),
+            ('3',   '✓ Floor division (`//`) divides and truncates toward negative infinity, giving 3.'),
+            ('4',   'Rounding up would give 4, but floor division always rounds toward negative infinity.'),
+            ('2',   'This would be the remainder (`7 % 2`), not the quotient.'),
         ],
-        correct_1based=3, points=1, category='Python Basics', level='Easy',
-        explanation='`len(sequence)` returns the number of items. `[1, 2, 3, 4, 5]` has 5 items, so the answer is **5**.',
+        correct_1based=2, points=1, category='Python Basics', level='Easy',
+        explanation='The `//` operator performs floor division, which divides two numbers and truncates the result toward negative infinity. `7 // 2` equals 3 because 7 divided by 2 is 3.5, and the floor of 3.5 is 3.',
         shuffle=True,
     ),
 
     _mc(
-        code='pystrmethod',
-        title='Python – uppercase method',
-        content='Which method converts a string to **all uppercase** letters?',
+        code='pymclistappend',
+        title='list.append() vs list.extend()',
+        content='What does `my_list.append([4, 5])` do when `my_list = [1, 2, 3]`?',
         choices_expls=[
-            ('str.lower()', 'Incorrect — `lower()` converts to all lowercase.'),
-            ('str.capitalize()', 'Incorrect — `capitalize()` only uppercases the first character.'),
-            ('str.title()', 'Incorrect — `title()` uppercases the first letter of each word.'),
-            ('str.upper()', '✓ `upper()` returns a copy of the string with all characters converted to uppercase.'),
+            ('Adds 4 and 5 as separate elements, making `my_list` have 5 elements',
+             'This describes `extend()`, not `append()`. `extend()` iterates and adds each item separately.'),
+            ('Raises a `TypeError` because you cannot append a list to a list',
+             'Python allows appending any object, including lists, to a list.'),
+            ('Adds `[4, 5]` as a single element, making `my_list` have 4 elements',
+             '✓ `append()` always adds exactly one object to the end; the list `[4, 5]` becomes a nested element.'),
+            ('Concatenates the lists and returns a new list `[1, 2, 3, 4, 5]`',
+             '`append()` modifies in place and returns `None`; `+` concatenation creates a new list.'),
         ],
-        correct_1based=4, points=1, category='Python Basics', level='Easy',
-        explanation='`str.upper()` returns a new string with every character converted to its uppercase equivalent, e.g. `"hello".upper()` → `"HELLO"`.',
+        correct_1based=3, points=1, category='Python Iterables', level='Easy',
+        explanation='`list.append(x)` adds `x` as a single element to the end of the list, regardless of `x`\'s type. To merge all elements of an iterable into the list, use `extend()` instead.',
         shuffle=True,
     ),
 
     _mc(
-        code='pydictget',
-        title='Python – dict.get() with default',
-        content='Given `d = {"a": 1, "b": 2}`, what does `d.get("c", 99)` return?',
+        code='pymcstrtype',
+        title='Type of a string literal',
+        content='What is the type of `"42"` in Python?',
         choices_expls=[
-            ('None', 'Incorrect — `None` is returned by `d.get("c")` with no default, but a default of 99 is provided here.'),
-            ('KeyError', 'Incorrect — `dict.get()` never raises `KeyError`; that is its purpose.'),
-            ('99', '✓ When the key is absent, `get()` returns the supplied default value, which is 99.'),
-            ('0', 'Incorrect — 0 is not the default; the caller explicitly passed 99.'),
+            ('`int`',   '`int` represents integer numbers. `"42"` has quotes, making it text, not a number.'),
+            ('`float`', '`float` represents decimal numbers. Quotes make this a string regardless of content.'),
+            ('`str`',   '✓ Any value enclosed in single or double quotes is a `str` (string) object in Python.'),
+            ('`bytes`', '`bytes` literals use a `b` prefix, e.g. `b"42"`. Plain quotes produce a `str`.'),
         ],
-        correct_1based=3, points=1, category='Python Basics', level='Easy',
-        explanation='`dict.get(key, default)` returns `default` (here `99`) when `key` is not found, instead of raising a `KeyError`.',
-        shuffle=True,
-    ),
-
-    _mc(
-        code='mathtrianglearea',
-        title='Math – area of a triangle',
-        content='What is the area of a triangle with **base = 8** and **height = 5**?',
-        choices_expls=[
-            ('13', 'Incorrect — 13 = 8 + 5; you added instead of using the area formula.'),
-            ('40', 'Incorrect — 40 = 8 × 5; you forgot to multiply by ½.'),
-            ('20', '✓ Area = ½ × base × height = ½ × 8 × 5 = **20**.'),
-            ('80', 'Incorrect — 80 = 2 × 8 × 5; the factor should be ½, not 2.'),
-        ],
-        correct_1based=3, points=1, category='Mathematics', level='Easy',
-        explanation='The area of a triangle is **½ × base × height**. Here: ½ × 8 × 5 = **20** square units.',
-        shuffle=True,
-    ),
-
-    _mc(
-        code='httpnotfound',
-        title='HTTP – 404 status code',
-        content='Which HTTP status code indicates that the requested resource was **not found** on the server?',
-        choices_expls=[
-            ('200', 'Incorrect — 200 OK means the request succeeded.'),
-            ('301', 'Incorrect — 301 Moved Permanently is a redirect status.'),
-            ('403', 'Incorrect — 403 Forbidden means the server refused to authorize the request.'),
-            ('404', '✓ 404 Not Found means the server could not locate the requested resource.'),
-        ],
-        correct_1based=4, points=1, category='Web / HTTP', level='Easy',
-        explanation='**404 Not Found** is returned when the server cannot find the resource matching the URL.',
+        correct_1based=3, points=1, category='Python Data Types', level='Easy',
+        explanation='In Python, any value enclosed in single quotes (`\'...\'`) or double quotes (`"..."`) is a `str` object. The fact that the content looks numeric is irrelevant — the quotes determine the type.',
         shuffle=False,
     ),
 
-    # ── Multiple Answer ───────────────────────────────────────────────────────
-    _ma(
-        code='pymutabletypes',
-        title='Python – mutable built-in types',
-        content='Which of the following Python built-in types are **mutable**? Select all that apply.',
+    # ── Multiple Choice: Medium (3) ───────────────────────────────────────────
+    _mc(
+        code='pymcdefaultarg',
+        title='Mutable default argument pitfall',
+        content=(
+            'What is printed by the following code?\n\n'
+            '```python\n'
+            'def add_item(item, lst=[]):\n'
+            '    lst.append(item)\n'
+            '    return lst\n\n'
+            'print(add_item(1))\n'
+            'print(add_item(2))\n'
+            '```'
+        ),
         choices_expls=[
-            ('list', '✓ Lists are mutable — elements can be added, removed, or changed in place.'),
-            ('tuple', 'Incorrect — tuples are immutable; their contents cannot be changed after creation.'),
-            ('dict', '✓ Dictionaries are mutable — key-value pairs can be added, updated, or deleted.'),
-            ('str', 'Incorrect — strings are immutable; operations return new string objects.'),
-            ('set', '✓ Sets are mutable — elements can be added or removed (unlike `frozenset`).'),
+            ('[1]\n[2]',
+             'This would be correct if `lst` were re-created on each call, but mutable defaults are shared across calls.'),
+            ('[1]\n[1, 2]',
+             '✓ The default list `[]` is created once when the function is defined and reused on every call that omits `lst`, so mutations accumulate.'),
+            ('[1]\n[2, 1]',
+             'Items are appended in call order; there is no reversal here.'),
+            ('A `TypeError` is raised on the second call',
+             'The code is syntactically and semantically valid Python; no error is raised.'),
         ],
-        correct_csv='1,3,5', points=2, category='Python Basics', level='Medium',
-        explanation='**Mutable** types can be modified after creation: `list`, `dict`, and `set`. **Immutable** types cannot: `tuple`, `str`, `int`, `float`, `frozenset`.',
+        correct_1based=2, points=2, category='Python Functions', level='Medium',
+        explanation='Mutable default arguments (like `[]` or `{}`) are evaluated **once** when the `def` statement runs, not on every call. All calls that rely on the default share the same object, so mutations persist between calls. The fix is to use `None` as the default and create a new list inside the function body.',
+        shuffle=False,
+    ),
+
+    _mc(
+        code='pymcisinstance',
+        title='isinstance() with inheritance',
+        content=(
+            'Given:\n\n'
+            '```python\n'
+            'class Animal: pass\n'
+            'class Dog(Animal): pass\n'
+            'd = Dog()\n'
+            '```\n\n'
+            'Which expression evaluates to `True`?'
+        ),
+        choices_expls=[
+            ('`type(d) is Animal`',
+             '`type()` returns the exact class; `d` is exactly a `Dog`, not an `Animal`, so this is `False`.'),
+            ('`type(d) is Dog`',
+             'This is `True`, but `isinstance(d, Animal)` is more informative — it covers the full inheritance chain.'),
+            ('`isinstance(d, Animal)`',
+             '✓ `isinstance()` checks the full MRO; since `Dog` inherits from `Animal`, `d` is an instance of both.'),
+            ('`isinstance(d, str)`',
+             '`d` is a `Dog`; it has no relationship to `str`, so this is `False`.'),
+        ],
+        correct_1based=3, points=2, category='Python OOP', level='Medium',
+        explanation='`isinstance(obj, cls)` returns `True` if `obj` is an instance of `cls` *or any subclass thereof*. Because `Dog` inherits from `Animal`, `isinstance(d, Animal)` is `True`. By contrast, `type(d) is Animal` returns `False` because `type()` checks for exact class identity.',
+        shuffle=False,
+    ),
+
+    _mc(
+        code='pymcgenexpr',
+        title='Generator expression vs comprehension',
+        content='Which of the following creates a **generator** (lazy iterator) rather than building the full sequence in memory?',
+        choices_expls=[
+            ('`[x**2 for x in range(10)]`',
+             'Square brackets produce a **list comprehension**, which evaluates all elements immediately.'),
+            ('`{x**2 for x in range(10)}`',
+             'Curly braces without a colon produce a **set comprehension**, not a generator.'),
+            ('`(x**2 for x in range(10))`',
+             '✓ Parentheses (without an outer function call) produce a **generator expression** — a lazy iterator that yields values one at a time.'),
+            ('`tuple(x**2 for x in range(10))`',
+             '`tuple()` *consumes* the generator and materialises all values into memory; the result is not a generator.'),
+        ],
+        correct_1based=3, points=2, category='Python Iterables', level='Medium',
+        explanation='A generator expression uses parentheses `(expr for var in iterable)` and returns a generator object that yields values lazily. List `[...]`, set `{...}`, and dict `{k:v ...}` comprehensions all materialise their results immediately.',
+        shuffle=False,
+    ),
+
+    # ── Multiple Choice: Hard (3) ─────────────────────────────────────────────
+    _mc(
+        code='pymcclosureval',
+        title='Closure late-binding behaviour',
+        content=(
+            'What does the following code print?\n\n'
+            '```python\n'
+            'funcs = [lambda: i for i in range(3)]\n'
+            'print([f() for f in funcs])\n'
+            '```'
+        ),
+        choices_expls=[
+            ('[0, 1, 2]',
+             'This would be correct if each lambda captured the *value* of `i` at creation time, but Python closures capture the *variable*, not its value.'),
+            ('[2, 2, 2]',
+             '✓ All three lambdas close over the same variable `i`. By the time they are called, the loop has finished and `i` is 2, so every lambda returns 2.'),
+            ('[0, 0, 0]',
+             'Closures do not freeze the initial value of the variable; they reference it dynamically.'),
+            ('A `NameError` because `i` is out of scope',
+             'The loop variable `i` persists in the enclosing scope after the loop ends; no `NameError` occurs.'),
+        ],
+        correct_1based=2, points=3, category='Python Functions', level='Hard',
+        explanation='Python closures capture variables by *reference*, not by value. All three lambdas share the same `i` variable from the enclosing scope. After the `for` loop completes, `i` equals 2, so every call to `f()` returns 2. The classic fix is to use a default argument: `lambda i=i: i`.',
+        shuffle=False,
+    ),
+
+    _mc(
+        code='pymcmroorder',
+        title='MRO method resolution order',
+        content=(
+            'Given the following class hierarchy, what does `C().greet()` print?\n\n'
+            '```python\n'
+            'class A:\n'
+            '    def greet(self): return "A"\n\n'
+            'class B(A):\n'
+            '    def greet(self): return "B"\n\n'
+            'class C(B, A):\n'
+            '    pass\n'
+            '```'
+        ),
+        choices_expls=[
+            ('"A"', '`A.greet` is further up the MRO than `B.greet`; Python searches left-to-right so `B` is checked before `A`.'),
+            ('"B"', '✓ Python\'s C3 linearisation MRO for `C` is `[C, B, A, object]`. The first class that defines `greet` is `B`.'),
+            ('"C"', '`C` does not define `greet`, so it cannot return `"C"`.'),
+            ('An `AttributeError`', '`greet` is inherited from `B`; no `AttributeError` is raised.'),
+        ],
+        correct_1based=2, points=3, category='Python OOP', level='Hard',
+        explanation='Python uses the C3 linearisation algorithm to compute the MRO. For `class C(B, A)`, the MRO is `C → B → A → object`. Python walks this list left-to-right and calls the first `greet` it finds, which belongs to `B`. You can inspect any class\'s MRO with `C.__mro__`.',
+        shuffle=False,
+    ),
+
+    _mc(
+        code='pymcdescriptor',
+        title='Property vs instance __dict__ priority',
+        content=(
+            'What does the following print?\n\n'
+            '```python\n'
+            'class Circle:\n'
+            '    def __init__(self, r):\n'
+            '        self.__dict__["radius"] = r\n\n'
+            '    @property\n'
+            '    def radius(self):\n'
+            '        return self.__dict__["radius"] * 2\n\n'
+            'c = Circle(5)\n'
+            'print(c.radius)\n'
+            '```'
+        ),
+        choices_expls=[
+            ('5',
+             'If the instance `__dict__` shadowed the property, you would get 5, but data descriptors take priority.'),
+            ('10',
+             '✓ A `property` is a data descriptor; it takes precedence over same-named keys in `__dict__`. The getter runs and returns `5 * 2 = 10`.'),
+            ('An `AttributeError`',
+             'Storing directly into `__dict__` bypasses the descriptor protocol for *setting*, so no error occurs during `__init__`.'),
+            ('An infinite recursion error',
+             'The getter reads from `__dict__` directly with `self.__dict__["radius"]`, avoiding recursive property access.'),
+        ],
+        correct_1based=2, points=3, category='Python OOP', level='Hard',
+        explanation='In Python\'s descriptor protocol, **data descriptors** (objects defining both `__get__` and `__set__`, like `property`) take priority over instance `__dict__` entries with the same name. So `c.radius` always invokes the getter even though `__dict__["radius"]` was set directly. The getter returns `5 * 2 = 10`.',
+        shuffle=False,
+    ),
+
+    # ── Multiple Answer (4, one of each MA strategy) ──────────────────────────
+    _ma(
+        code='pymabuiltins',
+        title='Built-in functions that return iterators',
+        content='Which of the following built-in functions return a **lazy iterator** (not a list) in Python 3?',
+        choices_expls=[
+            ('`map()`',    '✓ In Python 3, `map()` returns a map object (lazy iterator), not a list.'),
+            ('`filter()`', '✓ In Python 3, `filter()` returns a filter object (lazy iterator), not a list.'),
+            ('`sorted()`', '`sorted()` always returns a new `list`; it is never lazy.'),
+            ('`zip()`',    '✓ `zip()` returns a zip object (lazy iterator) that yields tuples on demand.'),
+            ('`list()`',   '`list()` consumes an iterable and returns a fully materialised list immediately.'),
+        ],
+        correct_csv='1,2,4', points=2, category='Python Iterables', level='Medium',
+        explanation='In Python 3, `map()`, `filter()`, and `zip()` all return lazy iterator objects that produce values one at a time. `sorted()` and `list()` always materialise their results into a list.',
         strategy='Partial credit',
     ),
 
     _ma(
-        code='httpsafemethods',
-        title='HTTP – safe request methods',
-        content='Which of the following HTTP methods are **safe** (i.e. they must not modify server state)? Select all that apply.',
+        code='pymaimutset',
+        title='Immutable types in Python',
+        content='Which of the following Python types are **immutable** (cannot be changed after creation)?',
         choices_expls=[
-            ('GET', '✓ GET retrieves a resource without modifying it.'),
-            ('POST', 'Incorrect — POST submits data that typically creates or modifies a resource.'),
-            ('HEAD', '✓ HEAD is identical to GET but returns only headers; no state change.'),
-            ('PUT', 'Incorrect — PUT replaces a resource and modifies server state.'),
-            ('OPTIONS', '✓ OPTIONS describes communication options without modifying state.'),
-            ('DELETE', 'Incorrect — DELETE removes a resource and is not safe.'),
+            ('`tuple`',     '✓ Tuples cannot be modified after creation; any "modification" produces a new tuple.'),
+            ('`list`',      '`list` is mutable — elements can be added, removed, or reassigned in place.'),
+            ('`frozenset`', '✓ `frozenset` is the immutable counterpart of `set`; it supports no add/remove operations.'),
+            ('`str`',       '✓ Strings are immutable; operations like `s.upper()` always return a *new* string.'),
+            ('`dict`',      '`dict` is mutable; keys and values can be added, removed, or updated.'),
         ],
-        correct_csv='1,3,5', points=2, category='Web / HTTP', level='Medium',
-        explanation='RFC 9110 defines **safe methods** as read-only: **GET**, **HEAD**, and **OPTIONS**. POST, PUT, PATCH, and DELETE modify state.',
+        correct_csv='1,3,4', points=2, category='Python Data Types', level='Medium',
+        explanation='Immutable types cannot be modified after creation: `tuple`, `frozenset`, `str`, `int`, `float`, and `bytes`. Mutable types (`list`, `dict`, `set`) support in-place modification.',
         strategy='All or nothing',
     ),
 
-    # ── True / False ──────────────────────────────────────────────────────────
+    _ma(
+        code='pymaexcbase',
+        title='Base classes of ValueError',
+        content='Which of the following are **direct or indirect base classes** of `ValueError`?',
+        choices_expls=[
+            ('`Exception`',    '✓ `ValueError` inherits from `Exception`, the base for all non-system-exiting exceptions.'),
+            ('`BaseException`','✓ `BaseException` is the root of the entire exception hierarchy; every exception is a subclass.'),
+            ('`RuntimeError`', '`RuntimeError` and `ValueError` are sibling subclasses of `Exception`; neither inherits from the other.'),
+            ('`LookupError`',  '`LookupError` is the base of `KeyError`/`IndexError`, not `ValueError`.'),
+            ('`object`',       '✓ In Python, every class ultimately inherits from `object`, including all exceptions.'),
+        ],
+        correct_csv='1,2,5', points=3, category='Python Exceptions', level='Hard',
+        explanation='The MRO for `ValueError` is: `ValueError → Exception → BaseException → object`. `RuntimeError` and `LookupError` are *siblings* (both inherit from `Exception`) but are not ancestors of `ValueError`.',
+        strategy='Right minus wrong',
+    ),
+
+    _ma(
+        code='pymadunder',
+        title='Dunder methods for two-way + support',
+        content='Which dunder methods should a class implement to support the `+` operator **both ways** (i.e. `a + b` and `b + a` when `b` is a different type)?',
+        choices_expls=[
+            ('`__add__`',  '✓ `__add__` handles left-hand-side `a + b`; Python calls `a.__add__(b)` first.'),
+            ('`__radd__`', '✓ `__radd__` is the reflected addition, called when the left operand\'s `__add__` returns `NotImplemented`.'),
+            ('`__iadd__`', '`__iadd__` handles *in-place* addition (`a += b`), not plain `+` with a foreign type on the left.'),
+            ('`__sum__`',  'There is no `__sum__` dunder method in Python; `sum()` uses `__add__` internally.'),
+            ('`__pos__`',  '`__pos__` is the unary plus operator (`+a`), not binary addition.'),
+        ],
+        correct_csv='1,2', points=3, category='Python OOP', level='Hard',
+        explanation='To support `a + b` where `a` is your type, implement `__add__`. To also support `b + a` where `b` is a built-in or foreign type, implement `__radd__`. Python first tries `b.__add__(a)`; if that returns `NotImplemented`, it falls back to `a.__radd__(b)`. `__iadd__` handles `+=` separately.',
+        strategy='Correct only',
+    ),
+
+    # ── True / False (4) ──────────────────────────────────────────────────────
     _tf(
-        code='tfpythonzeroindex',
-        title='Python – zero-based indexing',
-        content='In Python, the **first element** of a list is accessed with index `1`.',
-        correct_bool=False, points=1, category='Python Basics', level='Easy',
-        explanation='**False.** Python uses **zero-based indexing**. The first element is at index `0`, not `1`.',
+        code='pytfindent',
+        title='Indentation is syntactically significant',
+        content='In Python, indentation is **syntactically significant** — using inconsistent indentation within a block raises an `IndentationError`.',
+        correct_bool=True, points=1, category='Python Basics', level='Easy',
+        explanation='Unlike many languages that use braces `{}` to delimit code blocks, Python uses indentation as part of its syntax. Mixing tabs and spaces, or using inconsistent indent levels within a block, raises an `IndentationError` at parse time.',
     ),
 
     _tf(
-        code='tfprimeevenexist',
-        title='Math – even prime number',
-        content='There exists an **even** prime number.',
-        correct_bool=True, points=1, category='Mathematics', level='Easy',
-        explanation='**True.** The number **2** is the only even prime number. Every other even number is divisible by 2 and is therefore composite.',
+        code='pytfnonelies',
+        title='None is falsy in boolean context',
+        content='`None` evaluates to `False` in a boolean context (e.g. inside an `if` statement).',
+        correct_bool=True, points=1, category='Python Basics', level='Easy',
+        explanation='Python treats several values as falsy: `None`, `False`, `0`, `0.0`, empty sequences (`""`, `[]`, `()`), and empty mappings (`{}`). `None` is not equal to `False`, but `bool(None)` returns `False`, so it behaves as falsy in conditionals.',
     ),
 
     _tf(
-        code='tfaustraliacapital',
-        title='Geography – Australia\'s capital',
-        content='**Sydney** is the capital city of Australia.',
-        correct_bool=False, points=1, category='Geography', level='Easy',
-        explanation='**False.** The capital of Australia is **Canberra**, a purpose-built city chosen as a compromise between Sydney and Melbourne.',
+        code='pytftupmut',
+        title='Tuple containing a list is fully immutable',
+        content='A tuple that contains a list is fully immutable — neither the tuple nor any of its elements can be changed.',
+        correct_bool=False, points=2, category='Python Data Types', level='Medium',
+        explanation='A tuple\'s *references* are immutable — you cannot replace, add, or remove elements from the tuple itself. However, if a tuple element is a mutable object (like a list), that object\'s internal state *can* be changed. For example, `t = ([1, 2],); t[0].append(3)` works fine.',
     ),
 
-    # ── Short Answer ──────────────────────────────────────────────────────────
-    _sa(
-        code='safrancecapital',
-        title='Geography – capital of France',
-        content='What is the capital city of **France**?',
-        patterns=[r'(?i)paris'],
-        points=1, category='Geography', level='Easy',
-        explanation='**Paris** has been the capital of France since the late 10th century.',
-        answer_display='Paris',
+    _tf(
+        code='pytfglobalkw',
+        title='Assignment inside function creates local variable',
+        content='Without the `global` keyword, assigning to a variable inside a function **always** creates a new local variable, even if a global variable with the same name exists.',
+        correct_bool=True, points=2, category='Python Functions', level='Medium',
+        explanation='Python\'s scoping rule (LEGB) means that any assignment inside a function makes that name local to the function by default. Without `global x`, writing `x = value` inside a function shadows the global `x` rather than modifying it. The `global` keyword is needed to rebind a global variable from within a function.',
     ),
 
+    # ── Short Answer (3) ──────────────────────────────────────────────────────
     _sa(
-        code='sapythonlenbuiltin',
-        title='Python – length function name',
-        content='What built-in **function** returns the number of items in a Python list or string?\n'
-                '(type just the function name, with or without parentheses)',
-        patterns=[r'(?i)len\s*\(\s*\)', r'(?i)len'],
-        points=1, category='Python Basics', level='Easy',
-        explanation='`len()` is the built-in function for sequence length. It works on lists, strings, tuples, dicts, and any iterable.',
-        answer_display='len  (or  len())',
-    ),
-
-    _sa(
-        code='samathsqrt144',
-        title='Math – square root of 144',
-        content='What is the **square root** of 144?',
-        patterns=[r'12', r'(?i)twelve'],
-        points=1, category='Mathematics', level='Easy',
-        explanation='√144 = **12**, because 12 × 12 = 144.',
-        answer_display='12',
+        code='pysarangelen',
+        title='Built-in for sequence length',
+        content=(
+            'What built-in function returns the number of elements in a `range` object '
+            'without converting it to a list? Type the function name only (e.g. `foo`).'
+        ),
+        patterns=[r'(?i)len'],
+        points=1, category='Python Iterables', level='Easy',
+        explanation='`len()` works directly on `range` objects in Python 3 — it computes the count in O(1) using the start, stop, and step values without iterating. For example, `len(range(0, 10, 2))` returns `5`.',
+        answer_display='len',
     ),
 
     _sa(
-        code='sahttp200meaning',
-        title='HTTP – reason phrase for 200',
-        content='What is the standard **reason phrase** for HTTP status code `200`?\n'
-                '(e.g. 404 → Not Found)',
-        patterns=[r'(?i)ok', r'(?i)200\s*ok'],
-        points=1, category='Web / HTTP', level='Easy',
-        explanation='HTTP **200 OK** is the standard response for a successful request.',
-        answer_display='OK',
+        code='pysawalrus',
+        title='Walrus operator symbol',
+        content=(
+            'Python 3.8 introduced the **assignment expression** operator, nicknamed the "walrus operator". '
+            'What is its symbol? Type just the operator (e.g. `+=`).'
+        ),
+        patterns=[r':='],
+        points=2, category='Python Basics', level='Medium',
+        explanation='The walrus operator `:=` (PEP 572, Python 3.8) assigns a value to a variable as part of an expression. Common use: `while chunk := f.read(8192)` or `if m := re.search(pattern, text)`. It avoids repeating an expression just to capture its result.',
+        answer_display=':=',
+    ),
+
+    _sa(
+        code='pysaslotsdunder',
+        title='Dunder for memory-efficient attributes',
+        content=(
+            'What dunder attribute can be defined in a Python class to restrict instance attributes '
+            'to a fixed set, eliminating the per-instance `__dict__` and reducing memory usage? '
+            'Type the attribute name including underscores (e.g. `__foo__`).'
+        ),
+        patterns=[r'__slots__'],
+        points=3, category='Python OOP', level='Hard',
+        explanation='Defining `__slots__ = ("x", "y")` in a class tells Python to allocate a fixed-size array for those attributes instead of a per-instance `__dict__`. This reduces memory usage significantly for classes with many instances and also slightly speeds up attribute access.',
+        answer_display='__slots__',
     ),
 )
 
