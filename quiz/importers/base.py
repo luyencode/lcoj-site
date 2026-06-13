@@ -26,6 +26,7 @@ class ParsedQuestion:
     category: str = ''
     level: str = 'easy'
     explanation: str = ''
+    answer_display: str = ''
     shuffle: bool = False
     ma_strategy: str = grading.MA_ALL_OR_NOTHING
     errors: list = dataclasses.field(default_factory=list)

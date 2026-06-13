@@ -185,6 +185,7 @@ class QuizQuestionAdmin(admin.ModelAdmin):
                     choices=parsed.choices,
                     correct_answers=parsed.correct,
                     explanation=parsed.explanation,
+                    answer_display=parsed.answer_display,
                     category=categories.get(parsed.category),
                     level=parsed.level,
                     shuffle_choices=parsed.shuffle,

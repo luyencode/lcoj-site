@@ -51,6 +51,7 @@ HEADERS = (
     'correct',
     'points', 'category', 'level',
     'explanation', 'shuffle', 'ma_strategy',
+    'answer_display',
 )
 
 # Human-readable labels shown in row 1
@@ -66,6 +67,7 @@ HEADER_LABELS = (
     'Correct Answer',
     'Points', 'Category', 'Level',
     'Explanation', 'Shuffle Choices', 'MA Strategy',
+    'Answer Display',
 )
 
 # Pre-compute column letters (A=0, B=1, ...)
@@ -103,6 +105,11 @@ HEADER_NOTES = {
         '  Correct only      : correct / total_correct, no wrong-answer penalty'
     ),
     'Shuffle Choices': 'Yes — randomise the choice order shown to each student.',
+    'Answer Display': (
+        'SA only — human-readable answer shown to students on the result page.\n'
+        'Leave blank to fall back to showing the raw regex patterns.\n'
+        'Example: if patterns are  (?i)paris , write  Paris  here.'
+    ),
     'Level': 'Difficulty — choose from dropdown: Easy, Medium, Hard',
     'Explanation 1': 'Optional explanation for choice 1, shown to students after submitting.',
     'Explanation 2': 'Optional explanation for choice 2, shown to students after submitting.',
@@ -125,6 +132,7 @@ COL_WIDTHS = {
     'Q': 32,                          # correct
     'R': 8,   'S': 18,  'T': 12,    # points, category, level
     'U': 40,  'V': 14,  'W': 18,    # explanation, shuffle, ma_strategy
+    'X': 28,                          # answer_display
 }
 
 # ── Row helper: each row is exactly 22 values matching HEADERS ────────────────
@@ -142,7 +150,7 @@ def _mc(code, title, content, choices_expls, correct_1based, points,
         else:
             row += [None, None]
     row += [str(correct_1based), points, category, level,
-            explanation, 'Yes' if shuffle else None, None]
+            explanation, 'Yes' if shuffle else None, None, None]
     return tuple(row)
 
 
@@ -154,159 +162,205 @@ def _ma(code, title, content, choices_expls, correct_csv, points,
             row += list(choices_expls[i])
         else:
             row += [None, None]
-    row += [correct_csv, points, category, level, explanation, 'Yes', strategy]
+    row += [correct_csv, points, category, level, explanation, 'Yes', strategy, None]
     return tuple(row)
 
 
 def _tf(code, title, content, correct_bool, points, category, level, explanation):
     row = [code, 'True/False', title, content] + [None] * (MAX_CHOICES * 2)
     row += ['True' if correct_bool else 'False', points, category,
-            level, explanation, None, None]
+            level, explanation, None, None, None]
     return tuple(row)
 
 
-def _sa(code, title, content, patterns, points, category, level, explanation):
+def _sa(code, title, content, patterns, points, category, level, explanation,
+        answer_display=''):
     row = [code, 'Short Answer', title, content] + [None] * (MAX_CHOICES * 2)
     row += [' | '.join(patterns), points, category, level,
-            explanation, None, None]
+            explanation, None, None, answer_display or None]
     return tuple(row)
 
 
-# ── Python programming questions ──────────────────────────────────────────────
+# ── Example questions (diverse topics) ───────────────────────────────────────
 
 EXAMPLE_ROWS = (
     # ── Multiple Choice ───────────────────────────────────────────────────────
-    _mc('pylistlen',
-        'list len()',
-        'What does len([10, 20, 30]) return?',
-        [('1', '1 is just the first element — len() counts elements, not values.'),
-         ('2', '2 would be correct for a 2-element list.'),
-         ('3', '✓ Correct! len() returns the number of elements in the list.'),
-         ('4', '4 would require a 4-element list.')],
-        3, 1, 'Python Basics', 'Easy',
-        'len() is a built-in that returns the number of items in any sequence.',
-        shuffle=True),
+    _mc(
+        code='pylistlen',
+        title='Python – list length',
+        content='What is the output of `len([1, 2, 3, 4, 5])`?',
+        choices_expls=[
+            ('3', 'Incorrect — 3 is the length of [1, 2, 3], not a 5-element list.'),
+            ('4', 'Incorrect — off by one; the list contains 5 elements.'),
+            ('5', '✓ `len()` returns the number of items in the list, which is 5.'),
+            ('6', 'Incorrect — there is no hidden element; the list has exactly 5 items.'),
+        ],
+        correct_1based=3, points=1, category='Python Basics', level='Easy',
+        explanation='`len(sequence)` returns the number of items. `[1, 2, 3, 4, 5]` has 5 items, so the answer is **5**.',
+        shuffle=True,
+    ),
 
-    _mc('pyfloordiv',
-        'Floor division',
-        'What is the result of 7 // 2 in Python?',
-        [('3',   '✓ Correct! // performs integer (floor) division, discarding the decimal.'),
-         ('3.5', '3.5 is regular division: use 7 / 2 for that.'),
-         ('1',   '1 is the remainder: that would be 7 % 2.'),
-         ('4',   'Floor division rounds down, not up.')],
-        1, 1, 'Python Basics', 'Easy',
-        '// discards the fractional part. 7 // 2 = 3 (not 3.5).'),
+    _mc(
+        code='pystrmethod',
+        title='Python – uppercase method',
+        content='Which method converts a string to **all uppercase** letters?',
+        choices_expls=[
+            ('str.lower()', 'Incorrect — `lower()` converts to all lowercase.'),
+            ('str.capitalize()', 'Incorrect — `capitalize()` only uppercases the first character.'),
+            ('str.title()', 'Incorrect — `title()` uppercases the first letter of each word.'),
+            ('str.upper()', '✓ `upper()` returns a copy of the string with all characters converted to uppercase.'),
+        ],
+        correct_1based=4, points=1, category='Python Basics', level='Easy',
+        explanation='`str.upper()` returns a new string with every character converted to its uppercase equivalent, e.g. `"hello".upper()` → `"HELLO"`.',
+        shuffle=True,
+    ),
 
-    _mc('pyfunckey',
-        'Function keyword',
-        'Which keyword is used to define a function in Python?',
-        [('function', 'This is JavaScript syntax — not valid in Python.'),
-         ('def',      '✓ Correct! def is the Python keyword for defining functions.'),
-         ('func',     'Not a Python keyword.'),
-         ('define',   'Not a Python keyword.')],
-        2, 1, 'Python Basics', 'Easy',
-        'Syntax: def function_name(parameters): — the colon and indented body are required.',
-        shuffle=True),
+    _mc(
+        code='pydictget',
+        title='Python – dict.get() with default',
+        content='Given `d = {"a": 1, "b": 2}`, what does `d.get("c", 99)` return?',
+        choices_expls=[
+            ('None', 'Incorrect — `None` is returned by `d.get("c")` with no default, but a default of 99 is provided here.'),
+            ('KeyError', 'Incorrect — `dict.get()` never raises `KeyError`; that is its purpose.'),
+            ('99', '✓ When the key is absent, `get()` returns the supplied default value, which is 99.'),
+            ('0', 'Incorrect — 0 is not the default; the caller explicitly passed 99.'),
+        ],
+        correct_1based=3, points=1, category='Python Basics', level='Easy',
+        explanation='`dict.get(key, default)` returns `default` (here `99`) when `key` is not found, instead of raising a `KeyError`.',
+        shuffle=True,
+    ),
 
-    _mc('pytypeof',
-        'type() output',
-        'What does print(type([])) output?',
-        [("<class 'list'>",  "✓ Correct! Python 3 shows <class 'typename'> for all types."),
-         ('list',            'Just the word — Python includes the full <class ...> wrapper.'),
-         ("<type 'list'>",   "This was Python 2 syntax."),
-         ("<class 'array'>", "[] creates a list, not an array.")],
-        1, 1, 'Python Basics', 'Medium',
-        "type() returns the type object. In Python 3 it prints as <class 'list'>.",
-        shuffle=True),
+    _mc(
+        code='mathtrianglearea',
+        title='Math – area of a triangle',
+        content='What is the area of a triangle with **base = 8** and **height = 5**?',
+        choices_expls=[
+            ('13', 'Incorrect — 13 = 8 + 5; you added instead of using the area formula.'),
+            ('40', 'Incorrect — 40 = 8 × 5; you forgot to multiply by ½.'),
+            ('20', '✓ Area = ½ × base × height = ½ × 8 × 5 = **20**.'),
+            ('80', 'Incorrect — 80 = 2 × 8 × 5; the factor should be ½, not 2.'),
+        ],
+        correct_1based=3, points=1, category='Mathematics', level='Easy',
+        explanation='The area of a triangle is **½ × base × height**. Here: ½ × 8 × 5 = **20** square units.',
+        shuffle=True,
+    ),
 
-    _mc('pystrslice',
-        'String slicing',
-        'What does "Python"[1:4] return?',
-        [('Pyt',  'That would be "Python"[:3] — slicing from 0.'),
-         ('yth',  '✓ Correct! Index 1 to 3 (4 is exclusive): y-t-h.'),
-         ('ytho', 'Index 1 to 4 exclusive means only up to index 3.'),
-         ('hon',  'That would be "Python"[3:6] or "Python"[-3:].')],
-        2, 1, 'Python Strings', 'Medium',
-        'Slicing s[start:end] returns characters from start up to (not including) end.',
-        shuffle=True),
+    _mc(
+        code='httpnotfound',
+        title='HTTP – 404 status code',
+        content='Which HTTP status code indicates that the requested resource was **not found** on the server?',
+        choices_expls=[
+            ('200', 'Incorrect — 200 OK means the request succeeded.'),
+            ('301', 'Incorrect — 301 Moved Permanently is a redirect status.'),
+            ('403', 'Incorrect — 403 Forbidden means the server refused to authorize the request.'),
+            ('404', '✓ 404 Not Found means the server could not locate the requested resource.'),
+        ],
+        correct_1based=4, points=1, category='Web / HTTP', level='Easy',
+        explanation='**404 Not Found** is returned when the server cannot find the resource matching the URL.',
+        shuffle=False,
+    ),
 
     # ── Multiple Answer ───────────────────────────────────────────────────────
-    _ma('pymutable',
-        'Mutable types',
-        'Which Python types are MUTABLE? (select all)',
-        [('list',  'Mutable — elements can be added, removed, or changed.'),
-         ('tuple', 'Immutable — once created, a tuple cannot be changed.'),
-         ('dict',  'Mutable — key-value pairs can be added, removed, or updated.'),
-         ('str',   'Immutable — operations on strings always create a new string.'),
-         ('set',   'Mutable — elements can be added or removed.')],
-        '1,3,5', 2, 'Python Data Types', 'Medium',
-        'Mutable: list, dict, set, bytearray. Immutable: int, float, str, tuple, frozenset.',
-        strategy='Partial credit'),
+    _ma(
+        code='pymutabletypes',
+        title='Python – mutable built-in types',
+        content='Which of the following Python built-in types are **mutable**? Select all that apply.',
+        choices_expls=[
+            ('list', '✓ Lists are mutable — elements can be added, removed, or changed in place.'),
+            ('tuple', 'Incorrect — tuples are immutable; their contents cannot be changed after creation.'),
+            ('dict', '✓ Dictionaries are mutable — key-value pairs can be added, updated, or deleted.'),
+            ('str', 'Incorrect — strings are immutable; operations return new string objects.'),
+            ('set', '✓ Sets are mutable — elements can be added or removed (unlike `frozenset`).'),
+        ],
+        correct_csv='1,3,5', points=2, category='Python Basics', level='Medium',
+        explanation='**Mutable** types can be modified after creation: `list`, `dict`, and `set`. **Immutable** types cannot: `tuple`, `str`, `int`, `float`, `frozenset`.',
+        strategy='Partial credit',
+    ),
 
-    _ma('pylistmeth',
-        'Valid list methods',
-        'Which are valid methods on a Python list? (select all)',
-        [('.append(x)', 'Valid — adds x to the end of the list.'),
-         ('.sort()',     'Valid — sorts the list in-place (modifies the original).'),
-         ('.push(x)',    'Not a list method! Python uses .append() — push() is from JavaScript.'),
-         ('.index(x)',   'Valid — returns the index of the first occurrence of x.'),
-         ('.pop()',      'Valid — removes and returns the last element (or at a given index).')],
-        '1,2,4,5', 2, 'Python Data Types', 'Medium',
-        'Python list methods: append, extend, insert, remove, pop, index, count, sort, reverse, copy.',
-        strategy='All or nothing'),
+    _ma(
+        code='httpsafemethods',
+        title='HTTP – safe request methods',
+        content='Which of the following HTTP methods are **safe** (i.e. they must not modify server state)? Select all that apply.',
+        choices_expls=[
+            ('GET', '✓ GET retrieves a resource without modifying it.'),
+            ('POST', 'Incorrect — POST submits data that typically creates or modifies a resource.'),
+            ('HEAD', '✓ HEAD is identical to GET but returns only headers; no state change.'),
+            ('PUT', 'Incorrect — PUT replaces a resource and modifies server state.'),
+            ('OPTIONS', '✓ OPTIONS describes communication options without modifying state.'),
+            ('DELETE', 'Incorrect — DELETE removes a resource and is not safe.'),
+        ],
+        correct_csv='1,3,5', points=2, category='Web / HTTP', level='Medium',
+        explanation='RFC 9110 defines **safe methods** as read-only: **GET**, **HEAD**, and **OPTIONS**. POST, PUT, PATCH, and DELETE modify state.',
+        strategy='All or nothing',
+    ),
 
-    # ── True/False ────────────────────────────────────────────────────────────
-    _tf('pyindent',
-        'Indentation blocks',
-        'Python uses curly braces {} to define code blocks (like if statements and functions).',
-        False, 1, 'Python Basics', 'Easy',
-        'Python uses indentation (whitespace) for blocks — no curly braces needed. '
-        'This is enforced by the language.'),
+    # ── True / False ──────────────────────────────────────────────────────────
+    _tf(
+        code='tfpythonzeroindex',
+        title='Python – zero-based indexing',
+        content='In Python, the **first element** of a list is accessed with index `1`.',
+        correct_bool=False, points=1, category='Python Basics', level='Easy',
+        explanation='**False.** Python uses **zero-based indexing**. The first element is at index `0`, not `1`.',
+    ),
 
-    _tf('pyzerofalse',
-        '0 == False',
-        'In Python, the expression  0 == False  evaluates to True.',
-        True, 1, 'Python Basics', 'Medium',
-        'Python booleans are a subclass of int. True == 1 and False == 0, '
-        'so 0 == False is True.'),
+    _tf(
+        code='tfprimeevenexist',
+        title='Math – even prime number',
+        content='There exists an **even** prime number.',
+        correct_bool=True, points=1, category='Mathematics', level='Easy',
+        explanation='**True.** The number **2** is the only even prime number. Every other even number is divisible by 2 and is therefore composite.',
+    ),
 
-    _tf('pystrimm',
-        'String immutability',
-        'In Python, you can change a character in a string by writing  s[0] = "X".',
-        False, 1, 'Python Strings', 'Easy',
-        'Strings are immutable — s[0] = "X" raises a TypeError. '
-        'To modify, build a new string: s = "X" + s[1:].'),
+    _tf(
+        code='tfaustraliacapital',
+        title='Geography – Australia\'s capital',
+        content='**Sydney** is the capital city of Australia.',
+        correct_bool=False, points=1, category='Geography', level='Easy',
+        explanation='**False.** The capital of Australia is **Canberra**, a purpose-built city chosen as a compromise between Sydney and Melbourne.',
+    ),
 
     # ── Short Answer ──────────────────────────────────────────────────────────
-    _sa('pylenname',
-        'len() function name',
-        'What is the name of the built-in function that returns the number of items in a list?\n'
-        '(type just the function name, with or without parentheses)',
-        [r'(?i)len\(?\)?'],
-        1, 'Python Basics', 'Easy',
-        'len(sequence) works on lists, strings, tuples, dicts, sets, and any iterable.'),
+    _sa(
+        code='safrancecapital',
+        title='Geography – capital of France',
+        content='What is the capital city of **France**?',
+        patterns=[r'(?i)paris'],
+        points=1, category='Geography', level='Easy',
+        explanation='**Paris** has been the capital of France since the late 10th century.',
+        answer_display='Paris',
+    ),
 
-    _sa('pyintdivop',
-        'Integer division operator',
-        'What operator performs integer (floor) division in Python? (e.g.  7 ___ 2 = 3)',
-        [r'//'],
-        1, 'Python Basics', 'Easy',
-        '// discards the decimal: 7 // 2 = 3. For remainder use %, for exact division use /.'),
+    _sa(
+        code='sapythonlenbuiltin',
+        title='Python – length function name',
+        content='What built-in **function** returns the number of items in a Python list or string?\n'
+                '(type just the function name, with or without parentheses)',
+        patterns=[r'(?i)len\s*\(\s*\)', r'(?i)len'],
+        points=1, category='Python Basics', level='Easy',
+        explanation='`len()` is the built-in function for sequence length. It works on lists, strings, tuples, dicts, and any iterable.',
+        answer_display='len  (or  len())',
+    ),
 
-    _sa('pyupper',
-        'Output of upper()',
-        'What is the output of:  "hello".upper()',
-        [r'HELLO', r"'HELLO'"],
-        1, 'Python Strings', 'Easy',
-        '.upper() returns a new string with all characters converted to uppercase.'),
+    _sa(
+        code='samathsqrt144',
+        title='Math – square root of 144',
+        content='What is the **square root** of 144?',
+        patterns=[r'12', r'(?i)twelve'],
+        points=1, category='Mathematics', level='Easy',
+        explanation='√144 = **12**, because 12 × 12 = 144.',
+        answer_display='12',
+    ),
 
-    _sa('pyrangeres',
-        'Range result',
-        'What is the value of  list(range(3))  in Python?\n'
-        '(write the exact Python list representation)',
-        [r'\[0, 1, 2\]', r'\[0,1,2\]'],
-        1, 'Python Basics', 'Easy',
-        'range(n) generates integers 0 through n-1. list(range(3)) = [0, 1, 2].'),
+    _sa(
+        code='sahttp200meaning',
+        title='HTTP – reason phrase for 200',
+        content='What is the standard **reason phrase** for HTTP status code `200`?\n'
+                '(e.g. 404 → Not Found)',
+        patterns=[r'(?i)ok', r'(?i)200\s*ok'],
+        points=1, category='Web / HTTP', level='Easy',
+        explanation='HTTP **200 OK** is the standard response for a successful request.',
+        answer_display='OK',
+    ),
 )
 
 
@@ -372,6 +426,7 @@ def parse(file_obj):
         q.level = _LEVEL_PARSE.get(raw_level.lower(), raw_level.lower())
 
         q.explanation = str(data['explanation'] or '')
+        q.answer_display = str(data.get('answer_display') or '').strip()
         q.shuffle = str(data['shuffle'] or '').strip().lower() in TRUTHY
 
         raw_strategy = str(data['ma_strategy'] or '').strip()
@@ -421,6 +476,7 @@ def write(questions):
             q.points, q.category, LEVEL_DISPLAY.get(q.level, q.level),
             q.explanation, 'Yes' if q.shuffle else None,
             MA_STRATEGY_DISPLAY.get(q.ma_strategy, None) if q.type == grading.MA else None,
+            getattr(q, 'answer_display', None) if q.type == grading.SA else None,
         ])
 
     buf = io.BytesIO()
