@@ -109,6 +109,8 @@
         flex-shrink: 0;
         accent-color: #1958c1;
     }
+    .quiz-choice-text { flex: 1; }
+    .quiz-choice-text p { margin: 0 !important; }
     .quiz-choice-label.selected {
         border-color: #1958c1;
         background: #eef2ff;
@@ -285,6 +287,45 @@
     .btn-submit-quiz:hover {
         background: #1f5c1f;
     }
+
+    /* ── Integrity watermark ─────────────────────────────────── */
+    .quiz-watermark {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 9999;
+        overflow: hidden;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
+        gap: 80px 60px;
+        padding: 60px 40px;
+        transform: rotate(-25deg);
+        transform-origin: center center;
+        opacity: 0.05;
+        user-select: none;
+    }
+    .quiz-watermark span {
+        font-size: 13px;
+        color: #000;
+        white-space: nowrap;
+    }
+    /* ── Integrity toast ─────────────────────────────────────── */
+    #quiz-integrity-toast {
+        display: none;
+        position: fixed;
+        top: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10001;
+        background: #7c3e00;
+        color: #fff;
+        padding: 0.6em 1.4em;
+        border-radius: 4px;
+        font-size: 0.92em;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        white-space: nowrap;
+    }
 </style>
 {% endblock %}
 
@@ -318,7 +359,7 @@
                         <label class="quiz-choice-label{% if item.answer == idx %} selected{% endif %}">
                             <input type="radio" name="q{{ item.question.id }}" value="{{ idx }}"
                                    {% if item.answer == idx %}checked{% endif %}>
-                            <span>{{ item.question.choices[idx]['text'] }}</span>
+                            <div class="quiz-choice-text content-description">{{ item.question.choices[idx]['text']|markdown('default') }}</div>
                         </label>
                         {% endfor %}
                     {% elif item.question.type == 'MA' %}
@@ -326,7 +367,7 @@
                         <label class="quiz-choice-label{% if item.answer and idx in item.answer %} selected{% endif %}">
                             <input type="checkbox" name="q{{ item.question.id }}" value="{{ idx }}"
                                    {% if item.answer and idx in item.answer %}checked{% endif %}>
-                            <span>{{ item.question.choices[idx]['text'] }}</span>
+                            <div class="quiz-choice-text content-description">{{ item.question.choices[idx]['text']|markdown('default') }}</div>
                         </label>
                         {% endfor %}
                     {% elif item.question.type == 'TF' %}
@@ -568,4 +609,19 @@ window.quizConfig = {
     showQuestion(0);
 })();
 </script>
+{% if attempt.quiz.integrity_monitoring %}
+<div class="quiz-watermark" aria-hidden="true">
+    {% for i in range(30) %}
+    <span>{{ request.user.username }} · {{ attempt.started_at|date('Y-m-d H:i') }}</span>
+    {% endfor %}
+</div>
+<div id="quiz-integrity-toast" role="alert" aria-live="assertive"></div>
+<script>
+window.quizIntegrityConfig = {
+    violationUrl: '{{ url('quiz_violation', quiz.code, attempt.id) }}',
+    csrfToken: '{{ csrf_token }}',
+};
+</script>
+<script src="{{ static('quiz-integrity.js') }}"></script>
+{% endif %}
 {% endblock %}
