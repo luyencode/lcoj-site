@@ -1,4 +1,7 @@
+import json
+
 from django.test import TestCase
+from django.urls import reverse
 
 from quiz.models import Quiz, QuizAttempt, QuizViolation, ViolationType
 from quiz.tests.util import create_question, create_quiz, create_user
@@ -53,3 +56,70 @@ class QuizViolationModelTest(TestCase):
             occurred_at=now, extra_data={})
         types = list(self.attempt.violations.values_list('type', flat=True))
         self.assertEqual(types, ['window_blur', 'tab_switch'])
+
+
+class QuizRecordViolationTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.student = create_user(username='rv_student')
+        cls.other = create_user(username='rv_other')
+        cls.teacher = create_user(
+            username='rv_teacher', user_permissions=('edit_own_quiz',))
+        cls.q = create_question(title='rvq1')
+        cls.quiz = create_quiz(code='rvquiz', questions=((cls.q, 1.0),))
+        cls.quiz.authors.add(cls.teacher.profile)
+
+    def setUp(self):
+        self.attempt = QuizAttempt.start(self.quiz, self.student.profile)
+        self.url = reverse('quiz_violation', kwargs={
+            'quiz': 'rvquiz', 'attempt': self.attempt.id})
+
+    def _post(self, data, user=None):
+        self.client.force_login(user or self.student)
+        return self.client.post(
+            self.url,
+            data=json.dumps(data),
+            content_type='application/json',
+        )
+
+    def test_valid_violation_recorded(self):
+        resp = self._post({'type': 'tab_switch',
+                           'occurred_at': '2026-06-13T14:00:00Z'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(json.loads(resp.content), {'recorded': True})
+        self.assertEqual(self.attempt.violations.count(), 1)
+
+    def test_invalid_type_returns_400(self):
+        resp = self._post({'type': 'hacking',
+                           'occurred_at': '2026-06-13T14:00:00Z'})
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(self.attempt.violations.count(), 0)
+
+    def test_non_owner_gets_404(self):
+        resp = self._post({'type': 'tab_switch',
+                           'occurred_at': '2026-06-13T14:00:00Z'},
+                          user=self.other)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_submitted_attempt_silently_ignored(self):
+        self.attempt.finalize()
+        resp = self._post({'type': 'tab_switch',
+                           'occurred_at': '2026-06-13T14:00:00Z'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(json.loads(resp.content), {'recorded': True})
+        self.attempt.refresh_from_db()
+        self.assertEqual(self.attempt.violations.count(), 0)
+
+    def test_missing_body_returns_400(self):
+        self.client.force_login(self.student)
+        resp = self.client.post(self.url, data='not-json',
+                                content_type='application/json')
+        self.assertEqual(resp.status_code, 400)
+
+    def test_extra_data_stored(self):
+        resp = self._post({'type': 'devtools',
+                           'occurred_at': '2026-06-13T14:00:00Z',
+                           'extra_data': {'window_delta': 200}})
+        self.assertEqual(resp.status_code, 200)
+        v = self.attempt.violations.first()
+        self.assertEqual(v.extra_data, {'window_delta': 200})

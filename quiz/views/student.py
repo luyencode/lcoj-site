@@ -5,12 +5,15 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Max, Q, Sum
 from django.http import Http404, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+from django.utils.timezone import is_aware, make_aware
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.views.generic import ListView, TemplateView, View
 
 from judge.utils.views import TitleMixin
-from quiz.models import Quiz, QuizAttempt, QuizQuestion
+from quiz.models import Quiz, QuizAttempt, QuizQuestion, QuizViolation, ViolationType
 
 
 class QuizList(TitleMixin, ListView):
@@ -245,6 +248,40 @@ class QuizSaveAnswer(LoginRequiredMixin, AttemptMixin, View):
             return HttpResponseBadRequest()
         self.attempt.save_answer(question, answer)
         return JsonResponse({'saved': True})
+
+
+class QuizRecordViolation(LoginRequiredMixin, AttemptMixin, View):
+    def post(self, request, *args, **kwargs):
+        if self.attempt.is_submitted:
+            return JsonResponse({'recorded': True})
+        try:
+            body = json.loads(request.body)
+            vtype = body['type']
+            occurred_at_str = body['occurred_at']
+            extra_data = body.get('extra_data', {})
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+            return HttpResponseBadRequest()
+
+        if vtype not in ViolationType.values:
+            return JsonResponse({'error': 'invalid_type'}, status=400)
+
+        occurred_at = parse_datetime(occurred_at_str)
+        if occurred_at is None:
+            return JsonResponse({'error': 'invalid_time'}, status=400)
+        if not is_aware(occurred_at):
+            occurred_at = make_aware(occurred_at)
+
+        now = timezone.now()
+        if occurred_at > now:
+            occurred_at = now
+
+        QuizViolation.objects.create(
+            attempt=self.attempt,
+            type=vtype,
+            occurred_at=occurred_at,
+            extra_data=extra_data if isinstance(extra_data, dict) else {},
+        )
+        return JsonResponse({'recorded': True})
 
 
 class QuizResult(TitleMixin, LoginRequiredMixin, AttemptMixin, TemplateView):
