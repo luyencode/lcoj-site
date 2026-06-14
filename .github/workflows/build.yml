@@ -14,7 +14,7 @@ jobs:
     - name: Lint with flake8
       run: |
         flake8 --version
-        flake8
+        flake8 || (flake8 --statistics 2>&1; exit 1)
   unit:
     runs-on: ubuntu-latest
     steps:
