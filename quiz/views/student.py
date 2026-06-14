@@ -70,6 +70,18 @@ class QuizList(TitleMixin, ListView):
         context['attempt_counts'] = {row['quiz_id']: row['attempts'] for row in stats_rows}
         context['user_counts'] = {row['quiz_id']: row['users'] for row in stats_rows}
 
+        upcoming, open_, past = [], [], []
+        for quiz in context['quizzes']:
+            if not quiz.can_start:
+                upcoming.append(quiz)
+            elif quiz.ended:
+                past.append(quiz)
+            else:
+                open_.append(quiz)
+        context['upcoming_quizzes'] = upcoming
+        context['open_quizzes'] = open_
+        context['past_quizzes'] = past
+
         return context
 
 
@@ -114,6 +126,11 @@ class QuizDetail(TitleMixin, QuizMixin, TemplateView):
                     0, self.quiz.max_attempts - used)
             else:
                 context['attempts_left'] = None
+        context['can_start'] = self.quiz.can_start
+        context['ended'] = self.quiz.ended
+        context['time_before_start'] = self.quiz.time_before_start
+        context['time_before_end'] = self.quiz.time_before_end
+        context['now'] = self.quiz._now
         return context
 
 
