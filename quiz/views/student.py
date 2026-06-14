@@ -119,6 +119,13 @@ class QuizDetail(TitleMixin, QuizMixin, TemplateView):
 
 class QuizStart(LoginRequiredMixin, QuizMixin, View):
     def post(self, request, *args, **kwargs):
+        if not self.quiz.can_start:
+            messages.error(request, _('This quiz has not started yet.'))
+            return redirect('quiz_detail', quiz=self.quiz.code)
+        if self.quiz.ended:
+            messages.error(request,
+                           _('This quiz is no longer accepting submissions.'))
+            return redirect('quiz_detail', quiz=self.quiz.code)
         in_progress = self.quiz.attempts.filter(
             user=request.profile, is_submitted=False).first()
         if in_progress is not None:

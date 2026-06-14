@@ -68,6 +68,16 @@ class QuizSchedulingModelTests(TestCase):
         attempt = QuizAttempt.start(quiz, self.student.profile)
         self.assertFalse(attempt.has_expired())
 
+    def test_has_expired_both_limits_expired(self):
+        """When personal time_limit has also run out, attempt is expired."""
+        past_end = timezone.now() - timedelta(minutes=10)
+        quiz = create_quiz(code='bothexpired', questions=((self.q, 1.0),),
+                           time_limit=1, end_time=past_end)
+        attempt = QuizAttempt.start(quiz, self.student.profile)
+        attempt.started_at = timezone.now() - timedelta(minutes=5)
+        attempt.save(update_fields=['started_at'])
+        self.assertTrue(attempt.has_expired())
+
 
 class QuizSchedulingViewTests(TestCase):
     @classmethod
@@ -81,7 +91,9 @@ class QuizSchedulingViewTests(TestCase):
                            start_time=future)
         self.client.force_login(self.student)
         response = self.client.post(f'/quizzes/{quiz.code}/start')
-        self.assertRedirects(response, f'/quizzes/{quiz.code}/')
+        self.assertRedirects(response, f'/quizzes/{quiz.code}')
+        messages_list = list(response.wsgi_request._messages)
+        self.assertEqual(len(messages_list), 1)
 
     def test_quiz_start_blocked_when_ended(self):
         past = timezone.now() - timedelta(hours=1)
@@ -89,4 +101,6 @@ class QuizSchedulingViewTests(TestCase):
                            end_time=past)
         self.client.force_login(self.student)
         response = self.client.post(f'/quizzes/{quiz.code}/start')
-        self.assertRedirects(response, f'/quizzes/{quiz.code}/')
+        self.assertRedirects(response, f'/quizzes/{quiz.code}')
+        messages_list = list(response.wsgi_request._messages)
+        self.assertEqual(len(messages_list), 1)
