@@ -2,7 +2,6 @@
 max-line-length = 120
 application-import-names = dmoj,judge,django_ace,martor,quiz
 import-order-style = pycharm
-enable-extensions = G
 ignore =
     # line break occurred after a binary operator
     W504,
