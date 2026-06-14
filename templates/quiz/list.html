@@ -2,10 +2,10 @@
 
 {% block media %}
 <style>
-    #quiz-table th {
+    #quiz-table-upcoming th, #quiz-table-open th, #quiz-table-past th {
         padding: 0;
     }
-    #quiz-table th a {
+    #quiz-table-upcoming th a, #quiz-table-open th a, #quiz-table-past th a {
         display: block;
         padding: 6px 10px;
         color: inherit;
@@ -27,6 +27,9 @@
         width: 1%;
         text-align: center;
     }
+    h3 { margin-top: 1.2em; }
+    .quiz-schedule-note { color: #7a5900; }
+    .quiz-schedule-note-closed { color: #888; }
 </style>
 {% endblock %}
 
@@ -104,55 +107,79 @@
     </div>
 
     <div id="content-left" class="problems h-scrollable-table">
-        <table id="quiz-table" class="table striped">
-            <thead>
-                <tr>
-                    <th class="quiz-code-col">
-                        <a>{{ _('Code') }}</a>
-                    </th>
-                    <th class="problem-name">
-                        <a>{{ _('Quiz') }}</a>
-                    </th>
-                    <th class="quiz-stat-col">
-                        <a>{{ _('Questions') }}</a>
-                    </th>
-                    <th class="quiz-stat-col">
-                        <a>{{ _('Max score') }}</a>
-                    </th>
-                    <th class="quiz-stat-col">
-                        <a>{{ _('Attempts') }}</a>
-                    </th>
-                    <th class="quiz-stat-col">
-                        <a>{{ _('Participants') }}</a>
-                    </th>
-                    {% if request.user.is_authenticated %}
-                    <th class="points">
-                        <a>{{ _('Your best') }}</a>
-                    </th>
-                    {% endif %}
-                </tr>
-            </thead>
+
+        {# Macro: render one quiz row #}
+        {% macro quiz_row(quiz) %}
+        <tr>
+            <td class="quiz-code-col">{{ quiz.code }}</td>
+            <td class="problem-name">
+                <a href="{{ url('quiz_detail', quiz.code) }}">{{ quiz.name }}</a>
+                {% if quiz.time_before_start %}
+                <br><small class="quiz-schedule-note">
+                    {{ _('Starting in') }} {{ as_countdown(quiz.time_before_start) }}
+                </small>
+                {% elif quiz.time_before_end %}
+                <br><small class="quiz-schedule-note">
+                    {{ _('Ends in') }} {{ as_countdown(quiz.time_before_end) }}
+                </small>
+                {% elif quiz.ended %}
+                <br><small class="quiz-schedule-note quiz-schedule-note-closed">
+                    {{ _('Closed') }} {{ quiz.end_time|date('DATETIME_FORMAT') }}
+                </small>
+                {% endif %}
+            </td>
+            <td class="quiz-stat-col">{{ question_counts.get(quiz.id, 0) }}</td>
+            <td class="quiz-stat-col">{{ max_scores.get(quiz.id, 0) }}</td>
+            <td class="quiz-stat-col">{{ attempt_counts.get(quiz.id, 0) }}</td>
+            <td class="quiz-stat-col">{{ user_counts.get(quiz.id, 0) }}</td>
+            {% if request.user.is_authenticated %}
+            <td class="p">
+                {% if best_scores.get(quiz.id) is not none %}
+                    <span class="quiz-best-score">{{ best_scores.get(quiz.id) }}</span>
+                {% else %}
+                    <span class="quiz-no-score">—</span>
+                {% endif %}
+            </td>
+            {% endif %}
+        </tr>
+        {% endmacro %}
+
+        {# Shared table header macro #}
+        {% macro table_head() %}
+        <thead>
+            <tr>
+                <th class="quiz-code-col"><a>{{ _('Code') }}</a></th>
+                <th class="problem-name"><a>{{ _('Quiz') }}</a></th>
+                <th class="quiz-stat-col"><a>{{ _('Questions') }}</a></th>
+                <th class="quiz-stat-col"><a>{{ _('Max score') }}</a></th>
+                <th class="quiz-stat-col"><a>{{ _('Attempts') }}</a></th>
+                <th class="quiz-stat-col"><a>{{ _('Participants') }}</a></th>
+                {% if request.user.is_authenticated %}
+                <th class="points"><a>{{ _('Your best') }}</a></th>
+                {% endif %}
+            </tr>
+        </thead>
+        {% endmacro %}
+
+        {% if upcoming_quizzes %}
+        <h3>{{ _('Upcoming') }}</h3>
+        <table id="quiz-table-upcoming" class="table striped">
+            {{ table_head() }}
             <tbody>
-                {% for quiz in quizzes %}
-                <tr>
-                    <td class="quiz-code-col">{{ quiz.code }}</td>
-                    <td class="problem-name">
-                        <a href="{{ url('quiz_detail', quiz.code) }}">{{ quiz.name }}</a>
-                    </td>
-                    <td class="quiz-stat-col">{{ question_counts.get(quiz.id, 0) }}</td>
-                    <td class="quiz-stat-col">{{ max_scores.get(quiz.id, 0) }}</td>
-                    <td class="quiz-stat-col">{{ attempt_counts.get(quiz.id, 0) }}</td>
-                    <td class="quiz-stat-col">{{ user_counts.get(quiz.id, 0) }}</td>
-                    {% if request.user.is_authenticated %}
-                    <td class="p">
-                        {% if best_scores.get(quiz.id) is not none %}
-                            <span class="quiz-best-score">{{ best_scores.get(quiz.id) }}</span>
-                        {% else %}
-                            <span class="quiz-no-score">—</span>
-                        {% endif %}
-                    </td>
-                    {% endif %}
-                </tr>
+                {% for quiz in upcoming_quizzes %}
+                {{ quiz_row(quiz) }}
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        {% if open_quizzes or (not upcoming_quizzes and not past_quizzes) %}
+        <h3>{{ _('Open') }}</h3>
+        <table id="quiz-table-open" class="table striped">
+            {{ table_head() }}
+            <tbody>
+                {% for quiz in open_quizzes %}
+                {{ quiz_row(quiz) }}
                 {% else %}
                 <tr>
                     <td colspan="{{ 7 if request.user.is_authenticated else 6 }}">
@@ -162,6 +189,20 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% endif %}
+
+        {% if past_quizzes %}
+        <h3>{{ _('Past') }}</h3>
+        <table id="quiz-table-past" class="table striped">
+            {{ table_head() }}
+            <tbody>
+                {% for quiz in past_quizzes %}
+                {{ quiz_row(quiz) }}
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
     </div>
 </div>
 
