@@ -1,0 +1,104 @@
+{% extends "common-content.html" %}
+
+{% block media %}
+<style>
+    .quiz-answer-row { border: 1px solid #ddd; border-radius: 4px; padding: 1em; margin-bottom: 1em; }
+    .quiz-answer-row.correct   { border-left: 5px solid #4a4; }
+    .quiz-answer-row.incorrect { border-left: 5px solid #c44; }
+    .quiz-explanation { background: #f6f6f6; padding: 0.6em; margin-top: 0.6em; border-radius: 4px; }
+    .quiz-choices-result { list-style: none; padding: 0; margin: 0.5em 0; }
+    .quiz-choices-result li { padding: 0.3em 0.5em; margin: 0.2em 0; border-radius: 3px; }
+    .quiz-choices-result li.choice-correct  { background: #e6f4e6; font-weight: bold; }
+    .quiz-choices-result li.choice-selected { outline: 2px solid #666; }
+    .quiz-choices-result li p { margin: 0 !important; }
+    details.why-toggle { display: block; margin-top: 0.2em; }
+    details.why-toggle summary { cursor: pointer; color: #666; font-size: 0.88em; }
+    details.why-toggle .why-body { margin: 0.2em 0 0 1em; font-size: 0.9em; color: #444; }
+    details.why-toggle .why-body p { margin: 0 !important; }
+</style>
+{% endblock %}
+
+{% block body %}
+<p style="font-size:1.3em">{{ _('Score') }}: <b>{{ attempt.score }} / {{ total_points }}</b></p>
+
+{% for row in rows %}
+{% set show_correct  = result_feedback in ('correctness', 'full') %}
+{% set reveal_answer = result_feedback == 'full' %}
+<div class="quiz-answer-row
+    {%- if show_correct and row.answer %} {{ 'correct' if row.answer.is_correct else 'incorrect' }}{% endif %}">
+
+    <h4>{{ _('Question') }} {{ row.number }}
+        {% if show_correct %}({{ row.answer.points if row.answer else 0 }} / {{ row.max_points }}){% endif %}
+    </h4>
+
+    <div class="content-description">{{ row.question.content|markdown('default') }}</div>
+
+    {# score_only & correctness: just show student's answer as text #}
+    {% if not reveal_answer %}
+        <p>{{ _('Your answer') }}:
+            {% if row.answer is none or row.answer.answer is none %}<i>{{ _('(no answer)') }}</i>
+            {% elif row.question.type == 'MC' %}{{ row.question.choices[row.answer.answer]['text']|markdown('default', strip_paragraphs=True) }}
+            {% elif row.question.type == 'TF' %}{{ _('True') if row.answer.answer == 0 else _('False') }}
+            {% elif row.question.type == 'MA' %}
+                {% for idx in row.answer.answer %}{{ row.question.choices[idx]['text']|markdown('default', strip_paragraphs=True) }}{% if not loop.last %}; {% endif %}{% endfor %}
+            {% else %}{{ row.answer.answer }}
+            {% endif %}
+        </p>
+    {% endif %}
+
+    {# full mode: list all choices with highlighting and Why? toggles #}
+    {% if reveal_answer %}
+        {% if row.question.type in ('MC', 'MA') %}
+            <ul class="quiz-choices-result">
+            {% for idx in range(row.question.choices|length) %}
+                {% set ch = row.question.choices[idx] %}
+                {% set is_correct = (row.question.type == 'MC' and idx == row.question.correct_answers) or
+                                    (row.question.type == 'MA' and idx in (row.question.correct_answers or [])) %}
+                {% set was_selected = row.answer and row.answer.answer is not none and (
+                    (row.question.type == 'MC' and row.answer.answer == idx) or
+                    (row.question.type == 'MA' and idx in (row.answer.answer or []))) %}
+                <li class="content-description {% if is_correct %}choice-correct{% endif %} {% if was_selected %}choice-selected{% endif %}">
+                    {{ ch['text']|markdown('default') }}
+                    {% if ch['explanation'] %}
+                        <details class="why-toggle">
+                            <summary>{{ _('Why?') }}</summary>
+                            <div class="why-body content-description">{{ ch['explanation']|markdown('default') }}</div>
+                        </details>
+                    {% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+        {% elif row.question.type == 'TF' %}
+            <p>{{ _('Your answer') }}:
+                {% if row.answer is none or row.answer.answer is none %}<i>{{ _('(no answer)') }}</i>
+                {% else %}{{ _('True') if row.answer.answer == 0 else _('False') }}{% endif %}
+            </p>
+            <p>{{ _('Correct answer') }}: {{ _('True') if row.question.correct_answers == 0 else _('False') }}</p>
+        {% else %}
+            {# SA #}
+            <p>{{ _('Your answer') }}:
+                {% if row.answer is none or row.answer.answer is none %}<i>{{ _('(no answer)') }}</i>
+                {% else %}{{ row.answer.answer }}{% endif %}
+            </p>
+            {% if row.question.answer_display %}
+                <p>{{ _('Correct answer') }}: {{ row.question.answer_display }}</p>
+            {% else %}
+                <p>{{ _('Accepted patterns') }}:
+                    {% for acc in row.question.correct_answers %}{{ acc.text if acc is mapping else acc }}{% if not loop.last %} | {% endif %}{% endfor %}
+                </p>
+            {% endif %}
+        {% endif %}
+
+        {% if row.question.explanation %}
+            <div class="quiz-explanation">{{ row.question.explanation|markdown('default') }}</div>
+        {% endif %}
+    {% endif %}
+
+</div>
+{% endfor %}
+
+<p>
+    <a href="{{ url('quiz_detail', quiz.code) }}">{{ _('Back to quiz') }}</a> &middot;
+    <a href="{{ url('quiz_ranking', quiz.code) }}">{{ _('Ranking') }}</a>
+</p>
+{% endblock %}

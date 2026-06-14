@@ -1,0 +1,162 @@
+{% extends "common-content.html" %}
+
+{% block media %}
+    {{ form.media.css }}
+    {{ formset.media.css }}
+    <link rel="stylesheet" href="{{ static('vnoj/jquery-ui/jquery-ui.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ static('ui_form.css') }}">
+{% endblock %}
+
+{% block js_media %}
+    {{ form.media.js }}
+    {{ formset.media.js }}
+    <script type="text/javascript" src="{{ static('vnoj/jquery-ui/jquery-ui.min.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+<div>
+{% if editing and request.user.is_staff %}
+    <div class="alert alert-warning alert-dismissable">
+        <a class="close">x</a>
+        <a href="{{ url('admin:quiz_quiz_change', quiz.id) }}">{{ _('Edit quiz in admin panel for more options') }}</a>
+    </div>
+{% endif %}
+<form method="post" class="form-area" style="display: flex; justify-content: center; flex-direction: column;">
+    {% if form.errors %}
+        <p class="errornote">{{ _('Please correct the error below.') }}</p>
+    {% endif %}
+    {% csrf_token %}
+    <table class="django-as-table">{{ form.as_table() }}</table>
+    <hr>
+
+    <h3>{{ _('Questions') }}</h3>
+    {{ formset.management_form }}
+    <table class="table" id="question-links-table">
+        <thead>
+            <tr>
+                <th style="width:32px;"></th>
+                <th>{{ _('Question') }}</th>
+                <th style="width:90px;">{{ _('Points') }}</th>
+                <th style="width:36px;"></th>
+            </tr>
+        </thead>
+        <tbody id="question-links-body">
+            {% for link_form in formset %}
+            <tr class="sortable-row">
+                {% for hidden in link_form.hidden_fields() %}{{ hidden }}{% endfor %}
+                <td class="drag-handle" title="{{ _('Drag to reorder') }}">⠿</td>
+                <td>{{ link_form.question }}</td>
+                <td>{{ link_form.points }}</td>
+                <td>
+                    <span style="display:none;">{{ link_form.DELETE }}</span>
+                    <button type="button" class="delete-question-btn"
+                            title="{{ _('Remove') }}">✕</button>
+                </td>
+            </tr>
+            {% if link_form.errors %}
+            <tr><td colspan="4" style="color:#c00;">{{ link_form.errors }}</td></tr>
+            {% endif %}
+            {% endfor %}
+            {# Template row — JS clones this for new rows; Select2 skips it (id contains __prefix__) #}
+            <tr class="sortable-template" style="display:none;">
+                {% for hidden in formset.empty_form.hidden_fields() %}{{ hidden }}{% endfor %}
+                <td class="drag-handle">⠿</td>
+                <td>{{ formset.empty_form.question }}</td>
+                <td>{{ formset.empty_form.points }}</td>
+                <td>
+                    <span style="display:none;">{{ formset.empty_form.DELETE }}</span>
+                    <button type="button" class="delete-question-btn">✕</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <button type="button" id="add-question-btn" style="margin:8px 0;">
+        + {{ _('Add question') }}
+    </button>
+
+    <table>
+        <tr>
+            <td style="float: left;">
+                {% if editing %}
+                <a href="{{ url('quiz_detail', quiz.code) }}">{{ _('View quiz') }}</a> &middot;
+                <a href="{{ url('quiz_attempts', quiz.code) }}">{{ _('Attempts & regrade') }}</a>
+                {% endif %}
+            </td>
+            <td style="float: right;"><input type="submit" value="{{ _('Save quiz') }}" class="button"></td>
+        </tr>
+    </table>
+</form>
+</div>
+
+<style>
+.drag-handle {
+    cursor: grab;
+    user-select: none;
+    color: #aaa;
+    text-align: center;
+    font-size: 18px;
+    padding: 4px 8px;
+}
+.drag-handle:active { cursor: grabbing; }
+.ui-sortable-helper {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    display: table;
+}
+.delete-question-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #c00;
+    font-size: 16px;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+.delete-question-btn:hover { background: #fff0f0; }
+</style>
+
+<script>
+(function () {
+'use strict';
+
+/* ── Order management ── */
+function updateOrders() {
+    $('#question-links-body tr.sortable-row:visible').each(function (i) {
+        $(this).find('.order-field').val(i + 1);
+    });
+}
+
+/* ── Drag-to-reorder ── */
+$('#question-links-body').sortable({
+    handle: '.drag-handle',
+    items: 'tr.sortable-row',
+    stop: updateOrders,
+});
+
+/* ── Add question ── */
+$('#add-question-btn').on('click', function () {
+    var total = parseInt($('#id_question_links-TOTAL_FORMS').val(), 10);
+    var templateHtml = $('#question-links-body .sortable-template')[0].outerHTML
+        .replace(/sortable-template/g, 'sortable-row')
+        .replace(/__prefix__/g, String(total));
+    var $newRow = $(templateHtml).show();
+    $('#question-links-body .sortable-template').before($newRow);
+    $('#id_question_links-TOTAL_FORMS').val(total + 1);
+    $newRow.find('.django-select2').djangoSelect2({ dropdownAutoWidth: true });
+    updateOrders();
+});
+
+/* ── Delete question ── */
+$(document).on('click', '.delete-question-btn', function () {
+    var $row = $(this).closest('tr');
+    $row.find('[name$="-DELETE"]').prop('checked', true);
+    $row.addClass('sortable-deleted').hide();
+    updateOrders();
+});
+
+/* ── Set initial orders on page load ── */
+updateOrders();
+
+})();
+</script>
+{% endblock %}

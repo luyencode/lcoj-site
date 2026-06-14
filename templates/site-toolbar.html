@@ -1,5 +1,28 @@
 <div id="site-toolbar" class="site-toolbar">
     <div id="site-toolbar-panel" class="site-toolbar-panel">
+        {% if request.user.is_authenticated and (request.user.is_superuser or request.user.has_perm('quiz.edit_own_quiz') or request.user.has_perm('quiz.edit_all_quiz')) %}
+        <a class="site-toolbar-action" href="{{ url('quiz_question_bank') }}" title="{{ _('Question Bank') }}">
+            <span class="site-toolbar-icon"><i class="fa fa-question-circle"></i></span>
+            <span class="site-toolbar-label">
+                <span class="site-toolbar-label-title">{{ _('Question Bank') }}</span>
+                <span class="site-toolbar-label-brand">Quiz</span>
+            </span>
+        </a>
+        <a class="site-toolbar-action" href="{{ url('quiz_import') }}" title="{{ _('Import Quiz') }}">
+            <span class="site-toolbar-icon"><i class="fa fa-upload"></i></span>
+            <span class="site-toolbar-label">
+                <span class="site-toolbar-label-title">{{ _('Import Quiz') }}</span>
+                <span class="site-toolbar-label-brand">Quiz</span>
+            </span>
+        </a>
+        <a class="site-toolbar-action" href="{{ url('quiz_list') }}" title="{{ _('Manage Quizzes') }}">
+            <span class="site-toolbar-icon"><i class="fa fa-list-alt"></i></span>
+            <span class="site-toolbar-label">
+                <span class="site-toolbar-label-title">{{ _('Manage Quizzes') }}</span>
+                <span class="site-toolbar-label-brand">Quiz</span>
+            </span>
+        </a>
+        {% endif %}
         <a class="site-toolbar-action" href="https://luyencode.net/post/7-roadmap" title="{{ _('Beginner guide') }}">
             <span class="site-toolbar-icon"><i class="fa fa-road"></i></span>
             <span class="site-toolbar-label">

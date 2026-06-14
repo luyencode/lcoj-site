@@ -1,5 +1,5 @@
 from django.test import TestCase
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.translation import gettext_lazy as _
 
 from judge.models import ContestSubmission, Language, Submission, SubmissionSource
@@ -112,10 +112,11 @@ class SubmissionTestCase(CommonDataMixin, TestCase):
         self.assertEqual(self.full_ac_submission.result_class, 'AC')
         self.assertEqual(self.full_ac_submission.short_status, 'AC')
 
-        self.assertEqual(
-            str(self.full_ac_submission_source),
-            'Source of Submission %d of full_ac by normal' % self.full_ac_submission.id,
-        )
+        with translation.override('en'):
+            self.assertEqual(
+                str(self.full_ac_submission_source),
+                'Source of Submission %d of full_ac by normal' % self.full_ac_submission.id,
+            )
 
     def test_submission_lock(self):
         self.assertTrue(self.locked_submission.is_locked)
