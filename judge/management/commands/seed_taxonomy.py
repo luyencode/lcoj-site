@@ -142,12 +142,12 @@ class Command(BaseCommand):
                 problem_count = g.problem_set.count()
                 if problem_count == 0:
                     self.stdout.write(self.style.WARNING(
-                        f'  - Xoá nhóm bài cũ: {g.full_name} (không có bài nào)'
+                        f'  - Xoá nhóm bài cũ: {g.full_name} (không có bài nào)',
                     ))
                     g.delete()
                 else:
                     self.stdout.write(self.style.NOTICE(
-                        f'  ! Giữ nhóm bài cũ: {g.full_name} (đang có {problem_count} bài)'
+                        f'  ! Giữ nhóm bài cũ: {g.full_name} (đang có {problem_count} bài)',
                     ))
 
         for t in ProblemType.objects.exclude(name='uncategorized'):
@@ -155,15 +155,15 @@ class Command(BaseCommand):
                 problem_count = t.problem_set.count()
                 if problem_count == 0:
                     self.stdout.write(self.style.WARNING(
-                        f'  - Xoá dạng đề cũ: {t.full_name} (không có bài nào)'
+                        f'  - Xoá dạng đề cũ: {t.full_name} (không có bài nào)',
                     ))
                     t.delete()
                 else:
                     self.stdout.write(self.style.NOTICE(
-                        f'  ! Giữ dạng đề cũ: {t.full_name} (đang có {problem_count} bài)'
+                        f'  ! Giữ dạng đề cũ: {t.full_name} (đang có {problem_count} bài)',
                     ))
 
         self.stdout.write(self.style.SUCCESS(
             f'\nHoàn tất: {ProblemGroup.objects.count()} nhóm bài, '
-            f'{ProblemType.objects.count()} dạng đề'
+            f'{ProblemType.objects.count()} dạng đề',
         ))
