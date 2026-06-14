@@ -296,13 +296,13 @@ class Quiz(models.Model):
 
     @property
     def time_before_start(self):
-        if self.start_time and self._now <= self.start_time:
+        if self.start_time and self._now < self.start_time:
             return self.start_time - self._now
         return None
 
     @property
     def time_before_end(self):
-        if self.end_time and self._now <= self.end_time:
+        if self.end_time and self._now < self.end_time:
             return self.end_time - self._now
         return None
 
@@ -379,10 +379,12 @@ class QuizAttempt(models.Model):
 
     def has_expired(self, now=None):
         now = now or timezone.now()
-        # Personal time limit takes priority when set
+        # Personal time limit takes priority: a timed attempt runs to its own
+        # deadline even after end_time passes (teachers must set time_limit <=
+        # window duration to avoid late submissions in exam settings).
         if self.deadline is not None:
             return now > self.deadline + self.GRACE
-        # No personal time limit: quiz end_time is the hard deadline
+        # No personal time limit: quiz end_time is the hard deadline, no grace.
         if self.quiz.end_time is not None:
             return now > self.quiz.end_time
         return False
