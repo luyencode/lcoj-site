@@ -119,6 +119,7 @@ class QuizForm(forms.ModelForm):
         fields = ('code', 'name', 'description',
                   'time_limit', 'max_attempts', 'shuffle_questions',
                   'result_feedback', 'integrity_monitoring',
+                  'start_time', 'end_time',
                   'is_public', 'is_organization_private', 'organizations',
                   'curators', 'testers')
         widgets = {
@@ -133,12 +134,25 @@ class QuizForm(forms.ModelForm):
             'testers': HeavySelect2MultipleWidget(
                 data_view='profile_select2',
                 attrs={'style': 'width: 100%'}),
+            'start_time': forms.DateTimeInput(
+                attrs={'type': 'datetime-local'}),
+            'end_time': forms.DateTimeInput(
+                attrs={'type': 'datetime-local'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance.pk:
             self.fields['code'].disabled = True
+
+    def clean(self):
+        cleaned = super().clean()
+        start = cleaned.get('start_time')
+        end = cleaned.get('end_time')
+        if start and end and end <= start:
+            raise forms.ValidationError(
+                _('End time must be after start time.'))
+        return cleaned
 
 
 class QuizImportForm(forms.Form):

@@ -238,6 +238,9 @@ class QuizAdmin(admin.ModelAdmin):
             'fields': ('time_limit', 'max_attempts', 'shuffle_questions',
                        'result_feedback', 'integrity_monitoring'),
         }),
+        (_l('Scheduling'), {
+            'fields': ('start_time', 'end_time'),
+        }),
         (_l('Access'), {
             'fields': ('is_public', 'is_organization_private',
                        'organizations', 'authors', 'curators', 'testers'),
