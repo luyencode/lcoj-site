@@ -2,7 +2,8 @@ from django.contrib import messages
 from django.db import IntegrityError, transaction
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _l
 from django.views.generic import FormView, View
 
 from judge.utils.views import TitleMixin
@@ -19,7 +20,7 @@ XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 class QuizImport(TitleMixin, EditorPermissionMixin, FormView):
     form_class = QuizImportForm
     template_name = 'quiz/import.html'
-    title = _('Import Questions')
+    title = _l('Import Questions')
 
     def form_valid(self, form):
         uploaded = form.cleaned_data['file']
@@ -33,8 +34,9 @@ class QuizImport(TitleMixin, EditorPermissionMixin, FormView):
             if q.code:
                 if q.code in seen_codes:
                     q.errors.append(
-                        f'Duplicate code {q.code!r} in this file '
-                        f'(first seen on row {seen_codes[q.code]})')
+                        _('Duplicate code %(code)s in this file (first seen on row %(row)s)') % {
+                            'code': q.code, 'row': seen_codes[q.code],
+                        })
                 else:
                     seen_codes[q.code] = q.row
 
@@ -47,7 +49,9 @@ class QuizImport(TitleMixin, EditorPermissionMixin, FormView):
             for q in questions:
                 if q.code in db_conflicts:
                     q.errors.append(
-                        f'Code {q.code!r} already exists in the question bank')
+                        _('Code %(code)s already exists in the question bank') % {
+                            'code': q.code,
+                        })
 
         existing = set(QuizCategory.objects.values_list('slug', flat=True))
         new_categories = sorted({q.category for q in questions
