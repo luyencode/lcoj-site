@@ -1,5 +1,6 @@
 import random
 from datetime import timedelta
+from functools import cached_property
 
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
@@ -201,6 +202,12 @@ class Quiz(models.Model):
         default=True,
         help_text=_('Track suspicious behavior during this quiz.'),
     )
+    start_time = models.DateTimeField(
+        verbose_name=_('start time'), null=True, blank=True, db_index=True,
+        help_text=_('Leave blank to make the quiz available immediately.'))
+    end_time = models.DateTimeField(
+        verbose_name=_('end time'), null=True, blank=True, db_index=True,
+        help_text=_('Leave blank for no closing time.'))
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -275,6 +282,30 @@ class Quiz(models.Model):
         return [attempt for _key, attempt in sorted(
             best.values(), key=lambda pair: pair[0])]
 
+    @cached_property
+    def _now(self):
+        return timezone.now()
+
+    @cached_property
+    def can_start(self):
+        return self.start_time is None or self.start_time <= self._now
+
+    @cached_property
+    def ended(self):
+        return self.end_time is not None and self.end_time < self._now
+
+    @property
+    def time_before_start(self):
+        if self.start_time and self._now < self.start_time:
+            return self.start_time - self._now
+        return None
+
+    @property
+    def time_before_end(self):
+        if self.end_time and self._now < self.end_time:
+            return self.end_time - self._now
+        return None
+
 
 class QuizQuestionLink(models.Model):
     quiz = models.ForeignKey(
@@ -347,10 +378,16 @@ class QuizAttempt(models.Model):
         return self.started_at + timedelta(minutes=self.quiz.time_limit)
 
     def has_expired(self, now=None):
-        deadline = self.deadline
-        if deadline is None:
-            return False
-        return (now or timezone.now()) > deadline + self.GRACE
+        now = now or timezone.now()
+        # Personal time limit takes priority: a timed attempt runs to its own
+        # deadline even after end_time passes (teachers must set time_limit <=
+        # window duration to avoid late submissions in exam settings).
+        if self.deadline is not None:
+            return now > self.deadline + self.GRACE
+        # No personal time limit: quiz end_time is the hard deadline, no grace.
+        if self.quiz.end_time is not None:
+            return now > self.quiz.end_time
+        return False
 
     def time_remaining_seconds(self, now=None):
         deadline = self.deadline
