@@ -116,8 +116,9 @@ class QuizQuestionAdmin(admin.ModelAdmin):
                     if q.code:
                         if q.code in seen_codes:
                             q.errors.append(
-                                f'Duplicate code {q.code!r} in this file '
-                                f'(first seen on row {seen_codes[q.code]})')
+                                _('Duplicate code %(code)s in this file (first seen on row %(row)s)') % {
+                                    'code': q.code, 'row': seen_codes[q.code],
+                                })
                         else:
                             seen_codes[q.code] = q.row
                 # Check for code conflicts with existing DB records
@@ -129,7 +130,9 @@ class QuizQuestionAdmin(admin.ModelAdmin):
                     for q in questions:
                         if q.code in db_conflicts:
                             q.errors.append(
-                                f'Code {q.code!r} already exists in the question bank')
+                                _('Code %(code)s already exists in the question bank') % {
+                                    'code': q.code,
+                                })
                 has_errors = any(q.errors for q in questions) or not questions
                 if not has_errors:
                     request.session[SESSION_KEY] = {

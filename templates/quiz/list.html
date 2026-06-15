@@ -2,10 +2,10 @@
 
 {% block media %}
 <style>
-    #quiz-table-upcoming th, #quiz-table-open th, #quiz-table-past th {
+    #quiz-table-upcoming th, #quiz-table-ongoing th, #quiz-table-past th {
         padding: 0;
     }
-    #quiz-table-upcoming th a, #quiz-table-open th a, #quiz-table-past th a {
+    #quiz-table-upcoming th a, #quiz-table-ongoing th a, #quiz-table-past th a {
         display: block;
         padding: 6px 10px;
         color: inherit;
@@ -27,16 +27,17 @@
         width: 1%;
         text-align: center;
     }
-    h3 { margin-top: 1.2em; }
-    .quiz-schedule-note { color: #7a5900; }
-    .quiz-schedule-note-closed { color: #888; }
 </style>
 {% endblock %}
 
 {% block js_media %}
 {% compress js %}
 <script>
-    $(function () {
+    $(document).ready(function () {
+        $('.time-remaining').each(function () {
+            count_down($(this));
+        });
+
         var $form = $('form#filter-form');
         var $search = $('#search');
 
@@ -108,25 +109,37 @@
 
     <div id="content-left" class="problems h-scrollable-table">
 
-        {# Macro: render one quiz row #}
+        {# Show start/end date range below the quiz name #}
+        {% macro time_info(quiz) %}
+        {% if quiz.start_time or quiz.end_time %}
+        <div class="time time-left">
+            {% if quiz.start_time and quiz.end_time %}
+                {{ quiz.start_time|date(_("M j, Y, G:i")) }} – {{ quiz.end_time|date(_("M j, Y, G:i")) }}
+            {% elif quiz.start_time %}
+                {{ _('From %(start)s', start=quiz.start_time|date(_("M j, Y, G:i"))) }}
+            {% else %}
+                {{ _('Until %(end)s', end=quiz.end_time|date(_("M j, Y, G:i"))) }}
+            {% endif %}
+        </div>
+        {% endif %}
+        {% endmacro %}
+
+        {# Render one quiz row #}
         {% macro quiz_row(quiz) %}
         <tr>
             <td class="quiz-code-col">{{ quiz.code }}</td>
             <td class="problem-name">
-                <a href="{{ url('quiz_detail', quiz.code) }}">{{ quiz.name }}</a>
-                {% if quiz.time_before_start %}
-                <br><small class="quiz-schedule-note">
-                    {{ _('Starting in') }} {{ as_countdown(quiz.time_before_start) }}
-                </small>
-                {% elif quiz.time_before_end %}
-                <br><small class="quiz-schedule-note">
-                    {{ _('Ends in') }} {{ as_countdown(quiz.time_before_end) }}
-                </small>
-                {% elif quiz.ended %}
-                <br><small class="quiz-schedule-note quiz-schedule-note-closed">
-                    {{ _('Closed') }} {{ quiz.end_time|date('DATETIME_FORMAT') }}
-                </small>
-                {% endif %}
+                <div class="quiz-block">
+                    <a href="{{ url('quiz_detail', quiz.code) }}">{{ quiz.name }}</a>
+                    {% if quiz.time_before_start %}
+                    <br>
+                    <span class="time">{{ _('Starting in %(countdown)s', countdown=as_countdown(quiz.time_before_start)) }}</span>
+                    {% elif quiz.time_before_end %}
+                    <br>
+                    <span class="time">{{ _('Ends in %(countdown)s', countdown=as_countdown(quiz.time_before_end)) }}</span>
+                    {% endif %}
+                    {{ time_info(quiz) }}
+                </div>
             </td>
             <td class="quiz-stat-col">{{ question_counts.get(quiz.id, 0) }}</td>
             <td class="quiz-stat-col">{{ max_scores.get(quiz.id, 0) }}</td>
@@ -144,7 +157,7 @@
         </tr>
         {% endmacro %}
 
-        {# Shared table header macro #}
+        {# Shared table header #}
         {% macro table_head() %}
         <thead>
             <tr>
@@ -162,7 +175,7 @@
         {% endmacro %}
 
         {% if upcoming_quizzes %}
-        <h3>{{ _('Upcoming') }}</h3>
+        <h4>{{ _('Upcoming quizzes') }}</h4>
         <table id="quiz-table-upcoming" class="table striped">
             {{ table_head() }}
             <tbody>
@@ -171,11 +184,11 @@
                 {% endfor %}
             </tbody>
         </table>
+        <br>
         {% endif %}
 
-        {% if open_quizzes or (not upcoming_quizzes and not past_quizzes) %}
-        <h3>{{ _('Open') }}</h3>
-        <table id="quiz-table-open" class="table striped">
+        <h4>{{ _('Ongoing quizzes') }}</h4>
+        <table id="quiz-table-ongoing" class="table striped">
             {{ table_head() }}
             <tbody>
                 {% for quiz in open_quizzes %}
@@ -183,16 +196,16 @@
                 {% else %}
                 <tr>
                     <td colspan="{{ 7 if request.user.is_authenticated else 6 }}">
-                        {{ _('No quizzes found.') }}
+                        <i>{{ _('No quizzes found.') }}</i>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        {% endif %}
+        <br>
 
         {% if past_quizzes %}
-        <h3>{{ _('Past') }}</h3>
+        <h4 id="past-quizzes">{{ _('Past quizzes') }}</h4>
         <table id="quiz-table-past" class="table striped">
             {{ table_head() }}
             <tbody>

@@ -249,7 +249,7 @@ $(document).ready(function () {
 {% if time_before_start %}
 <div class="quiz-schedule-banner quiz-schedule-upcoming">
     <i class="fa fa-clock-o"></i>
-    {{ _('Starting in') }} {{ as_countdown(time_before_start) }}
+    {{ _('Starting in %(countdown)s', countdown=as_countdown(time_before_start)) }}
 </div>
 {% elif ended %}
 <div class="quiz-schedule-banner quiz-schedule-ended">
@@ -259,7 +259,7 @@ $(document).ready(function () {
 {% elif time_before_end %}
 <div class="quiz-schedule-banner quiz-schedule-open">
     <i class="fa fa-clock-o"></i>
-    {{ _('Ends in') }} {{ as_countdown(time_before_end) }}
+    {{ _('Ends in %(countdown)s', countdown=as_countdown(time_before_end)) }}
 </div>
 {% endif %}
 
@@ -370,8 +370,10 @@ $(document).ready(function () {
 {% else %}
     <div class="quiz-login-notice">
         <i class="fa fa-lock"></i>
-        {{ _('Please') }} <a href="{{ url('auth_login') }}?next={{ request.get_full_path() }}">{{ _('log in') }}</a>
-        {{ _('to take this quiz.') }}
+        {% set login_url = url('auth_login') + '?next=' + request.get_full_path() %}
+        {%- trans login_url=login_url -%}
+        Please <a href="{{ login_url }}">log in</a> to take this quiz.
+        {%- endtrans -%}
     </div>
 {% endif %}
 {% if quiz.integrity_monitoring and not in_progress and request.user.is_authenticated %}
