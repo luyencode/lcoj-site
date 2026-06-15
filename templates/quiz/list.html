@@ -2,6 +2,11 @@
 
 {% block media %}
 <style>
+    /* ── Table column widths ── */
+    #quiz-table-upcoming, #quiz-table-ongoing, #quiz-table-past {
+        table-layout: fixed;
+        width: 100%;
+    }
     #quiz-table-upcoming th, #quiz-table-ongoing th, #quiz-table-past th {
         padding: 0;
     }
@@ -9,6 +14,9 @@
         display: block;
         padding: 6px 10px;
         color: inherit;
+    }
+    .quiz-block a {
+        font-size: 1.2em;
     }
     .quiz-best-score {
         font-weight: bold;
@@ -20,12 +28,144 @@
     }
     .quiz-code-col {
         white-space: nowrap;
-        width: 1%;
+        width: 15%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .problem-name {
+        width: 40%;
     }
     .quiz-stat-col {
         white-space: nowrap;
-        width: 1%;
+        width: 15%;
         text-align: center;
+    }
+    th.points, td.points {
+        width: 15%;
+        text-align: center;
+    }
+
+    /* ── Tab bar ── */
+    .quiz-tabs-bar {
+        border-bottom: 2px solid #ccc;
+        margin-bottom: 1em;
+    }
+    .quiz-tabs {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0;
+    }
+    .quiz-tab {
+        padding: 0.5em 1.1em;
+        cursor: pointer;
+        font-weight: 600;
+        color: #555;
+        border: 1px solid transparent;
+        border-bottom: none;
+        margin-bottom: -2px;
+        border-radius: 4px 4px 0 0;
+        user-select: none;
+        transition: background 0.1s;
+    }
+    .quiz-tab:hover {
+        background: #f5f5f5;
+        color: #231f20;
+    }
+    .quiz-tab.active {
+        background: #fff;
+        color: #231f20;
+        border-color: #ccc;
+        border-bottom-color: #fff;
+    }
+    .quiz-tab-count {
+        display: inline-block;
+        background: #eee;
+        border-radius: 10px;
+        padding: 0 7px;
+        font-size: 0.8em;
+        font-weight: 700;
+        margin-left: 4px;
+        min-width: 18px;
+        text-align: center;
+    }
+    .quiz-tab.active .quiz-tab-count {
+        background: #5b80b9;
+        color: #fff;
+    }
+
+    /* ── Section wrappers ── */
+    .quiz-section {
+        margin-bottom: 1.5em;
+    }
+    .quiz-section-header {
+        padding: 0.45em 0.75em;
+        border-radius: 4px 4px 0 0;
+        margin: 0;
+        font-size: 1em;
+        font-weight: 600;
+    }
+    .quiz-section-upcoming {
+        background: #fff8e1;
+        border-left: 4px solid #ffe082;
+        color: #7a5900;
+    }
+    .quiz-section-ongoing {
+        background: #e8f5e9;
+        border-left: 4px solid #a5d6a7;
+        color: #1b5e20;
+    }
+    .quiz-section-past {
+        background: #f5f5f5;
+        border-left: 4px solid #ccc;
+        color: #555;
+    }
+
+    /* ── Sidebar status dots ── */
+    .quiz-status-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 4px;
+        vertical-align: middle;
+    }
+    .quiz-dot-upcoming { background: #ffe082; border: 1px solid #f4c430; }
+    .quiz-dot-ongoing  { background: #a5d6a7; border: 1px solid #4caf50; }
+    .quiz-dot-past     { background: #ccc;    border: 1px solid #aaa; }
+
+    .quiz-status-cb-row {
+        padding: 3px 0;
+    }
+    .quiz-status-cb-row label {
+        cursor: pointer;
+    }
+
+    /* ── Time info in quiz rows ── */
+    .quiz-time-info {
+        font-size: 0.82em;
+        color: #666;
+        margin-top: 3px;
+        line-height: 1.6;
+    }
+    .quiz-time-item {
+        display: inline-block;
+        margin-right: 0.9em;
+        white-space: nowrap;
+    }
+    .quiz-icon-start {
+        color: #2a7a2a;
+        margin-right: 3px;
+    }
+    .quiz-icon-end {
+        color: #b05000;
+        margin-right: 3px;
+    }
+    .quiz-time-always-open {
+        color: #5b80b9;
+        font-style: italic;
     }
 </style>
 {% endblock %}
@@ -33,6 +173,33 @@
 {% block js_media %}
 {% compress js %}
 <script>
+    var activeTab = 'all';
+
+    function applyTab(tab) {
+        activeTab = tab;
+        $('.quiz-tab').removeClass('active');
+        $('#quiz-tab-' + tab).addClass('active');
+
+        if (tab === 'all') {
+            applyCheckboxFilters();
+            $('.quiz-status-cb').prop('disabled', false).closest('.quiz-status-cb-row').css('opacity', '');
+        } else {
+            $('.quiz-section').hide();
+            $('.quiz-section[data-section="' + tab + '"]').show();
+            $('.quiz-status-cb').prop('disabled', true).closest('.quiz-status-cb-row').css('opacity', '0.5');
+        }
+        if (history.replaceState) {
+            history.replaceState(null, '', window.location.pathname + window.location.search + (tab === 'all' ? '' : '#' + tab));
+        }
+    }
+
+    function applyCheckboxFilters() {
+        $('.quiz-status-cb').each(function () {
+            var section = $(this).val();
+            $('.quiz-section[data-section="' + section + '"]').toggle($(this).is(':checked'));
+        });
+    }
+
     $(document).ready(function () {
         $('.time-remaining').each(function () {
             count_down($(this));
@@ -56,6 +223,18 @@
             $search.prop('disabled', !$search.val());
             $form.submit();
         });
+
+        $('.quiz-tab').on('click', function () {
+            applyTab($(this).data('tab'));
+        });
+
+        $('.quiz-status-cb').on('change', function () {
+            if (activeTab === 'all') applyCheckboxFilters();
+        });
+
+        var hash = window.location.hash.replace('#', '');
+        var validTabs = ['upcoming', 'ongoing', 'past', 'all'];
+        applyTab(validTabs.indexOf(hash) !== -1 ? hash : 'all');
 
         var info_float = $('.info-float');
         var container = $('#content-right');
@@ -104,27 +283,69 @@
                     </form>
                 </div>
             </div>
+
+            <div class="sidebox">
+                <h3>{{ _('Status') }} <i class="fa fa-filter"></i></h3>
+                <div class="sidebox-content">
+                    {% if upcoming_quizzes %}
+                    <div class="quiz-status-cb-row">
+                        <input type="checkbox" id="show-upcoming" class="quiz-status-cb" value="upcoming" checked>
+                        <label for="show-upcoming">
+                            <span class="quiz-status-dot quiz-dot-upcoming"></span>
+                            {{ _('Upcoming') }}
+                        </label>
+                    </div>
+                    {% endif %}
+                    <div class="quiz-status-cb-row">
+                        <input type="checkbox" id="show-ongoing" class="quiz-status-cb" value="ongoing" checked>
+                        <label for="show-ongoing">
+                            <span class="quiz-status-dot quiz-dot-ongoing"></span>
+                            {{ _('Ongoing') }}
+                        </label>
+                    </div>
+                    {% if past_quizzes %}
+                    <div class="quiz-status-cb-row">
+                        <input type="checkbox" id="show-past" class="quiz-status-cb" value="past" checked>
+                        <label for="show-past">
+                            <span class="quiz-status-dot quiz-dot-past"></span>
+                            {{ _('Past') }}
+                        </label>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 
     <div id="content-left" class="problems h-scrollable-table">
 
-        {# Show start/end date range below the quiz name #}
+        {# Show start/end time with icons below the quiz name #}
         {% macro time_info(quiz) %}
-        {% if quiz.start_time or quiz.end_time %}
         {% set dfmt = _("M j, Y, G:i") %}
-        <div class="time time-left">
-            {%- if quiz.start_time %}{{ quiz.start_time|date(dfmt) }}{% endif %}
-            {%- if quiz.start_time and quiz.end_time %} – {% endif %}
-            {%- if quiz.end_time %}{{ quiz.end_time|date(dfmt) }}{% endif -%}
+        <div class="quiz-time-info">
+            {% if quiz.start_time or quiz.end_time %}
+                {% if quiz.start_time %}
+                <span class="quiz-time-item">
+                    <i class="fa fa-sign-in quiz-icon-start" title="{{ _('Start') }}"></i>{{ quiz.start_time|date(dfmt) }}
+                </span>
+                {% endif %}
+                {% if quiz.end_time %}
+                <span class="quiz-time-item">
+                    <i class="fa fa-sign-out quiz-icon-end" title="{{ _('End') }}"></i>{{ quiz.end_time|date(dfmt) }}
+                </span>
+                {% endif %}
+            {% else %}
+                <span class="quiz-time-item quiz-time-always-open">
+                    <i class="fa fa-unlock-alt"></i> {{ _('Always open') }}
+                </span>
+            {% endif %}
         </div>
-        {% endif %}
         {% endmacro %}
 
         {# Render one quiz row #}
         {% macro quiz_row(quiz) %}
         <tr>
-            <td class="quiz-code-col">{{ quiz.code }}</td>
+            <td class="quiz-code-col"><a href="{{ url('quiz_detail', quiz.code) }}">{{ quiz.code }}</a></td>
             <td class="problem-name">
                 <div class="quiz-block">
                     <a href="{{ url('quiz_detail', quiz.code) }}">{{ quiz.name }}</a>
@@ -139,8 +360,6 @@
                 </div>
             </td>
             <td class="quiz-stat-col">{{ question_counts.get(quiz.id, 0) }}</td>
-            <td class="quiz-stat-col">{{ max_scores.get(quiz.id, 0) }}</td>
-            <td class="quiz-stat-col">{{ attempt_counts.get(quiz.id, 0) }}</td>
             <td class="quiz-stat-col">{{ user_counts.get(quiz.id, 0) }}</td>
             {% if request.user.is_authenticated %}
             <td class="p">
@@ -161,8 +380,6 @@
                 <th class="quiz-code-col"><a>{{ _('Code') }}</a></th>
                 <th class="problem-name"><a>{{ _('Quiz') }}</a></th>
                 <th class="quiz-stat-col"><a>{{ _('Questions') }}</a></th>
-                <th class="quiz-stat-col"><a>{{ _('Max score') }}</a></th>
-                <th class="quiz-stat-col"><a>{{ _('Attempts') }}</a></th>
                 <th class="quiz-stat-col"><a>{{ _('Participants') }}</a></th>
                 {% if request.user.is_authenticated %}
                 <th class="points"><a>{{ _('Your best') }}</a></th>
@@ -171,46 +388,82 @@
         </thead>
         {% endmacro %}
 
+        {# Tab bar #}
+        <div class="quiz-tabs-bar">
+            <ul class="quiz-tabs">
+                <li class="quiz-tab" id="quiz-tab-all" data-tab="all">
+                    {{ _('All') }}
+                    <span class="quiz-tab-count">{{ (upcoming_quizzes|length) + (open_quizzes|length) + (past_quizzes|length) }}</span>
+                </li>
+                {% if upcoming_quizzes %}
+                <li class="quiz-tab" id="quiz-tab-upcoming" data-tab="upcoming">
+                    {{ _('Upcoming') }}
+                    <span class="quiz-tab-count">{{ upcoming_quizzes|length }}</span>
+                </li>
+                {% endif %}
+                <li class="quiz-tab" id="quiz-tab-ongoing" data-tab="ongoing">
+                    {{ _('Ongoing') }}
+                    <span class="quiz-tab-count">{{ open_quizzes|length }}</span>
+                </li>
+                {% if past_quizzes %}
+                <li class="quiz-tab" id="quiz-tab-past" data-tab="past">
+                    {{ _('Past') }}
+                    <span class="quiz-tab-count">{{ past_quizzes|length }}</span>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+
         {% if upcoming_quizzes %}
-        <h4>{{ _('Upcoming quizzes') }}</h4>
-        <table id="quiz-table-upcoming" class="table striped">
-            {{ table_head() }}
-            <tbody>
-                {% for quiz in upcoming_quizzes %}
-                {{ quiz_row(quiz) }}
-                {% endfor %}
-            </tbody>
-        </table>
-        <br>
+        <div class="quiz-section" data-section="upcoming">
+            <h4 class="quiz-section-header quiz-section-upcoming">
+                <i class="fa fa-clock-o"></i> {{ _('Upcoming quizzes') }}
+            </h4>
+            <table id="quiz-table-upcoming" class="table striped">
+                {{ table_head() }}
+                <tbody>
+                    {% for quiz in upcoming_quizzes %}
+                    {{ quiz_row(quiz) }}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% endif %}
 
-        <h4>{{ _('Ongoing quizzes') }}</h4>
-        <table id="quiz-table-ongoing" class="table striped">
-            {{ table_head() }}
-            <tbody>
-                {% for quiz in open_quizzes %}
-                {{ quiz_row(quiz) }}
-                {% else %}
-                <tr>
-                    <td colspan="{{ 7 if request.user.is_authenticated else 6 }}">
-                        <i>{{ _('No quizzes found.') }}</i>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <br>
+        <div class="quiz-section" data-section="ongoing">
+            <h4 class="quiz-section-header quiz-section-ongoing">
+                <i class="fa fa-play-circle"></i> {{ _('Ongoing quizzes') }}
+            </h4>
+            <table id="quiz-table-ongoing" class="table striped">
+                {{ table_head() }}
+                <tbody>
+                    {% for quiz in open_quizzes %}
+                    {{ quiz_row(quiz) }}
+                    {% else %}
+                    <tr>
+                        <td colspan="{{ 5 if request.user.is_authenticated else 4 }}">
+                            <i>{{ _('No quizzes found.') }}</i>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         {% if past_quizzes %}
-        <h4 id="past-quizzes">{{ _('Past quizzes') }}</h4>
-        <table id="quiz-table-past" class="table striped">
-            {{ table_head() }}
-            <tbody>
-                {% for quiz in past_quizzes %}
-                {{ quiz_row(quiz) }}
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="quiz-section" data-section="past">
+            <h4 class="quiz-section-header quiz-section-past">
+                <i class="fa fa-check-circle"></i> {{ _('Past quizzes') }}
+            </h4>
+            <table id="quiz-table-past" class="table striped">
+                {{ table_head() }}
+                <tbody>
+                    {% for quiz in past_quizzes %}
+                    {{ quiz_row(quiz) }}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% endif %}
 
     </div>

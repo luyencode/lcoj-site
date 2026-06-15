@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: dmoj\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-15 03:33+0000\n"
+"POT-Creation-Date: 2026-06-15 04:10+0000\n"
 "PO-Revision-Date: 2020-08-23 18:59\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
@@ -179,7 +179,7 @@ msgstr "Truy cập"
 msgid "Justice"
 msgstr "Công lý"
 
-#: judge/admin/contest.py:157 templates/quiz/detail.html:235
+#: judge/admin/contest.py:157 templates/quiz/detail.html:251
 #: templates/quiz/result.html:102
 msgid "Ranking"
 msgstr "Bảng xếp hạng"
@@ -311,7 +311,7 @@ msgstr "Phân loại"
 #: templates/contest/contest.html:202 templates/contest/edit.html:117
 #: templates/contest/official-ranking-table.html:12
 #: templates/organization/list.html:24 templates/problem/data.html:727
-#: templates/problem/list.html:247 templates/quiz/detail.html:279
+#: templates/problem/list.html:247 templates/quiz/detail.html:295
 #: templates/quiz/quiz_form.html:39 templates/user/base-users-table.html:12
 #: templates/user/user-problems.html:60
 msgid "Points"
@@ -4313,7 +4313,7 @@ msgid "New Problems"
 msgstr "Bài mới"
 
 #: judge/views/status.py:24 templates/quiz/attempts.html:94
-#: templates/submission/list.html:382
+#: templates/quiz/list.html:282 templates/submission/list.html:382
 msgid "Status"
 msgstr "Trạng thái"
 
@@ -4547,7 +4547,7 @@ msgstr "Người dùng %s"
 msgid "Login"
 msgstr "Đăng nhập"
 
-#: judge/views/user.py:203 templates/quiz/list.html:115
+#: judge/views/user.py:203 templates/quiz/list.html:318
 msgid "M j, Y, G:i"
 msgstr "j M, Y, G:i"
 
@@ -4664,7 +4664,7 @@ msgid "This site is powered by Markdown. For full documentation, <a href=\"%(doc
 msgstr ""
 
 #: martor/templates/martor/guide.html:9 martor/templates/martor/toolbar.html:26
-#: templates/quiz/list.html:165 templates/quiz/question_bank.html:24
+#: templates/quiz/list.html:374 templates/quiz/question_bank.html:24
 #: templates/quiz/question_form.html:198
 msgid "Code"
 msgstr "Mã"
@@ -5653,7 +5653,7 @@ msgid "Confirm import"
 msgstr "Xác nhận nhập liệu"
 
 #: templates/admin/quiz/quizquestion/import.html:232
-#: templates/quiz/detail.html:393 templates/quiz/question_form.html:381
+#: templates/quiz/detail.html:430 templates/quiz/question_form.html:381
 #: templates/status/oj-status.html:75
 msgid "Cancel"
 msgstr "Huỷ"
@@ -5814,7 +5814,7 @@ msgstr "Tìm bài..."
 msgid "Search with Google"
 msgstr "Đăng ký bằng Gmail"
 
-#: templates/blog/list.html:66 templates/quiz/list.html:85
+#: templates/blog/list.html:66 templates/quiz/list.html:258
 msgid "Search"
 msgstr "Tìm kiếm"
 
@@ -5996,7 +5996,7 @@ msgid "Voter"
 msgstr ""
 
 #: templates/comments/votes.html:6 templates/quiz/attempts.html:95
-#: templates/quiz/detail.html:343 templates/quiz/ranking.html:12
+#: templates/quiz/detail.html:380 templates/quiz/ranking.html:12
 #: templates/quiz/result.html:22 templates/user/user-problems.html:103
 msgid "Score"
 msgstr "Điểm"
@@ -6461,13 +6461,13 @@ msgid "Window ends in %(countdown)s"
 msgstr "Thời gian làm bài kết thúc trong %(countdown)s."
 
 #: templates/contest/list.html:216 templates/contest/list.html:253
-#: templates/quiz/detail.html:262 templates/quiz/list.html:140
+#: templates/quiz/detail.html:278 templates/quiz/list.html:351
 #, python-format
 msgid "Ends in %(countdown)s"
 msgstr "Kết thúc trong %(countdown)s."
 
-#: templates/contest/list.html:292 templates/quiz/detail.html:252
-#: templates/quiz/list.html:137
+#: templates/contest/list.html:292 templates/quiz/detail.html:268
+#: templates/quiz/list.html:348
 #, python-format
 msgid "Starting in %(countdown)s"
 msgstr "Bắt đầu trong %(countdown)s."
@@ -7466,7 +7466,7 @@ msgid "Show problem types"
 msgstr "Hiện dạng bài"
 
 #: templates/problem/search-form.html:38 templates/problem/search-form.html:40
-#: templates/submission/list.html:403
+#: templates/quiz/list.html:389 templates/submission/list.html:403
 #: templates/submission/submission-list-tabs.html:4
 msgid "All"
 msgstr "Tất cả"
@@ -7479,7 +7479,7 @@ msgstr "Dạng bài"
 msgid "Point range"
 msgstr "Khoảng điểm"
 
-#: templates/problem/search-form.html:66 templates/quiz/list.html:102
+#: templates/problem/search-form.html:66 templates/quiz/list.html:275
 #: templates/submission/list.html:413 templates/tag/search-form.html:21
 #: templates/ticket/list.html:187
 msgid "Go"
@@ -7585,7 +7585,7 @@ msgstr "Chấm lại tất cả lần nộp bài?"
 msgid "Regrade all attempts"
 msgstr "Chấm lại tất cả lần làm bài"
 
-#: templates/quiz/attempts.html:93 templates/quiz/detail.html:342
+#: templates/quiz/attempts.html:93 templates/quiz/detail.html:379
 msgid "Started"
 msgstr "Bắt đầu lúc"
 
@@ -7602,7 +7602,7 @@ msgstr "đã nộp"
 msgid "View violation log"
 msgstr "Xem nhật ký vi phạm"
 
-#: templates/quiz/attempts.html:122 templates/quiz/detail.html:361
+#: templates/quiz/attempts.html:122 templates/quiz/detail.html:398
 #: templates/submission/row.html:54
 msgid "view"
 msgstr "xem"
@@ -7631,109 +7631,125 @@ msgstr "vi phạm tổng cộng"
 msgid "Failed to load."
 msgstr "Tải thất bại."
 
-#: templates/quiz/detail.html:239
+#: templates/quiz/detail.html:255
 msgid "Edit quiz"
 msgstr "Chỉnh sửa bài kiểm tra"
 
-#: templates/quiz/detail.html:242
+#: templates/quiz/detail.html:258
 msgid "All attempts"
 msgstr "Tất cả lượt làm"
 
-#: templates/quiz/detail.html:257
+#: templates/quiz/detail.html:273
 msgid "This quiz closed on"
 msgstr ""
 
-#: templates/quiz/detail.html:275 templates/quiz/list.html:167
+#: templates/quiz/detail.html:291 templates/quiz/list.html:376
 #: templates/quiz/quiz_form.html:32 templates/quiz/take.html:428
 msgid "Questions"
 msgstr "Câu hỏi"
 
-#: templates/quiz/detail.html:287
+#: templates/quiz/detail.html:303
 msgid "Time limit"
 msgstr "Giới hạn thời gian:"
 
-#: templates/quiz/detail.html:295
+#: templates/quiz/detail.html:311
 msgid "Max attempts"
 msgstr "Số lần làm tối đa"
 
-#: templates/quiz/detail.html:303
+#: templates/quiz/detail.html:318
+msgid "Start:"
+msgstr "Bắt đầu:"
+
+#: templates/quiz/detail.html:322
+msgid "Not set — opens immediately"
+msgstr "Không đặt — mở ngay"
+
+#: templates/quiz/detail.html:327
+msgid "End:"
+msgstr "Kết thúc:"
+
+#: templates/quiz/detail.html:331
+msgid "Not set — never closes"
+msgstr "Không đặt — không có hạn"
+
+#: templates/quiz/detail.html:340
 #, fuzzy
 #| msgid "Quiz saved."
 msgid "Quiz not started yet."
 msgstr "Đã lưu bài kiểm tra."
 
-#: templates/quiz/detail.html:307
+#: templates/quiz/detail.html:344
 #, fuzzy
 #| msgid "Quiz saved."
 msgid "Quiz is closed."
 msgstr "Đã lưu bài kiểm tra."
 
-#: templates/quiz/detail.html:313
+#: templates/quiz/detail.html:350
 msgid "Resume attempt"
 msgstr "Tiếp tục làm bài"
 
-#: templates/quiz/detail.html:320
+#: templates/quiz/detail.html:357
 msgid "Start quiz"
 msgstr "Bắt đầu kiểm tra"
 
-#: templates/quiz/detail.html:325
+#: templates/quiz/detail.html:362
 msgid "attempt(s) remaining"
 msgstr "lần làm còn lại"
 
-#: templates/quiz/detail.html:330
+#: templates/quiz/detail.html:367
 msgid "No attempts remaining."
 msgstr "Không còn lượt làm bài."
 
-#: templates/quiz/detail.html:337
+#: templates/quiz/detail.html:374
 msgid "Your attempts"
 msgstr "Lần làm bài của bạn"
 
-#: templates/quiz/detail.html:356
+#: templates/quiz/detail.html:393
 msgid "in progress"
 msgstr "đang làm bài"
 
-#: templates/quiz/detail.html:374
+#: templates/quiz/detail.html:411
 #, python-format
 msgid "Please <a href=\"%(login_url)s\">log in</a> to take this quiz."
 msgstr ""
 
-#: templates/quiz/detail.html:381
+#: templates/quiz/detail.html:418
 msgid "Academic Integrity Notice"
 msgstr "Thông báo liêm chính học thuật"
 
-#: templates/quiz/detail.html:382
+#: templates/quiz/detail.html:419
 msgid "To ensure a fair exam, please follow these rules during the attempt:"
 msgstr "Để đảm bảo thi công bằng, vui lòng tuân thủ các quy tắc sau khi làm bài:"
 
-#: templates/quiz/detail.html:384
+#: templates/quiz/detail.html:421
 msgid "Stay on this tab — do not switch to other tabs or windows"
 msgstr "Giữ nguyên tab này — không chuyển sang tab hoặc cửa sổ khác"
 
-#: templates/quiz/detail.html:385
+#: templates/quiz/detail.html:422
 msgid "Do not take screenshots or photograph the screen"
 msgstr "Không chụp màn hình"
 
-#: templates/quiz/detail.html:386
+#: templates/quiz/detail.html:423
 msgid "Do not open DevTools or use browser extensions"
 msgstr "Không mở DevTools hoặc sử dụng tiện ích mở rộng của trình duyệt"
 
-#: templates/quiz/detail.html:387
+#: templates/quiz/detail.html:424
 msgid "Do not copy questions or share answers with others"
 msgstr "Không sao chép câu hỏi hoặc chia sẻ đáp án với người khác"
 
-#: templates/quiz/detail.html:390
+#: templates/quiz/detail.html:427
 msgid "Suspicious activity is visible to the teacher but does"
 msgstr "Hoạt động đáng ngờ hiển thị với giáo viên nhưng"
 
-#: templates/quiz/detail.html:390
+#: templates/quiz/detail.html:427
 msgid "NOT"
 msgstr "KHÔNG"
 
-#: templates/quiz/detail.html:390
+#: templates/quiz/detail.html:427
 msgid "affect your score."
 msgstr "ảnh hưởng đến điểm số của bạn."
 
-#: templates/quiz/detail.html:394
+#: templates/quiz/detail.html:431
 msgid "I understand, start →"
 msgstr "Tôi hiểu, bắt đầu →"
 
@@ -7761,47 +7777,63 @@ msgstr "Tải xuống mẫu XLSX"
 msgid "or import JSON: a list of objects with type, title, content, choices, correct, category, level, points, explanation, shuffle, ma_strategy."
 msgstr ""
 
-#: templates/quiz/list.html:91
+#: templates/quiz/list.html:264
 msgid "Search quizzes..."
 msgstr "Tìm bài kiểm tra..."
 
-#: templates/quiz/list.html:98
+#: templates/quiz/list.html:271
 msgid "Hide attempted"
 msgstr "Ẩn đã làm"
 
-#: templates/quiz/list.html:166
+#: templates/quiz/list.html:289 templates/quiz/list.html:394
+msgid "Upcoming"
+msgstr "Sắp tới"
+
+#: templates/quiz/list.html:297 templates/quiz/list.html:399
+msgid "Ongoing"
+msgstr "Đang diễn ra"
+
+#: templates/quiz/list.html:305 templates/quiz/list.html:404
+msgid "Past"
+msgstr "Đã kết thúc"
+
+#: templates/quiz/list.html:323
+msgid "Start"
+msgstr "Bắt đầu"
+
+#: templates/quiz/list.html:328
+msgid "End"
+msgstr "Kết thúc"
+
+#: templates/quiz/list.html:333
+msgid "Always open"
+msgstr "Luôn mở"
+
+#: templates/quiz/list.html:375
 msgid "Quiz"
 msgstr "Bài kiểm tra"
 
-#: templates/quiz/list.html:168
-msgid "Max score"
-msgstr "Điểm tối đa"
-
-#: templates/quiz/list.html:169
-msgid "Attempts"
-msgstr "Số lần làm"
-
-#: templates/quiz/list.html:170
+#: templates/quiz/list.html:377
 msgid "Participants"
 msgstr "Người tham gia"
 
-#: templates/quiz/list.html:172
+#: templates/quiz/list.html:379
 msgid "Your best"
-msgstr "Kết quả tốt nhất"
+msgstr "Điểm của bạn"
 
-#: templates/quiz/list.html:179
+#: templates/quiz/list.html:414
 msgid "Upcoming quizzes"
 msgstr "Bài kiểm tra sắp tới"
 
-#: templates/quiz/list.html:191
+#: templates/quiz/list.html:429
 msgid "Ongoing quizzes"
 msgstr "Bài kiểm tra đang diễn ra"
 
-#: templates/quiz/list.html:200
+#: templates/quiz/list.html:439
 msgid "No quizzes found."
 msgstr "Không tìm thấy bài kiểm tra nào."
 
-#: templates/quiz/list.html:209
+#: templates/quiz/list.html:450
 msgid "Past quizzes"
 msgstr "Bài kiểm tra đã kết thúc"
 
@@ -9350,6 +9382,12 @@ msgstr "Số bài"
 #: templates/widgets/select_all.html:8
 msgid "Check all"
 msgstr "Chọn tất cả"
+
+#~ msgid "Max score"
+#~ msgstr "Điểm tối đa"
+
+#~ msgid "Attempts"
+#~ msgstr "Số lần làm"
 
 #~ msgid "Continue"
 #~ msgstr "Tiếp tục"

@@ -112,6 +112,22 @@
     .quiz-links a {
         margin-right: 1em;
     }
+    .quiz-schedule-dates {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5em 2em;
+        margin: 0.75em 0 1em;
+        font-size: 0.92em;
+        color: #444;
+    }
+    .quiz-schedule-date-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4em;
+    }
+    .quiz-icon-start { color: #2a7a2a; }
+    .quiz-icon-end   { color: #b05000; }
+    .quiz-no-date    { color: #888; font-style: italic; }
     /* ── Integrity modal ────────────────────────────────────── */
     .integrity-overlay {
         display: none;
@@ -294,6 +310,27 @@ $(document).ready(function () {
         {% endif %}
         <span class="meta-label">{{ _('Max attempts') }}</span>
     </div>
+</div>
+
+<div class="quiz-schedule-dates">
+    <span class="quiz-schedule-date-item">
+        <i class="fa fa-sign-in quiz-icon-start"></i>
+        <strong>{{ _('Start:') }}</strong>
+        {% if quiz.start_time %}
+            {{ quiz.start_time|date(_('M j, Y, G:i')) }}
+        {% else %}
+            <span class="quiz-no-date">{{ _('Not set — opens immediately') }}</span>
+        {% endif %}
+    </span>
+    <span class="quiz-schedule-date-item">
+        <i class="fa fa-sign-out quiz-icon-end"></i>
+        <strong>{{ _('End:') }}</strong>
+        {% if quiz.end_time %}
+            {{ quiz.end_time|date(_('M j, Y, G:i')) }}
+        {% else %}
+            <span class="quiz-no-date">{{ _('Not set — never closes') }}</span>
+        {% endif %}
+    </span>
 </div>
 
 {% if request.user.is_authenticated %}
