@@ -4860,10 +4860,8 @@ msgid "Also create a quiz from these questions"
 msgstr "Cũng tạo bài kiểm tra từ các câu hỏi này"
 
 #: quiz/forms.py:163
-#, fuzzy
-#| msgid "QR code"
 msgid "Quiz code"
-msgstr "Mã QR"
+msgstr "Code"
 
 #: quiz/forms.py:165 quiz/models.py:159
 msgid "Quiz code must be ^[a-z0-9]+$"
@@ -5072,7 +5070,7 @@ msgstr "Chỉnh sửa bài kiểm tra và câu hỏi của mình"
 
 #: quiz/models.py:157
 msgid "quiz code"
-msgstr "Mã QR"
+msgstr "code"
 
 #: quiz/models.py:160
 msgid "quiz name"
