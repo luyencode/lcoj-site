@@ -4859,7 +4859,7 @@ msgstr ""
 #: templates/quiz/list.html:111 templates/quiz/question_bank.html:24
 #: templates/quiz/question_form.html:198
 msgid "Code"
-msgstr "Mã QR"
+msgstr "Mã"
 
 #: martor/templates/martor/guide.html:10
 msgid "Or"
@@ -5093,7 +5093,7 @@ msgstr "Trả lời ngắn"
 
 #: quiz/models.py:28 templates/admin/quiz/quizquestion/change_form.html:271
 msgid "All or nothing"
-msgstr "Tất cả tổ chức"
+msgstr "Tất cả hoặc không"
 
 #: quiz/models.py:29 templates/admin/quiz/quizquestion/change_form.html:275
 msgid "Partial credit with penalty"
@@ -5405,7 +5405,7 @@ msgstr "Bài kiểm tra"
 
 #: quiz/views/student.py:135
 msgid "You have no attempts remaining."
-msgstr "Bạn còn lại %(countdown)s thời gian."
+msgstr "Bạn không còn lượt làm bài."
 
 #: quiz/views/student.py:292
 #, fuzzy, python-format
@@ -5490,19 +5490,15 @@ msgstr "Đúng"
 #: templates/admin/quiz/quizquestion/change_form.html:150
 #: templates/quiz/question_form.html:288 templates/quiz/question_form.html:472
 msgid "Choice text"
-msgstr "văn bản cấp phép"
+msgstr "Nội dung lựa chọn"
 
 #: templates/admin/quiz/quizquestion/change_form.html:116
-#, fuzzy
-#| msgid "Exceptional"
 msgid "Explanation"
-msgstr "Lỗi"
+msgstr "Giải thích"
 
 #: templates/admin/quiz/quizquestion/change_form.html:116
-#, fuzzy
-#| msgid "Exceptional"
 msgid "optional"
-msgstr "Lỗi"
+msgstr "tùy chọn"
 
 #: templates/admin/quiz/quizquestion/change_form.html:121
 #: templates/quiz/question_form.html:296
@@ -5522,7 +5518,7 @@ msgstr "Xoá"
 #: templates/admin/quiz/quizquestion/change_form.html:207
 #: templates/quiz/question_form.html:303
 msgid "Correct Answer"
-msgstr "Kết quả sai (WA)"
+msgstr "Đáp án đúng"
 
 #: templates/admin/quiz/quizquestion/change_form.html:210
 #: templates/quiz/question_form.html:308 templates/quiz/result.html:41
@@ -5619,10 +5615,8 @@ msgid "Required"
 msgstr "Yêu cầu"
 
 #: templates/admin/quiz/quizquestion/import.html:121
-#, fuzzy
-#| msgid "votes"
 msgid "Notes"
-msgstr "đánh giá"
+msgstr "Ghi chú"
 
 #: templates/admin/quiz/quizquestion/import.html:124
 #: templates/admin/quiz/quizquestion/import.html:125
@@ -5690,10 +5684,8 @@ msgid "Difficulty — choose from dropdown:"
 msgstr "Độ khó — chọn từ danh sách:"
 
 #: templates/admin/quiz/quizquestion/import.html:133
-#, fuzzy
-#| msgid "Default"
 msgid "Default: Easy."
-msgstr "Mặc định"
+msgstr "Mặc định: Dễ."
 
 #: templates/admin/quiz/quizquestion/import.html:134
 msgid ""
@@ -5705,10 +5697,8 @@ msgid "Yes / No — randomise the order of choices shown to each student."
 msgstr "Có / Không — xáo trộn thứ tự lựa chọn hiển thị cho mỗi học sinh."
 
 #: templates/admin/quiz/quizquestion/import.html:136
-#, fuzzy
-#| msgid "MathML only"
 msgid "MA only"
-msgstr "Chỉ dạng MathML"
+msgstr "Chỉ MA"
 
 #: templates/admin/quiz/quizquestion/import.html:136
 msgid "How Multiple Answer questions are scored — choose from dropdown."
@@ -5779,10 +5769,8 @@ msgid "one or more word characters (letters, digits, underscore)"
 msgstr "một hoặc nhiều ký tự từ (chữ, số, gạch dưới)"
 
 #: templates/admin/quiz/quizquestion/import.html:158
-#, fuzzy
-#| msgid "Batch end"
 msgid "matches"
-msgstr "Hết nhóm test"
+msgstr "khớp với"
 
 #: templates/admin/quiz/quizquestion/import.html:159
 msgid "Example:"
@@ -5793,20 +5781,16 @@ msgid "accepts any of the three, case-insensitively."
 msgstr "chấp nhận bất kỳ trong ba, không phân biệt hoa/thường."
 
 #: templates/admin/quiz/quizquestion/import.html:169
-#, fuzzy
-#| msgid "Update profile"
 msgid "Upload file"
-msgstr "Cập nhật"
+msgstr "Tải lên file"
 
 #: templates/admin/quiz/quizquestion/import.html:180
 msgid "Preview import"
 msgstr "Xem trước nhập"
 
 #: templates/admin/quiz/quizquestion/import.html:182
-#, fuzzy
-#| msgid "code template"
 msgid "Download template"
-msgstr "code mẫu"
+msgstr "Tải xuống mẫu"
 
 #: templates/admin/quiz/quizquestion/import.html:192
 msgid "Import preview — errors found, fix file and re-upload"
@@ -5848,7 +5832,7 @@ msgstr "Lỗi"
 #: templates/admin/quiz/quizquestion/import.html:231
 #: templates/quiz/import.html:23
 msgid "Confirm import"
-msgstr "Xác nhận mật khẩu"
+msgstr "Xác nhận nhập liệu"
 
 #: templates/admin/quiz/quizquestion/import.html:232
 #: templates/quiz/detail.html:331 templates/quiz/question_form.html:381
@@ -8004,7 +7988,7 @@ msgstr "lần làm còn lại"
 
 #: templates/quiz/detail.html:268
 msgid "No attempts remaining."
-msgstr "Bạn còn lại %(countdown)s thời gian."
+msgstr "Không còn lượt làm bài."
 
 #: templates/quiz/detail.html:275
 msgid "Your attempts"
@@ -8069,7 +8053,7 @@ msgstr "Tôi hiểu, bắt đầu →"
 
 #: templates/quiz/import.html:7
 msgid "These categories will be created"
-msgstr "Kỳ thi này **không** tính rating."
+msgstr "Các danh mục sau sẽ được tạo mới"
 
 #: templates/quiz/import.html:26
 msgid "Fix the errors above and re-upload. Nothing was imported."
@@ -8081,11 +8065,11 @@ msgstr "Tải lên"
 
 #: templates/quiz/import.html:34
 msgid "Upload and preview"
-msgstr "Cập nhật preview"
+msgstr "Tải lên và xem trước"
 
 #: templates/quiz/import.html:36
 msgid "Download the XLSX template"
-msgstr "code mẫu"
+msgstr "Tải xuống mẫu XLSX"
 
 #: templates/quiz/import.html:37
 msgid ""
@@ -8095,7 +8079,7 @@ msgstr ""
 
 #: templates/quiz/list.html:87
 msgid "Search quizzes..."
-msgstr "Tìm kỳ thi..."
+msgstr "Tìm bài kiểm tra..."
 
 #: templates/quiz/list.html:94
 msgid "Hide attempted"
@@ -8107,7 +8091,7 @@ msgstr "Bài kiểm tra"
 
 #: templates/quiz/list.html:120
 msgid "Max score"
-msgstr "điểm"
+msgstr "Điểm tối đa"
 
 #: templates/quiz/list.html:123
 msgid "Attempts"
@@ -8115,7 +8099,7 @@ msgstr "Số lần làm"
 
 #: templates/quiz/list.html:126
 msgid "Participants"
-msgstr "Tham gia"
+msgstr "Người tham gia"
 
 #: templates/quiz/list.html:130
 msgid "Your best"
@@ -8127,19 +8111,19 @@ msgstr "Không tìm thấy bài kiểm tra nào."
 
 #: templates/quiz/question_bank.html:5
 msgid "New question"
-msgstr "Xem yêu cầu"
+msgstr "Câu hỏi mới"
 
 #: templates/quiz/question_bank.html:7
 msgid "Download XLSX template"
-msgstr "code mẫu"
+msgstr "Tải xuống mẫu XLSX"
 
 #: templates/quiz/question_bank.html:10
 msgid "Search..."
-msgstr "Tìm kỳ thi..."
+msgstr "Tìm kiếm..."
 
 #: templates/quiz/question_bank.html:11
 msgid "All types"
-msgstr "Tất cả bài tập"
+msgstr "Tất cả loại"
 
 #: templates/quiz/question_bank.html:14
 msgid "All categories"
@@ -8147,7 +8131,7 @@ msgstr "Tất cả danh mục"
 
 #: templates/quiz/question_bank.html:17
 msgid "All levels"
-msgstr "Tất cả bài tập"
+msgstr "Tất cả cấp độ"
 
 #: templates/quiz/question_bank.html:24
 msgid "Public"
@@ -8163,7 +8147,7 @@ msgstr "Xuất đã chọn ra XLSX"
 
 #: templates/quiz/question_form.html:176
 msgid "Edit Question"
-msgstr "Cập nhật người dùng"
+msgstr "Chỉnh sửa câu hỏi"
 
 #: templates/quiz/question_form.html:181
 msgid "Please fix the following:"
@@ -8171,7 +8155,7 @@ msgstr "Vui lòng sửa các lỗi sau:"
 
 #: templates/quiz/question_form.html:196
 msgid "Question Code"
-msgstr "ngày tạo"
+msgstr "Mã câu hỏi"
 
 #: templates/quiz/question_form.html:201
 msgid ""
@@ -8204,7 +8188,7 @@ msgstr "Học sinh nhập câu trả lời"
 
 #: templates/quiz/question_form.html:238
 msgid "Question Details"
-msgstr "Chi tiết"
+msgstr "Chi tiết câu hỏi"
 
 #: templates/quiz/question_form.html:244
 msgid "Short identifier used in the question bank"
@@ -8284,7 +8268,7 @@ msgstr "không phân biệt hoa/thường: True, TRUE, yes, YES"
 
 #: templates/quiz/question_form.html:333
 msgid "Display answer"
-msgstr "Huy hiệu hiển thị"
+msgstr "Đáp án hiển thị"
 
 #: templates/quiz/question_form.html:335
 msgid ""
@@ -8334,7 +8318,7 @@ msgstr "Hiển thị với tất cả người biên soạn, không chỉ bạn"
 
 #: templates/quiz/question_form.html:380
 msgid "Save question"
-msgstr "vị trí phép thử"
+msgstr "Lưu câu hỏi"
 
 #: templates/quiz/question_form.html:473
 msgid "Why correct / incorrect (optional)"
@@ -8346,7 +8330,7 @@ msgstr "Mẫu Regex, vd: (?i)python hoặc \\d+"
 
 #: templates/quiz/question_form.html:606
 msgid "Nothing to preview."
-msgstr "Không có gì ở đây."
+msgstr "Không có gì để xem trước."
 
 #: templates/quiz/question_form.html:610
 msgid "Loading preview…"
@@ -8358,7 +8342,7 @@ msgstr "Xem trước thất bại."
 
 #: templates/quiz/quiz_form.html:21
 msgid "Edit quiz in admin panel for more options"
-msgstr "Sửa contest này ở admin panel để có nhiều tùy chỉnh hơn"
+msgstr "Sửa bài kiểm tra này ở admin panel để có nhiều tùy chỉnh hơn"
 
 #: templates/quiz/quiz_form.html:38 templates/quiz/result.html:30
 #: templates/quiz/take.html:498
@@ -8371,11 +8355,11 @@ msgstr "Kéo để sắp xếp lại"
 
 #: templates/quiz/quiz_form.html:74
 msgid "Add question"
-msgstr "mô tả"
+msgstr "Thêm câu hỏi"
 
 #: templates/quiz/quiz_form.html:81
 msgid "View quiz"
-msgstr "Xem yêu cầu"
+msgstr "Xem bài kiểm tra"
 
 #: templates/quiz/quiz_form.html:82
 msgid "Attempts & regrade"
@@ -8383,7 +8367,7 @@ msgstr "Lần làm bài & chấm lại"
 
 #: templates/quiz/quiz_form.html:85
 msgid "Save quiz"
-msgstr "Lưu"
+msgstr "Lưu bài kiểm tra"
 
 #: templates/quiz/ranking.html:23
 msgid "No submitted attempts yet."
@@ -8396,12 +8380,12 @@ msgstr "Quay lại bài kiểm tra"
 #: templates/quiz/result.html:38 templates/quiz/result.html:72
 #: templates/quiz/result.html:79
 msgid "Your answer"
-msgstr "Kết quả sai (WA)"
+msgstr "Câu trả lời của bạn"
 
 #: templates/quiz/result.html:39 templates/quiz/result.html:73
 #: templates/quiz/result.html:80
 msgid "(no answer)"
-msgstr "Kết quả sai (WA)"
+msgstr "(không có câu trả lời)"
 
 #: templates/quiz/result.html:64
 msgid "Why?"
@@ -8409,7 +8393,7 @@ msgstr "Tại sao?"
 
 #: templates/quiz/result.html:86
 msgid "Accepted patterns"
-msgstr "Kết quả đúng (AC)"
+msgstr "Mẫu được chấp nhận"
 
 #: templates/quiz/take.html:388
 msgid "Type your answer..."
@@ -8417,19 +8401,19 @@ msgstr "Nhập câu trả lời của bạn..."
 
 #: templates/quiz/take.html:395
 msgid "Previous"
-msgstr "bài nộp"
+msgstr "Trước"
 
 #: templates/quiz/take.html:405
 msgid "Review & Submit"
-msgstr "Nộp lại"
+msgstr "Xem lại & Nộp bài"
 
 #: templates/quiz/take.html:442
 msgid "Shortcuts"
-msgstr "Ngắn Mạch"
+msgstr "Phím tắt"
 
 #: templates/quiz/take.html:445
 msgid "Navigate"
-msgstr "mục điều hướng"
+msgstr "Điều hướng"
 
 #: templates/quiz/take.html:446
 msgid "Select choice"
