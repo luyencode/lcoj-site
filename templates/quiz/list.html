@@ -112,14 +112,11 @@
         {# Show start/end date range below the quiz name #}
         {% macro time_info(quiz) %}
         {% if quiz.start_time or quiz.end_time %}
+        {% set dfmt = _("M j, Y, G:i") %}
         <div class="time time-left">
-            {% if quiz.start_time and quiz.end_time %}
-                {{ quiz.start_time|date(_("M j, Y, G:i")) }} – {{ quiz.end_time|date(_("M j, Y, G:i")) }}
-            {% elif quiz.start_time %}
-                {{ _('From %(start)s', start=quiz.start_time|date(_("M j, Y, G:i"))) }}
-            {% else %}
-                {{ _('Until %(end)s', end=quiz.end_time|date(_("M j, Y, G:i"))) }}
-            {% endif %}
+            {%- if quiz.start_time %}{{ quiz.start_time|date(dfmt) }}{% endif %}
+            {%- if quiz.start_time and quiz.end_time %} – {% endif %}
+            {%- if quiz.end_time %}{{ quiz.end_time|date(dfmt) }}{% endif -%}
         </div>
         {% endif %}
         {% endmacro %}
