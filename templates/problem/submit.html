@@ -128,6 +128,45 @@
                         $('#file_select').prop('files', e.originalEvent.dataTransfer.files);
                         handleFileSelect();
                     });
+
+                    // ===== DISABLE COPY IN ACE EDITOR =====
+                    // Users can select text normally for editing, but cannot copy it
+                    // out of the editor via Ctrl+C, right-click, or browser menus.
+
+                    // 1. Remove Ace's internal copy/cut commands
+                    editor.commands.removeCommand('copy');
+                    editor.commands.removeCommand('cut');
+
+                    // 2. Intercept copy/cut events in the CAPTURE phase.
+                    //    Ace syncs its selection to a hidden <textarea> deep inside
+                    //    editor.container. Normal (bubble-phase) listeners on the
+                    //    container fire too late — the browser already copied the
+                    //    selection from the textarea into the clipboard. A capturing
+                    //    listener (third arg = true) fires BEFORE the event reaches
+                    //    the textarea, letting us block it in time.
+                    editor.container.addEventListener('copy', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }, true);
+                    editor.container.addEventListener('cut', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }, true);
+
+                    // 3. Also block copy/cut via jQuery as a fallback (bubble phase)
+                    $(editor.container).on('copy cut', function (e) {
+                        e.preventDefault();
+                        return false;
+                    });
+
+                    // 4. Block right-click context menu (prevents "Copy" / "Cut"
+                    //    from the browser context menu on the editor)
+                    editor.container.addEventListener('contextmenu', function (e) {
+                        e.preventDefault();
+                        return false;
+                    });
                 });
 
                 $(window).resize(function () {
@@ -241,6 +280,14 @@
 
 {% block media %}
     {{ form.media.css }}
+    <style>
+        #ace_source, .ace_content, #editor {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
