@@ -291,14 +291,15 @@ class SubmissionTestCaseQuery(SubmissionStatus):
         return super(SubmissionTestCaseQuery, self).get(request, *args, **kwargs)
 
 
-# Disabled: raw submission source endpoint
-# class SubmissionSourceRaw(SubmissionSource):
-#     def get(self, request, *args, **kwargs):
-#         try:
-#             submission = self.get_object()
-#             return HttpResponse(submission.source.source, content_type='text/plain')
-#         except PermissionDenied:
-#             return HttpResponseNotFound()
+class SubmissionSourceRaw(SubmissionSource):
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            raise PermissionDenied()
+        try:
+            submission = self.get_object()
+            return HttpResponse(submission.source.source, content_type='text/plain')
+        except PermissionDenied:
+            return HttpResponseNotFound()
 
 
 class SubmissionSourceDownload(SubmissionDetailBase):

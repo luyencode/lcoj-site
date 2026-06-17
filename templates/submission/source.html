@@ -18,16 +18,19 @@
             background: rgba(255, 212, 0, 0.48);
         }
 
+        {% if not request.user.is_superuser %}
         .source-wrap, .source-wrap * {
             -webkit-user-select: none !important;
             -moz-user-select: none !important;
             -ms-user-select: none !important;
             user-select: none !important;
         }
+        {% endif %}
     </style>
 {% endblock %}
 
 {% block js_media %}
+    {% if not request.user.is_superuser %}
     <script type="text/javascript">
         $(function () {
             var $sourceWrap = $('.source-wrap');
@@ -73,6 +76,7 @@
             });
         });
     </script>
+    {% endif %}
     {% block content_js_media %}{% endblock %}
 {% endblock %}
 
@@ -92,6 +96,9 @@
                 <input type="hidden" name="path" value="{{ url('submission_status', submission.id) }}">
             </form>
         </div>
+    {% endif %}
+    {% if request.user.is_superuser %}
+        <div><a href="{{ url('submission_source_raw', submission.id) }}">{{ _('View raw source') }}</a></div>
     {% endif %}
     <br>
     <hr>

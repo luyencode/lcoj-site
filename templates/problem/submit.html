@@ -134,12 +134,13 @@
                     // editing operations remain functional.  Only copy and
                     // cut are blocked — at the keyboard, DOM-event, and
                     // context-menu levels.
+                    {% if not request.user.is_superuser %}
 
-                    // ―― Layer 1: Remove Ace's built-in copy / cut commands ――――
+                    // —— Layer 1: Remove Ace's built-in copy / cut commands ——
                     editor.commands.removeCommand('copy');
                     editor.commands.removeCommand('cut');
 
-                    // ―― Layer 2: No-op commands for copy / cut shortcuts ―――――――
+                    // —— Layer 2: No-op commands for copy / cut shortcuts ——
                     [
                         { name: 'block-copy-c',        bindKey: { win: 'Ctrl-C',       mac: 'Command-C'     } },
                         { name: 'block-copy-insert',   bindKey: { win: 'Ctrl-Insert',   mac: 'Ctrl-Insert'   } },
@@ -149,7 +150,7 @@
                         editor.commands.addCommand({ exec: function () {}, name: c.name, bindKey: c.bindKey });
                     });
 
-                    // ―― Layer 3: Capture-phase DOM listeners on the container ――
+                    // —— Layer 3: Capture-phase DOM listeners on the container ——
                     // These fire BEFORE the event reaches Ace's hidden <textarea>,
                     // so the browser never sees selected text to copy.
                     ['copy', 'cut', 'beforecopy'].forEach(function (type) {
@@ -160,7 +161,7 @@
                         }, true);
                     });
 
-                    // ―― Layer 4: Keyboard-level block on the hidden <textarea> ――
+                    // —— Layer 4: Keyboard-level block on the hidden <textarea> ——
                     // Capture-phase keydown: stops Ctrl+C / Ctrl+X / Ctrl+Insert /
                     // Shift+Delete before Ace or the browser ever sees them.
                     var ta = editor.container.querySelector('textarea');
@@ -191,11 +192,12 @@
                         }, true);
                     }
 
-                    // ―― Layer 5: Disable right-click context menu ――――――――――――
+                    // —— Layer 5: Disable right-click context menu ——
                     editor.container.addEventListener('contextmenu', function (e) {
                         e.preventDefault();
                         return false;
                     });
+                    {% endif %}
                 });
 
                 $(window).resize(function () {
@@ -310,6 +312,7 @@
 {% block media %}
     {{ form.media.css }}
     <style>
+        {% if not request.user.is_superuser %}
         /* Safety net: prevent the hidden textarea from receiving a
            browser-native text selection (does not block Ace's own
            selection model, which is what users interact with). */
@@ -317,6 +320,7 @@
             user-select: none;
             -webkit-user-select: none;
         }
+        {% endif %}
     </style>
 {% endblock %}
 
