@@ -1,4 +1,7 @@
+from datetime import timedelta
 from operator import attrgetter
+
+from django.utils import timezone
 
 from judge.models import SubmissionSourceAccess
 from . import registry
@@ -28,7 +31,7 @@ def submission_layout(submission, profile_id, user, completed_problem_ids, edita
     elif user.has_perm('judge.view_all_submission'):
         can_view = True
     elif profile_id == submission.user_id:
-        can_view = True
+        can_view = timezone.now() - submission.date <= timedelta(hours=24)
     elif not submission.problem.is_public and user.has_perm('judge.suggest_new_problem') and \
             submission.problem.is_suggesting:
         can_view = True

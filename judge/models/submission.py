@@ -155,7 +155,7 @@ class Submission(models.Model):
         elif not self.problem.is_public and user.has_perm('judge.suggest_new_problem') and self.problem.is_suggesting:
             return True
         elif self.user_id == profile.id:
-            return True
+            return timezone.now() - self.date <= timezone.timedelta(hours=24)
         elif source_visibility == SubmissionSourceAccess.ALWAYS:
             return True
         elif source_visibility == SubmissionSourceAccess.SOLVED and \
