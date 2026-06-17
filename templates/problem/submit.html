@@ -129,40 +129,69 @@
                         handleFileSelect();
                     });
 
-                    // ===== DISABLE COPY IN ACE EDITOR =====
-                    // Users can select text normally for editing, but cannot copy it
-                    // out of the editor via Ctrl+C, right-click, or browser menus.
+                    // ===== DISABLE COPY & CUT IN ACE EDITOR (Ace 1.2.3) =====
+                    // Selection, paste, delete, select-all, and all other
+                    // editing operations remain functional.  Only copy and
+                    // cut are blocked — at the keyboard, DOM-event, and
+                    // context-menu levels.
 
-                    // 1. Remove Ace's internal copy/cut commands
+                    // ―― Layer 1: Remove Ace's built-in copy / cut commands ――――
                     editor.commands.removeCommand('copy');
                     editor.commands.removeCommand('cut');
 
-                    // 2. Intercept copy/cut events in the CAPTURE phase.
-                    //    Ace syncs its selection to a hidden <textarea> deep inside
-                    //    editor.container. Normal (bubble-phase) listeners on the
-                    //    container fire too late — the browser already copied the
-                    //    selection from the textarea into the clipboard. A capturing
-                    //    listener (third arg = true) fires BEFORE the event reaches
-                    //    the textarea, letting us block it in time.
-                    editor.container.addEventListener('copy', function (e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        return false;
-                    }, true);
-                    editor.container.addEventListener('cut', function (e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        return false;
-                    }, true);
-
-                    // 3. Also block copy/cut via jQuery as a fallback (bubble phase)
-                    $(editor.container).on('copy cut', function (e) {
-                        e.preventDefault();
-                        return false;
+                    // ―― Layer 2: No-op commands for copy / cut shortcuts ―――――――
+                    [
+                        { name: 'block-copy-c',        bindKey: { win: 'Ctrl-C',       mac: 'Command-C'     } },
+                        { name: 'block-copy-insert',   bindKey: { win: 'Ctrl-Insert',   mac: 'Ctrl-Insert'   } },
+                        { name: 'block-cut-x',         bindKey: { win: 'Ctrl-X',        mac: 'Command-X'     } },
+                        { name: 'block-cut-shift-del', bindKey: { win: 'Shift-Delete',  mac: 'Shift-Delete'  } },
+                    ].forEach(function (c) {
+                        editor.commands.addCommand({ exec: function () {}, name: c.name, bindKey: c.bindKey });
                     });
 
-                    // 4. Block right-click context menu (prevents "Copy" / "Cut"
-                    //    from the browser context menu on the editor)
+                    // ―― Layer 3: Capture-phase DOM listeners on the container ――
+                    // These fire BEFORE the event reaches Ace's hidden <textarea>,
+                    // so the browser never sees selected text to copy.
+                    ['copy', 'cut', 'beforecopy'].forEach(function (type) {
+                        editor.container.addEventListener(type, function (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return false;
+                        }, true);
+                    });
+
+                    // ―― Layer 4: Keyboard-level block on the hidden <textarea> ――
+                    // Capture-phase keydown: stops Ctrl+C / Ctrl+X / Ctrl+Insert /
+                    // Shift+Delete before Ace or the browser ever sees them.
+                    var ta = editor.container.querySelector('textarea');
+                    if (ta) {
+                        ta.addEventListener('keydown', function (e) {
+                            var key = e.keyCode || e.which;
+                            var ctrl = e.ctrlKey || e.metaKey;
+                            if (
+                                (ctrl && key === 67) ||    // Ctrl+C  (copy)
+                                (ctrl && key === 88) ||    // Ctrl+X  (cut)
+                                (ctrl && key === 45) ||    // Ctrl+Insert (alt copy)
+                                (e.shiftKey && key === 46)  // Shift+Delete (alt cut)
+                            ) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.stopImmediatePropagation();
+                                return false;
+                            }
+                        }, true);
+
+                        // Belt-and-suspenders: block copy / cut events directly
+                        // on the textarea in case they fire for any other reason.
+                        ta.addEventListener('copy', function (e) {
+                            e.preventDefault(); e.stopPropagation(); return false;
+                        }, true);
+                        ta.addEventListener('cut', function (e) {
+                            e.preventDefault(); e.stopPropagation(); return false;
+                        }, true);
+                    }
+
+                    // ―― Layer 5: Disable right-click context menu ――――――――――――
                     editor.container.addEventListener('contextmenu', function (e) {
                         e.preventDefault();
                         return false;
@@ -281,11 +310,12 @@
 {% block media %}
     {{ form.media.css }}
     <style>
-        #ace_source, .ace_content, #editor {
+        /* Safety net: prevent the hidden textarea from receiving a
+           browser-native text selection (does not block Ace's own
+           selection model, which is what users interact with). */
+        .ace_text-input {
             user-select: none;
             -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
         }
     </style>
 {% endblock %}
