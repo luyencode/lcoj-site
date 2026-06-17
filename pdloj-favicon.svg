@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!--
+    PDLOJ Favicon — 32x32
+    Icon: >_ terminal prompt inside a dark rounded-square tile
+    Designed for readability down to 16x16
+    Colors: tile #0f172a, prompt #22c55e (accepted-verdict green)
+  -->
+
+  <!-- Rounded-square tile -->
+  <rect width="32" height="32" rx="7" fill="#0f172a"/>
+
+  <!-- > chevron  -->
+  <!-- from (6,9) → tip at (15,16) → back to (6,23)       -->
+  <!-- 9px horizontal reach, 14px vertical span            -->
+  <!-- at 16px render: ≈4px wide, 7px tall — still legible -->
+  <polyline
+    points="6,9 15,16 6,23"
+    fill="none"
+    stroke="#22c55e"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"/>
+
+  <!-- _ cursor bar                                         -->
+  <!-- sits at y=22, same baseline as bottom of chevron    -->
+  <line
+    x1="18" y1="22"
+    x2="26" y2="22"
+    stroke="#22c55e"
+    stroke-width="3"
+    stroke-linecap="round"/>
+</svg>
