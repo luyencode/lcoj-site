@@ -1,21 +1,48 @@
 {% macro make_status(case) %}
     {% set partial = (case.status == 'AC' and  case.points < case.total) %}
-    <span title="{{ case.long_status }}" class="case-{%- if partial -%}_AC{% else %}{{- case.result_class -}}{%- endif -%}">
-        {%- if case.status == 'SC' %}&mdash;{% elif partial %}{{_("Partial Accepted")}}{% else %}{{ case.long_status }}{% endif -%}
+    {% if partial %}
+        {% set status_class = '_AC' %}
+    {% else %}
+        {% set status_class = case.result_class %}
+    {% endif %}
+    <span title="{{ case.long_status }}" class="case-badge case-badge-{{ status_class }}">
+        {%- if case.status == 'SC' %}&mdash;{% elif partial %}{{_("Partial")}}{% else %}{{ case.status }}{% endif -%}
     </span>
 {% endmacro %}
 
 {% macro make_batch_status(batch, cnt) %}
-    <b>{{ _('Batch #%(id)d', id=cnt) }}</b>
-    {% if not batch.not_graded %}
-        ({{ _('%(points)s/%(total)s points', points=batch.points|floatformat(0), total=batch.total|floatformat(0)) }})
+    {% if not batch.not_graded and batch.status %}
+        {% if batch.status == 'AC' %}
+            {% if batch.points == batch.total %}
+                {% set batch_class = 'AC' %}
+            {% else %}
+                {% set batch_class = '_AC' %}
+            {% endif %}
+        {% else %}
+            {% set batch_class = batch.status %}
+        {% endif %}
     {% else %}
-        <span class="fa fa-spinner fa-pulse"></span>
+        {% set batch_class = '' %}
     {% endif %}
-
-    {% if not can_view_testcase_status and not batch.not_graded %}
-        {{ make_status(batch) }}
-    {% endif %}
+    <div class="batch-header batch-header-{{ batch_class }}">
+        <span class="batch-status-icon">
+            {% if batch_class == 'AC' %}
+                <i class="fa fa-check-circle"></i>
+            {% elif batch_class == 'WA' or batch_class == 'RTE' or batch_class == 'IR' %}
+                <i class="fa fa-times-circle"></i>
+            {% elif not batch.not_graded %}
+                <i class="fa fa-exclamation-circle"></i>
+            {% else %}
+                <i class="fa fa-spinner fa-pulse"></i>
+            {% endif %}
+        </span>
+        <span class="batch-label">{{ _('Batch #%(id)d', id=cnt) }}</span>
+        {% if not batch.not_graded %}
+            <span class="batch-points">{{ _('%(points)s/%(total)s points', points=batch.points|floatformat(0), total=batch.total|floatformat(0)) }}</span>
+        {% else %}
+            <span class="batch-points"><i class="fa fa-spinner fa-pulse"></i></span>
+        {% endif %}
+    </div>
 {% endmacro %}
 
 {% if submission.contest_or_none %}
@@ -47,14 +74,19 @@
         <br>
         {% if can_view_testcase_status or can_view_batch_status %}
         {% if statuses or not submission.is_graded %}
+            <div class="testcase-statuses">
             {% for case in statuses %}
                 {% if case.status == "AC" %}
-                    <span class="fa fa-check case-AC"></span>
+                    <span class="testcase-dot testcase-dot-AC" title="{{ case.status }}">
+                        <i class="fa fa-check"></i>
+                    </span>
                 {% elif case.status == "SC" %}
-                    <span class="case-SC">&ndash;</span>
+                    <span class="testcase-dot testcase-dot-SC" title="{{ case.status }}">
+                        &ndash;
+                    </span>
                 {% else %}
-                    <a href="#{{ case.id }}">
-                        <span class="fa fa-times case-{{ case.status }} case-bad"></span>
+                    <a href="#{{ case.id }}" class="testcase-dot testcase-dot-{{ case.status }}" title="{{ case.status }}">
+                        <i class="fa fa-times"></i>
                     </a>
                 {% endif %}
                 {% if case.num_combined > 1 %}
@@ -62,9 +94,9 @@
                 {% endif %}
             {% endfor %}
             {% if not submission.is_graded %}
-                <span class="fa fa-spinner fa-pulse"></span>
+                <span class="testcase-dot-spinner"><i class="fa fa-spinner fa-pulse"></i></span>
             {% endif %}
-            <br><br>
+            </div>
         {% else %}
             <div>
                 <div class="alert alert-warning comment-lock">
@@ -74,6 +106,17 @@
         {% endif %}
         {% set test_case_id = counter() %}
         {% set test_case_counter = counter() %}
+        {# Compute summary stats from all batches #}
+        {% set ac_count = namespace(count=0) %}
+        {% set total_count = namespace(count=0) %}
+        {% for batch in batches %}
+            {% for case in batch.cases %}
+                {% set total_count.count = total_count.count + 1 %}
+                {% if case.status == 'AC' %}
+                    {% set ac_count.count = ac_count.count + 1 %}
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
         {% for batch in batches %}
             {% if batch.id %}
                 {{ make_batch_status(batch, test_case_id()) }}
@@ -81,7 +124,24 @@
                 <div class="batch-cases">
             {% endif %}
         {% if can_view_testcase_status %}
-        <table class="submissions-status-table">{% for case in batch.cases %}
+        <table class="submissions-status-table">
+            <thead>
+                <tr class="case-header-row">
+                    <th class="case-name">{{ _('Tổng: %(ac)s/%(total)s', ac=ac_count.count, total=total_count.count) }}</th>
+                    <th class="case-status">
+                        <span class="case-badge case-badge-{{ submission.result_class }}">
+                            {{- submission.result or submission.status -}}
+                        </span>
+                    </th>
+                    <th class="case-time">{{ _('%(time)ss', time=max_execution_time|floatformat(3)) }}</th>
+                    <th class="case-memory">{{ submission.memory|kbdetailformat }}</th>
+                    {% if not batch.id %}
+                        <th class="case-points">{{ _('%(points)s/%(total)s', points=submission.case_points|floatformat(-3), total=submission.case_total|floatformat(0)) }}</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+            {% for case in batch.cases %}
             {% set current_test_case_count = test_case_counter() %}
             {% set print_case_output = can_view_test and case.output %}
             {% set print_case_ext_feedback = case.extended_feedback
@@ -92,38 +152,48 @@
             {% set has_extended_data = print_case_output or print_case_ext_feedback or (can_view_test and curr_data) %}
 
             <tr id="{{ case.id }}" class="case-row toggle closed">
-                <td>
+                <td class="case-name">
                     {%- if has_extended_data -%}
                         <i class="fa fa-chevron-right fa-fw"></i>
+                    {%- else -%}
+                        <span class="fa-fw"></span>
                     {%- endif -%}
                     {%- if batch.id -%}
-                        <b>{{ _('Case #%(id)d:', id=loop.index) }}</b>
+                        <b>{{ _('Case #%(id)d', id=loop.index) }}</b>
                     {%- elif is_pretest -%}
-                        <b>{{ _('Pretest #%(id)d:', id=test_case_id()) }}</b>
+                        <b>{{ _('Pretest #%(id)d', id=test_case_id()) }}</b>
                     {%- else -%}
-                        <b>{{ _('Test case #%(id)d:', id=test_case_id()) }}</b>
+                        <b>{{ _('Test case #%(id)d', id=test_case_id()) }}</b>
                     {%- endif -%}
                 </td>
 
-                <td>
+                <td class="case-status">
                     {{ make_status(case) }}
                     {%- if case.feedback %}&nbsp;({{ case.feedback }}){% endif -%}
                 </td>
 
-                <td>
+                <td class="case-time">
                     {%- if case.status != 'SC' -%}
                         {%- if case.status == 'TLE' -%}
-                            [&gt;<span>{{ time_limit|floatformat(3) }}s,</span>
+                            &gt;<span>{{ time_limit|floatformat(3) }}s</span>
                         {%- else -%}
-                            [<span title="{{ case.time }}s">{{ case.time|floatformat(3) }}s,</span>
+                            <span title="{{ case.time }}s">{{ case.time|floatformat(3) }}s</span>
                         {%- endif -%}
+                    {%- else -%}
+                        &mdash;
                     {%- endif -%}
                 </td>
 
-                <td>{% if case.status != 'SC' %}{{ case.memory|kbdetailformat }}]{% endif %}</td>
+                <td class="case-memory">
+                    {%- if case.status != 'SC' -%}
+                        {{ case.memory|kbdetailformat }}
+                    {%- else -%}
+                        &mdash;
+                    {%- endif -%}
+                </td>
 
                 {% if not batch.id %}
-                    <td>({{ case.points|floatformat(-3) }}/{{ case.total|floatformat(0) }})</td>
+                    <td class="case-points">({{ case.points|floatformat(-3) }}/{{ case.total|floatformat(0) }})</td>
                 {% endif %}
             </tr>
 
@@ -155,6 +225,7 @@
                 </tr>
             {% endif %}
         {% endfor %}
+            </tbody>
         </table>
         {% endif %}
 
@@ -162,36 +233,19 @@
             <br>
         {% endfor %}
         {% if statuses and submission.is_graded %}
-            <br>
             {% if submission.result != "AB" %}
-                {% if can_view_testcase_status %}
-                    <b>{{ _('Resources:') }}</b>
-                    {% if submission.result == "TLE" %}
-                        <span>---,</span>
-                    {% else %}
-                        <span title="{{ submission.time }}s">{{ submission.time|floatformat(3) }}s,</span>
-                    {% endif %}
-                    {{ submission.memory|kbdetailformat }}
-                    <br>
-                    {% if submission.result == "AC" %}
-                        <b>{{ _('Maximum single-case runtime:') }}</b>
-                        <span title="{{ max_execution_time }}s">{{ max_execution_time|floatformat(3) }}s</span>
-                        <br>
-                    {% endif %}
-                {% endif %}
-                {% if is_pretest %}
-                    <b>{{ _('Final pretest score:') }}</b>
-                {% else %}
-                    <b>{{ _('Final score:') }}</b>
-                {% endif %}
-                {{ submission.case_points|floatformat(-3) }}/{{ submission.case_total|floatformat(0) }}
                 {% if request.in_contest and submission.contest_or_none %}
+                    <br>
                     {% with contest=submission.contest_or_none %}
                         {% set points=contest.points|roundfloat(3) %}
                         {% set total=contest.problem.points|floatformat(-1) %}
+                        <b>{{ _('Final score:') }}</b> {{ submission.case_points|floatformat(-3) }}/{{ submission.case_total|floatformat(0) }}
                         ({{ _('%(points)s/%(total)s points', points=points, total=total) }})
                     {% endwith %}
-                {% else %}
+                {% elif not can_view_testcase_status %}
+                    <br>
+                    <b>{% if is_pretest %}{{ _('Final pretest score:') }}{% else %}{{ _('Final score:') }}{% endif %}</b>
+                    {{ submission.case_points|floatformat(-3) }}/{{ submission.case_total|floatformat(0) }}
                     {% with points=submission.points|floatformat(3), total=submission.problem.points|floatformat(3) %}
                         ({{ _('%(points)s/%(total)s points', points=points, total=total) }})
                     {% endwith %}
