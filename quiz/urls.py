@@ -28,6 +28,7 @@ urlpatterns = [
         path('/start', student.QuizStart.as_view(), name='quiz_start'),
         path('/ranking', student.QuizRanking.as_view(), name='quiz_ranking'),
         path('/edit', editor.QuizEdit.as_view(), name='quiz_edit'),
+        path('/clone', editor.QuizClone.as_view(), name='quiz_clone'),
         path('/attempts', editor.QuizAttempts.as_view(), name='quiz_attempts'),
         path('/attempt/<int:attempt>', include([
             path('', student.QuizTake.as_view(), name='quiz_take'),

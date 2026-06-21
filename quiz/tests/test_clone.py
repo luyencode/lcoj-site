@@ -94,3 +94,47 @@ class QuizCloneModelTest(TestCase):
             create_quiz(code=f'clonesrce{i}')
         with self.assertRaises(ValueError):
             base.clone(self.cloner.profile)
+
+
+class QuizCloneViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.author = create_user(
+            username='cloneviewauthor', user_permissions=('edit_own_quiz',))
+        cls.stranger = create_user(
+            username='clonestranger', user_permissions=('edit_own_quiz',))
+        cls.q = create_question(title='view clone q', code='viewcloneq')
+        cls.quiz = create_quiz(
+            code='viewclonesrc',
+            authors=(cls.author.profile,),
+            questions=((cls.q, 1.0),),
+        )
+
+    def test_clone_post_redirects_to_edit(self):
+        from django.urls import reverse
+        self.client.force_login(self.author)
+        resp = self.client.post(
+            reverse('quiz_clone', kwargs={'quiz': 'viewclonesrc'}))
+        self.assertRedirects(
+            resp, reverse('quiz_edit', kwargs={'quiz': 'viewclonesrc2'}))
+
+    def test_clone_creates_quiz_and_links(self):
+        from django.urls import reverse
+        self.client.force_login(self.author)
+        self.client.post(reverse('quiz_clone', kwargs={'quiz': 'viewclonesrc'}))
+        clone = Quiz.objects.get(code='viewclonesrc2')
+        self.assertEqual(clone.question_links.count(), 1)
+
+    def test_clone_non_editor_returns_404(self):
+        from django.urls import reverse
+        self.client.force_login(self.stranger)
+        resp = self.client.post(
+            reverse('quiz_clone', kwargs={'quiz': 'viewclonesrc'}))
+        self.assertEqual(resp.status_code, 404)
+
+    def test_clone_get_returns_405(self):
+        from django.urls import reverse
+        self.client.force_login(self.author)
+        resp = self.client.get(
+            reverse('quiz_clone', kwargs={'quiz': 'viewclonesrc'}))
+        self.assertEqual(resp.status_code, 405)
