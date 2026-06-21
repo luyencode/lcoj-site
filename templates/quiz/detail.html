@@ -257,14 +257,13 @@ $(document).ready(function () {
         <a href="{{ url('quiz_attempts', quiz.code) }}" class="quiz-edit-link">
             <i class="fa fa-list"></i> {{ _('All attempts') }}
         </a>
-        <form method="post" action="{{ url('quiz_clone', quiz.code) }}" style="display:inline;margin:0;">
+        <form id="clone-form" method="post" action="{{ url('quiz_clone', quiz.code) }}" style="display:none;">
             {% csrf_token %}
-            <button type="submit"
-                    style="background:none;border:none;cursor:pointer;padding:0;font-size:inherit;color:#5b80b9;"
-                    class="quiz-edit-link">
-                <i class="fa fa-copy"></i> {{ _('Clone quiz') }}
-            </button>
         </form>
+        <a href="#" class="quiz-edit-link"
+           onclick="document.getElementById('clone-form').submit();return false;">
+            <i class="fa fa-copy"></i> {{ _('Clone quiz') }}
+        </a>
         {% endif %}
     </div>
 </div>
