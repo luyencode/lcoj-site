@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 
 from quiz.models import Quiz, QuizQuestionLink
@@ -10,6 +11,7 @@ class QuizCloneModelTest(TestCase):
     def setUpTestData(cls):
         cls.cloner = create_user(username='cloner', user_permissions=('edit_own_quiz',))
         cls.other_editor = create_user(username='othercloner', user_permissions=('edit_own_quiz',))
+        cls.tester = create_user(username='clonetester')
         cls.org = create_organization(name='cloneorg', admins=())
         cls.q1 = create_question(title='clone q1', code='cloneq1')
         cls.q2 = create_question(title='clone q2', code='cloneq2')
@@ -28,7 +30,7 @@ class QuizCloneModelTest(TestCase):
             end_time=timezone.now(),
             authors=(cls.cloner.profile,),
             curators=(cls.other_editor.profile,),
-            testers=(),
+            testers=(cls.tester.profile,),
             organizations=(cls.org,),
             questions=((cls.q1, 2.5), (cls.q2, 1.0)),
         )
@@ -76,6 +78,7 @@ class QuizCloneModelTest(TestCase):
         clone = self.quiz.clone(self.cloner.profile)
         self.assertIn(self.org, clone.organizations.all())
         self.assertIn(self.other_editor.profile, clone.curators.all())
+        self.assertIn(self.tester.profile, clone.testers.all())
 
     def test_clone_code_first_suffix(self):
         clone = self.quiz.clone(self.cloner.profile)
@@ -111,7 +114,6 @@ class QuizCloneViewTest(TestCase):
         )
 
     def test_clone_post_redirects_to_edit(self):
-        from django.urls import reverse
         self.client.force_login(self.author)
         resp = self.client.post(
             reverse('quiz_clone', kwargs={'quiz': 'viewclonesrc'}))
@@ -119,21 +121,18 @@ class QuizCloneViewTest(TestCase):
             resp, reverse('quiz_edit', kwargs={'quiz': 'viewclonesrc2'}))
 
     def test_clone_creates_quiz_and_links(self):
-        from django.urls import reverse
         self.client.force_login(self.author)
         self.client.post(reverse('quiz_clone', kwargs={'quiz': 'viewclonesrc'}))
         clone = Quiz.objects.get(code='viewclonesrc2')
         self.assertEqual(clone.question_links.count(), 1)
 
     def test_clone_non_editor_returns_404(self):
-        from django.urls import reverse
         self.client.force_login(self.stranger)
         resp = self.client.post(
             reverse('quiz_clone', kwargs={'quiz': 'viewclonesrc'}))
         self.assertEqual(resp.status_code, 404)
 
     def test_clone_get_returns_405(self):
-        from django.urls import reverse
         self.client.force_login(self.author)
         resp = self.client.get(
             reverse('quiz_clone', kwargs={'quiz': 'viewclonesrc'}))
