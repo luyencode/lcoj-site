@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from quiz.models import Quiz, QuizQuestionLink
+from quiz.models import Quiz
 from quiz.tests.util import create_organization, create_question, create_quiz, create_user
 
 
