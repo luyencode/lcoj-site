@@ -52,12 +52,14 @@
             left: -999em;
         }
 
-        .content-description {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
+        {% if not request.user.is_authenticated or not (request.user.is_superuser or request.user.profile.display_rank == 'teacher') %}
+            .content-description {
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+        {% endif %}
     </style>
 {% endblock %}
 
