@@ -34,19 +34,26 @@
     {% else %}
         <meta property="og:image" content="{{ request.build_absolute_uri("/logo.png") }}">
     {% endif %}
-    {% block og_title %}{% endblock %}
+    {% block og_title %}
+    <meta property="og:title" content="{{ title }} - {{ SITE_LONG_NAME }}">
+    {% endblock %}
     <meta property="og:site_name" content="{{ SITE_LONG_NAME }}">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Luyện Code Online - Học lập trình tương tác trực tuyến">
     <meta property='fb:app_id' content='168993876192748'>
-    <meta property='og:image:alt' content='Luyện Code Online - Học lập trình tương tác trực tuyến'>
+    <meta property='og:image:alt' content='{{ SITE_LONG_NAME }}'>
     <meta property='og:image:type' content='image/png'>
     <meta name='twitter:card' content='summary_large_image'>
-    <meta name='twitter:title' content='Luyện Code Online - Học lập trình tương tác trực tuyến'>
-    <meta name='twitter:description' content='Luyện code & Học lập trình tương tác trực tuyến cực kỳ hấp dẫn qua việc chấm code tự động'>
+    <meta name='twitter:title' content='{{ title }} - {{ SITE_LONG_NAME }}'>
+    {% if meta_description %}
+    <meta name='twitter:description' content='{{ meta_description }}'>
+    {% else %}
+    <meta name='twitter:description' content='{{ SITE_LONG_NAME }} - Nền tảng học lập trình tương tác trực tuyến với chấm code tự động'>
+    {% endif %}
     <meta name='twitter:site' content='@nguyenvanhieuvn'>
     <meta name='twitter:creator' content='@nguyenvanhieuvn'>
-    <meta property='og:description' content='Luyện code & Học lập trình tương tác trực tuyến cực kỳ hấp dẫn qua việc chấm code tự động'>
+    {% if not meta_description %}
+    <meta property='og:description' content='{{ SITE_LONG_NAME }} - Nền tảng học lập trình tương tác trực tuyến với chấm code tự động'>
+    {% endif %}
     <meta property="og:url"
           content="{{ DMOJ_SCHEME }}://{{ DMOJ_CANONICAL|default(site.domain) }}{{ request.get_full_path() }}">
 
