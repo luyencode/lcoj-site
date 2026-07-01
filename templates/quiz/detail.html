@@ -257,6 +257,13 @@ $(document).ready(function () {
         <a href="{{ url('quiz_attempts', quiz.code) }}" class="quiz-edit-link">
             <i class="fa fa-list"></i> {{ _('All attempts') }}
         </a>
+        <form id="clone-form" method="post" action="{{ url('quiz_clone', quiz.code) }}" style="display:none;">
+            {% csrf_token %}
+        </form>
+        <a href="#" class="quiz-edit-link"
+           onclick="document.getElementById('clone-form').submit();return false;">
+            <i class="fa fa-copy"></i> {{ _('Clone quiz') }}
+        </a>
         {% endif %}
     </div>
 </div>
@@ -408,9 +415,7 @@ $(document).ready(function () {
     <div class="quiz-login-notice">
         <i class="fa fa-lock"></i>
         {% set login_url = url('auth_login') + '?next=' + request.get_full_path() %}
-        {%- trans login_url=login_url -%}
-        Please <a href="{{ login_url }}">log in</a> to take this quiz.
-        {%- endtrans -%}
+        {{ _('Please') }} <a href="{{ login_url }}">{{ _('log in') }}</a> {{ _('to take this quiz.') }}
     </div>
 {% endif %}
 {% if quiz.integrity_monitoring and not in_progress and request.user.is_authenticated %}
