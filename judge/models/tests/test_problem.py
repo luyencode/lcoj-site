@@ -41,6 +41,7 @@ class ProblemTestCase(CommonDataMixin, TestCase):
             types=('type',),
             authors=('normal',),
             testers=('staff_problem_edit_public',),
+            testcase_visibility_mode=ProblemTestcaseAccess.AUTHOR_ONLY,
         )
 
         self.testcase_allow_all = create_problem(
