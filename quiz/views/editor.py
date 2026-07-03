@@ -194,3 +194,19 @@ class QuizViolationLog(QuizEditorObjectMixin, View):
                 for v in violations
             ],
         })
+
+
+class QuizClone(QuizEditorObjectMixin, View):
+    def post(self, request, *args, **kwargs):
+        try:
+            clone = self.quiz.clone(request.profile)
+        except ValueError:
+            messages.error(
+                request,
+                _('Could not generate a unique code for the clone. '
+                  'Rename the original quiz first.'))
+            return redirect('quiz_edit', quiz=self.quiz.code)
+        messages.success(
+            request,
+            _('Quiz cloned. Update the name and settings before publishing.'))
+        return redirect('quiz_edit', quiz=clone.code)

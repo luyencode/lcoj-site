@@ -3,7 +3,7 @@ from datetime import timedelta
 from functools import cached_property
 
 from django.core.validators import MinValueValidator, RegexValidator
-from django.db import models
+from django.db import models, transaction
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -270,6 +270,47 @@ class Quiz(models.Model):
             attempt.regrade()
             count += 1
         return count
+
+    def clone(self, author):
+        suffixes = [str(i) for i in range(2, 10)]
+        new_code = None
+        for suffix in suffixes:
+            candidate = f'{self.code}{suffix}'
+            if not Quiz.objects.filter(code=candidate).exists():
+                new_code = candidate
+                break
+        if new_code is None:
+            raise ValueError(
+                f'Cannot generate a unique code for clone of {self.code!r}')
+        with transaction.atomic():
+            clone_quiz = Quiz.objects.create(
+                code=new_code,
+                name=f'Copy of {self.name}',
+                description=self.description,
+                time_limit=self.time_limit,
+                max_attempts=self.max_attempts,
+                shuffle_questions=self.shuffle_questions,
+                result_feedback=self.result_feedback,
+                integrity_monitoring=self.integrity_monitoring,
+                is_organization_private=self.is_organization_private,
+                is_public=False,
+                start_time=None,
+                end_time=None,
+            )
+            clone_quiz.authors.set([author])
+            clone_quiz.organizations.set(self.organizations.all())
+            clone_quiz.curators.set(self.curators.all())
+            clone_quiz.testers.set(self.testers.all())
+            QuizQuestionLink.objects.bulk_create([
+                QuizQuestionLink(
+                    quiz=clone_quiz,
+                    question_id=link.question_id,
+                    points=link.points,
+                    order=link.order,
+                )
+                for link in self.question_links.all()
+            ])
+        return clone_quiz
 
     def get_ranking(self):
         best = {}

@@ -86,6 +86,14 @@
         </tr>
     </table>
 </form>
+{% if editing %}
+<div style="margin-top:0.5em;text-align:right;">
+    <form method="post" action="{{ url('quiz_clone', quiz.code) }}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="button">{{ _('Clone quiz') }}</button>
+    </form>
+</div>
+{% endif %}
 </div>
 
 <style>

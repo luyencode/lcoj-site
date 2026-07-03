@@ -226,9 +226,31 @@ class QuizQuestionLinkInline(admin.TabularInline):
     fields = ('question', 'order', 'points')
 
 
+def clone_quiz_action(modeladmin, request, queryset):
+    cloned, errors = 0, []
+    author = getattr(request, 'profile', None)
+    for quiz in queryset:
+        try:
+            quiz.clone(author or quiz.authors.first())
+            cloned += 1
+        except ValueError as e:
+            errors.append(str(e))
+    if cloned:
+        modeladmin.message_user(
+            request,
+            _('Cloned %(n)d quiz(zes). Edit the copies to update their names and settings.') % {'n': cloned},
+            messages.SUCCESS)
+    for err in errors:
+        modeladmin.message_user(request, err, messages.ERROR)
+
+
+clone_quiz_action.short_description = _l('Clone selected quizzes')
+
+
 @admin.register(Quiz)
 class QuizAdmin(admin.ModelAdmin):
     form = QuizAdminForm
+    actions = (clone_quiz_action,)
     list_display = ('code', 'name', 'time_limit', 'is_public')
     list_filter = ('is_public', 'is_organization_private')
     search_fields = ('code', 'name')
