@@ -55,6 +55,7 @@
 {% endblock %}
 
 {% block content_js_media %}
+    {# Keep existing PDF print script exactly as-is #}
     {% if not comment_lock %}
         {% include "comments/media-js.html" %}
     {% endif %}
@@ -72,6 +73,30 @@
             });
         });
     </script>
+
+    {% if problem.block_copy and not request.user.is_staff and not can_edit_problem %}
+    <script>
+        (function() {
+            var blockCopy = true;
+            window.addEventListener('beforeunload', function(e) {
+                if (!blockCopy) return;
+                e.preventDefault();
+                e.returnValue = '';
+            });
+            // Suppress beforeunload on intentional navigation (clicks on links/buttons)
+            document.addEventListener('click', function(e) {
+                var a = e.target.closest('a');
+                if (a && a.href && !a.href.startsWith('javascript:')) {
+                    blockCopy = false;
+                }
+            });
+            // Also suppress on form submission
+            document.addEventListener('submit', function() {
+                blockCopy = false;
+            }, true);
+        })();
+    </script>
+    {% endif %}
 {% endblock %}
 
 {% block title_row %}
@@ -363,7 +388,19 @@
             {{ _('This problem cannot be accessed by normal users until it is approved by an admin or staff. Please make sure that all the data for this problem is correct.') }}
         </div>
     {% endif %}
-    {% include "problem/problem-detail.html" %}
+
+    {% if problem.block_copy and not request.user.is_staff and not can_edit_problem %}
+        <div class="alert alert-warning" id="block-copy-banner">
+            <i class="fa fa-exclamation-triangle"></i>
+            <b>{{ _('Copying is disabled for this problem.') }}</b>
+            {{ _('Please solve it on your own.') }}
+        </div>
+        <div id="problem-description" style="user-select: none;">
+            {% include "problem/problem-detail.html" %}
+        </div>
+    {% else %}
+        {% include "problem/problem-detail.html" %}
+    {% endif %}
 {% endblock %}
 
 {% block post_description_end %}
