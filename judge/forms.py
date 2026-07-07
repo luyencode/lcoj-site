@@ -225,7 +225,7 @@ class ProblemEditForm(ModelForm):
         model = Problem
         fields = ['is_public', 'code', 'name', 'time_limit', 'memory_limit', 'points', 'partial',
                   'statement_file', 'source', 'types', 'group', 'submission_source_visibility_mode',
-                  'testcase_visibility_mode', 'description', 'testers']
+                  'testcase_visibility_mode', 'description', 'testers', 'block_copy']
         widgets = {
             'types': Select2MultipleWidget,
             'group': Select2Widget,
