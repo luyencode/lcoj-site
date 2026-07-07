@@ -225,6 +225,12 @@ class Problem(models.Model):
         default=False,
     )
 
+    block_copy = models.BooleanField(
+        default=False,
+        verbose_name=_('block copy'),
+        help_text=_('Block text selection and show a warning on the problem description page.'),
+    )
+
     __original_points = None
 
     def __init__(self, *args, **kwargs):
