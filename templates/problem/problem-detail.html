@@ -1,3 +1,36 @@
+{% if not request.user.is_staff %}
+<style>
+    .nocopy {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var nocopy = document.querySelector('.nocopy');
+        if (!nocopy) return;
+
+        nocopy.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+        nocopy.addEventListener('copy', function (e) { e.preventDefault(); });
+        nocopy.addEventListener('cut', function (e) { e.preventDefault(); });
+        nocopy.addEventListener('dragstart', function (e) { e.preventDefault(); });
+
+        document.addEventListener('keydown', function (e) {
+            var key = e.key.toLowerCase();
+            if ((e.ctrlKey || e.metaKey) && (key === 'c' || key === 'x' || key === 'u' || key === 'p')) {
+                // Allow Ctrl+C / Ctrl+X / Ctrl+U / Ctrl+P only if focus is in an input/textarea
+                var tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+                if (tag !== 'input' && tag !== 'textarea') {
+                    e.preventDefault();
+                }
+            }
+        });
+    });
+</script>
+{% endif %}
+
 {% with pdf_url=problem.absolute_pdf_url %}
 {% if pdf_url %}
     <p>{{ _("In case the statement didn't load correctly, you can download the statement here: ") }}<a href="{{ pdf_url }}">{{ _("Statement") }}</a></p>
@@ -5,6 +38,7 @@
 {% endif %}
 {% endwith %}
 
+<div class="{% if not request.user.is_staff %}nocopy{% endif %}">
 {% cache 86400 'problem_html' problem.id MATH_ENGINE LANGUAGE_CODE %}
     {{ (description or problem.i18n_description or problem.description)|markdown(problem.markdown_style, MATH_ENGINE)|reference|str|safe }}
 {% endcache %}
@@ -16,3 +50,4 @@
     </span>
     {% endif %}
 {% endwith %}
+</div>
