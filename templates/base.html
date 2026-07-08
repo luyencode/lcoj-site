@@ -31,8 +31,10 @@
     <meta name="theme-color" content="#519c53">
     {% if og_image %}
         <meta property="og:image" content="{{ request.build_absolute_uri(og_image) }}">
+        <meta name="twitter:image" content="{{ request.build_absolute_uri(og_image) }}">
     {% else %}
-        <meta property="og:image" content="{{ request.build_absolute_uri("/logo.png") }}">
+        <meta property="og:image" content="{{ request.build_absolute_uri("/thumbnail.jpg") }}">
+        <meta name="twitter:image" content="{{ request.build_absolute_uri("/thumbnail.jpg") }}">
     {% endif %}
     {% block og_title %}
     <meta property="og:title" content="{{ title }} - {{ SITE_LONG_NAME }}">
@@ -41,7 +43,7 @@
     <meta property="og:type" content="website">
     <meta property='fb:app_id' content='168993876192748'>
     <meta property='og:image:alt' content='{{ SITE_LONG_NAME }}'>
-    <meta property='og:image:type' content='image/png'>
+    <meta property='og:image:type' content='{% if og_image and (og_image.endswith(".png") or og_image.endswith(".PNG")) %}image/png{% else %}image/jpeg{% endif %}'>
     <meta name='twitter:card' content='summary_large_image'>
     <meta name='twitter:title' content='{{ title }} - {{ SITE_LONG_NAME }}'>
     {% if meta_description %}
