@@ -384,6 +384,12 @@ class ContestClone(ContestMixin, PermissionRequiredMixin, TitleMixin, SingleObje
             raise PermissionDenied(_('You are not allowed to edit this contest.'))
         return contest
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        if self.object.organizations.count() == 1:
+            kwargs['org_pk'] = self.object.organizations.values_list('pk', flat=True)[0]
+        return kwargs
+
     def form_valid(self, form):
         contest = self.object
 
