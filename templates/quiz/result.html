@@ -7,10 +7,34 @@
     .quiz-answer-row.incorrect { border-left: 5px solid #c44; }
     .quiz-explanation { background: #f6f6f6; padding: 0.6em; margin-top: 0.6em; border-radius: 4px; }
     .quiz-choices-result { list-style: none; padding: 0; margin: 0.5em 0; }
-    .quiz-choices-result li { padding: 0.3em 0.5em; margin: 0.2em 0; border-radius: 3px; }
-    .quiz-choices-result li.choice-correct  { background: #e6f4e6; font-weight: bold; }
-    .quiz-choices-result li.choice-selected { outline: 2px solid #666; }
+    .quiz-choices-result li {
+        padding: 0.4em 0.6em; margin: 0.3em 0; border-radius: 3px;
+        border: 1px solid transparent;
+    }
+    .quiz-choices-result li.choice-correct {
+        background: #e6f4e6; border-color: #bfe3bf;
+    }
+    .quiz-choices-result li.choice-wrong-selected {
+        background: #fbe6e6; border-color: #e3bfbf;
+    }
     .quiz-choices-result li p { margin: 0 !important; }
+    .choice-row { display: flex; align-items: flex-start; gap: 0.5em; }
+    .choice-icon { flex: 0 0 1.2em; font-weight: bold; text-align: center; }
+    .choice-body { flex: 1; min-width: 0; }
+    .choice-correct .choice-icon { color: #2f8f2f; }
+    .choice-wrong-selected .choice-icon { color: #c44; }
+    .choice-tag {
+        flex: 0 0 auto; font-size: 0.78em; font-weight: bold;
+        padding: 0.1em 0.5em; border-radius: 3px; color: #fff;
+    }
+    .choice-tag.correct { background: #2f8f2f; }
+    .choice-tag.wrong { background: #c44; }
+    .choice-tag.missed { background: #cc7a00; }
+    .question-type-tag {
+        display: inline-block; font-size: 0.7em; font-weight: normal;
+        color: #666; background: #eee; border-radius: 3px;
+        padding: 0.1em 0.5em; margin-left: 0.5em; vertical-align: middle;
+    }
     details.why-toggle { display: block; margin-top: 0.2em; }
     details.why-toggle summary { cursor: pointer; color: #666; font-size: 0.88em; }
     details.why-toggle .why-body { margin: 0.2em 0 0 1em; font-size: 0.9em; color: #444; }
@@ -28,6 +52,7 @@
     {%- if show_correct and row.answer %} {{ 'correct' if row.answer.is_correct else 'incorrect' }}{% endif %}">
 
     <h4>{{ _('Question') }} {{ row.number }}
+        <span class="question-type-tag">{{ row.question.get_type_display() }}</span>
         {% if show_correct %}({{ row.answer.points if row.answer else 0 }} / {{ row.max_points }}){% endif %}
     </h4>
 
@@ -57,14 +82,28 @@
                 {% set was_selected = row.answer and row.answer.answer is not none and (
                     (row.question.type == 'MC' and row.answer.answer == idx) or
                     (row.question.type == 'MA' and idx in (row.answer.answer or []))) %}
-                <li class="content-description {% if is_correct %}choice-correct{% endif %} {% if was_selected %}choice-selected{% endif %}">
-                    {{ ch['text']|markdown('default') }}
-                    {% if ch['explanation'] %}
-                        <details class="why-toggle">
-                            <summary>{{ _('Why?') }}</summary>
-                            <div class="why-body content-description">{{ ch['explanation']|markdown('default') }}</div>
-                        </details>
-                    {% endif %}
+                <li class="content-description
+                    {%- if is_correct %} choice-correct{% endif %}
+                    {%- if was_selected and not is_correct %} choice-wrong-selected{% endif %}">
+                    <div class="choice-row">
+                        <span class="choice-icon">{% if is_correct %}&#10003;{% elif was_selected %}&#10007;{% endif %}</span>
+                        <div class="choice-body">
+                            {{ ch['text']|markdown('default') }}
+                            {% if ch['explanation'] %}
+                                <details class="why-toggle">
+                                    <summary>{{ _('Why?') }}</summary>
+                                    <div class="why-body content-description">{{ ch['explanation']|markdown('default') }}</div>
+                                </details>
+                            {% endif %}
+                        </div>
+                        {% if was_selected and is_correct %}
+                            <span class="choice-tag correct">{{ _('Your answer') }}</span>
+                        {% elif was_selected %}
+                            <span class="choice-tag wrong">{{ _('Your answer') }}</span>
+                        {% elif is_correct %}
+                            <span class="choice-tag missed">{{ _('Missed') }}</span>
+                        {% endif %}
+                    </div>
                 </li>
             {% endfor %}
             </ul>
