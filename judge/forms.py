@@ -665,13 +665,28 @@ class ContestAnnouncementForm(forms.ModelForm):
         }
 
 
+def get_organization_key_prefix(org_pk):
+    if org_pk is None:
+        return None
+    org = Organization.objects.get(pk=org_pk)
+    return ''.join(x for x in org.slug.lower() if x.isalnum()) + '_'
+
+
 class ContestCloneForm(Form):
     key = CharField(max_length=32, validators=[RegexValidator('^[a-z0-9_]+$', _('Contest id must be ^[a-z0-9_]+$'))])
+
+    def __init__(self, *args, **kwargs):
+        self.org_pk = kwargs.pop('org_pk', None)
+        super(ContestCloneForm, self).__init__(*args, **kwargs)
 
     def clean_key(self):
         key = self.cleaned_data['key']
         if Contest.objects.filter(key=key).exists():
             raise ValidationError(_('Contest with key already exists.'))
+        prefix = get_organization_key_prefix(self.org_pk)
+        if prefix and not key.startswith(prefix):
+            raise ValidationError(_('Contest id must starts with `%s`') % (prefix, ),
+                                  'contest_id_invalid_prefix')
         return key
 
 
@@ -778,11 +793,8 @@ class ContestForm(ModelForm):
 
     def clean_key(self):
         key = self.cleaned_data['key']
-        if self.org_pk is None:
-            return key
-        org = Organization.objects.get(pk=self.org_pk)
-        prefix = ''.join(x for x in org.slug.lower() if x.isalnum()) + '_'
-        if not key.startswith(prefix):
+        prefix = get_organization_key_prefix(self.org_pk)
+        if prefix and not key.startswith(prefix):
             raise forms.ValidationError(_('Contest id must starts with `%s`') % (prefix, ),
                                         'contest_id_invalid_prefix')
         return key
