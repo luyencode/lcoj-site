@@ -29,6 +29,12 @@
     }
     .choice-tag.correct { background: #2f8f2f; }
     .choice-tag.wrong { background: #c44; }
+    .choice-tag.missed { background: #cc7a00; }
+    .question-type-tag {
+        display: inline-block; font-size: 0.7em; font-weight: normal;
+        color: #666; background: #eee; border-radius: 3px;
+        padding: 0.1em 0.5em; margin-left: 0.5em; vertical-align: middle;
+    }
     details.why-toggle { display: block; margin-top: 0.2em; }
     details.why-toggle summary { cursor: pointer; color: #666; font-size: 0.88em; }
     details.why-toggle .why-body { margin: 0.2em 0 0 1em; font-size: 0.9em; color: #444; }
@@ -46,6 +52,7 @@
     {%- if show_correct and row.answer %} {{ 'correct' if row.answer.is_correct else 'incorrect' }}{% endif %}">
 
     <h4>{{ _('Question') }} {{ row.number }}
+        <span class="question-type-tag">{{ row.question.get_type_display() }}</span>
         {% if show_correct %}({{ row.answer.points if row.answer else 0 }} / {{ row.max_points }}){% endif %}
     </h4>
 
@@ -94,7 +101,7 @@
                         {% elif was_selected %}
                             <span class="choice-tag wrong">{{ _('Your answer') }}</span>
                         {% elif is_correct %}
-                            <span class="choice-tag correct">{{ _('Correct answer') }}</span>
+                            <span class="choice-tag missed">{{ _('Missed') }}</span>
                         {% endif %}
                     </div>
                 </li>
