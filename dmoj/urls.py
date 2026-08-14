@@ -159,6 +159,8 @@ urlpatterns = [
         ])),
     ])),
 
+    path('quizzes', include('quiz.urls')),
+
     path('tags', include([
         path('/', tag.TagProblemList.as_view(), name='tagproblem_list'),
         path('/create', tag.TagProblemCreate.as_view(), name='tagproblem_create'),

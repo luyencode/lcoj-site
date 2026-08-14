@@ -126,9 +126,11 @@ class TestMarkdown(SimpleTestCase):
                              '<script>void(0)</script>')
 
     def test_post_process(self):
+        from django.templatetags.static import static
+        blank_url = static('blank.gif')
         self.assertHTMLEqual(markdown('<img src="test.png">', self.UNBLEACHED_STYLE, lazy_load=True),
                              '<p><noscript><img src="test.png"></noscript>'
-                             '<img src="/static/blank.gif" data-src="test.png" class="unveil"></p>')
+                             '<img src="%s" data-src="test.png" class="unveil"></p>' % blank_url)
 
 
 class TestFragmentUtils(SimpleTestCase):

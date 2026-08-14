@@ -1,0 +1,238 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Import Questions" %} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:quiz_quizquestion_changelist' %}">{% trans 'Quiz questions' %}</a>
+    &rsaquo; {% trans 'Import' %}
+</div>
+{% endblock %}
+
+{% block content_title %}<h1>{% trans "Import Questions" %}</h1>{% endblock %}
+
+{% block content %}
+{% if messages %}
+<ul class="messagelist">
+    {% for message in messages %}
+    <li class="{{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<details class="module" style="margin-bottom:1em;">
+    <summary style="padding:10px 14px;cursor:pointer;font-weight:bold;font-size:14px;list-style:none;display:flex;align-items:center;gap:8px;">
+        <span>&#9654;</span> {% trans "How to fill in the spreadsheet" %}
+    </summary>
+    <style>
+    details[open] summary span { transform: rotate(90deg); display: inline-block; }
+    .imp-instr { padding: 0 16px 16px; }
+    .imp-instr table { border-collapse: collapse; width: 100%; margin: 8px 0 16px; font-size: 13px; }
+    .imp-instr th { background: #1B5E20; color: #fff; padding: 6px 10px; text-align: left; }
+    .imp-instr td { padding: 5px 10px; border-bottom: 1px solid #e8e8e8; vertical-align: top; }
+    .imp-instr tr:nth-child(even) td { background: #f9f9f9; }
+    .imp-instr code { background: #e8e8e8; border-radius: 3px; padding: 1px 5px; font-size: 12px; }
+    .imp-instr h3 { margin: 14px 0 6px; font-size: 13px; color: #333; }
+    .imp-instr .tip-box { background: #f0f4ff; border: 1px solid #c5d0ef; border-radius: 4px; padding: 10px 14px; font-size: 12px; margin-top: 10px; }
+    #btn-copy-md { display:inline-flex; align-items:center; gap:6px; border:1px solid #417690; border-radius:4px; background:#f0f6f9; color:#417690; font-size:12px; font-weight:600; padding:5px 11px; cursor:pointer; }
+    #btn-copy-md:hover { background:#417690; color:#fff; }
+    #btn-copy-md.copied { background:#2a7a40; border-color:#2a7a40; color:#fff; }
+    </style>
+    <div class="imp-instr">
+
+        <button type="button" id="btn-copy-md">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6z"/><path d="M2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2z"/></svg>
+            {% trans "Copy prompt for Claude.ai" %}
+        </button>
+        <script>
+        (function () {
+            var MD = [
+                "I need quiz questions for this system. Please generate questions following the format below.\n",
+                "**My request:** [Describe your topic, number of questions, and difficulty level here]\n",
+                "---\n",
+                "## Quiz Import Format\n",
+                "Output one question per row. The columns (left to right) are:\n",
+                "| Column | Required | Notes |",
+                "|--------|----------|-------|",
+                "| Code | Yes | Unique ID — lowercase letters + digits only, max 32 chars. E.g. `py101q1` |",
+                "| Type | Yes | `Multiple Choice`, `Multiple Answer`, `True/False`, or `Short Answer` |",
+                "| Title | Yes | Short display title |",
+                "| Question | Yes | Full question text (Markdown supported: bold, code, lists) |",
+                "| Choice 1 | MC/MA | First answer choice (MC and MA need at least 2) |",
+                "| Explanation 1 | No | Why Choice 1 is right or wrong — shown after submission |",
+                "| Choice 2 | MC/MA | Second answer choice |",
+                "| Explanation 2 | No | Why Choice 2 is right or wrong |",
+                "| Choice 3–6 / Explanation 3–6 | No | Up to 6 choices; leave unused columns blank |",
+                "| Correct Answer | Yes | See syntax table below |",
+                "| Points | No | Numeric score. Default: 1 |",
+                "| Category | No | Topic label (created automatically if new) |",
+                "| Level | No | `Easy`, `Medium`, or `Hard`. Default: Easy |",
+                "| Explanation | No | General explanation shown after submission (Markdown ok) |",
+                "| Shuffle Choices | No | `Yes` or `No` |",
+                "| MA Strategy | MA only | `All or nothing`, `Partial credit`, `Right minus wrong`, or `Correct only` |",
+                "| Answer Display | SA only | Human-readable answer shown to students (e.g. `Paris`). Leave blank to show raw patterns. |\n",
+                "## Correct Answer Syntax\n",
+                "| Type | Format | Example |",
+                "|------|--------|---------|",
+                "| Multiple Choice | Choice number (1-based) | `2` |",
+                "| Multiple Answer | Comma-separated numbers | `1,3,5` |",
+                "| True/False | `True` or `False` | `False` |",
+                "| Short Answer | Regex patterns separated by `\\|` | `(?i)paris \\| (?i)paris france` |\n",
+                "## Short Answer Regex Tips\n",
+                "- `(?i)` prefix = case-insensitive (recommended for most text answers)",
+                "- `\\d+` = one or more digits",
+                "- `\\w+` = one or more word characters",
+                "- Use `|` to accept alternative forms: `(?i)python | (?i)py`",
+                "- Set **Answer Display** to the clean readable answer (e.g. `Paris`) so students see it on the result page.\n",
+                "## What to do\n",
+                "I have attached the XLSX template file. Please:\n",
+                "1. Read the attached template (it already has styled headers and example rows).",
+                "2. Generate the questions described above — follow the column format exactly.",
+                "3. Use Python with `openpyxl` to **append the new question rows** after the existing example rows in the template.",
+                "   - Keep all existing rows (headers + examples) intact.",
+                "   - Leave a cell empty when a column does not apply to that question type.",
+                "   - For choice explanations, mark the correct choice with ✓ and briefly explain why wrong choices are incorrect.",
+                "4. Save the workbook and **output the completed XLSX file** so I can download and import it directly."
+            ].join("\n");
+
+            document.getElementById('btn-copy-md').addEventListener('click', function () {
+                var btn = this;
+                navigator.clipboard.writeText(MD).then(function () {
+                    btn.classList.add('copied');
+                    btn.querySelector('svg').style.display = 'none';
+                    btn.childNodes[btn.childNodes.length - 1].textContent = ' Copied!';
+                    setTimeout(function () {
+                        btn.classList.remove('copied');
+                        btn.querySelector('svg').style.display = '';
+                        btn.childNodes[btn.childNodes.length - 1].textContent = ' {% trans "Copy prompt for Claude.ai" %}';
+                    }, 2500);
+                });
+            });
+        })();
+        </script>
+
+        <h3>{% trans "Spreadsheet columns" %}</h3>
+        <table>
+            <thead><tr>
+                <th style="width:120px">{% trans "Column" %}</th>
+                <th style="width:80px">{% trans "Required" %}</th>
+                <th>{% trans "Notes" %}</th>
+            </tr></thead>
+            <tbody>
+                <tr><td><strong>Code</strong></td><td>{% trans "Yes" %}</td><td>{% trans "Unique identifier — lowercase letters and digits only (no spaces). E.g." %} <code>py101q1</code></td></tr>
+                <tr><td><strong>Type</strong></td><td>{% trans "Yes" %}</td><td>{% trans "Choose from dropdown:" %} <code>Multiple Choice</code>, <code>Multiple Answer</code>, <code>True/False</code>, <code>Short Answer</code></td></tr>
+                <tr><td><strong>Title</strong></td><td>{% trans "Yes" %}</td><td>{% trans "Short display title for the question." %}</td></tr>
+                <tr><td><strong>Question</strong></td><td>{% trans "Yes" %}</td><td>{% trans "Full question text. Markdown is supported (bold, code, lists)." %}</td></tr>
+                <tr><td><strong>Choice 1–6</strong></td><td>{% trans "MC / MA" %}</td><td>{% trans "Answer choices. MC and MA require at least 2. Unused slots leave blank." %}</td></tr>
+                <tr><td><strong>Explanation 1–6</strong></td><td>{% trans "No" %}</td><td>{% trans "Per-choice feedback shown to students after they submit (optional)." %}</td></tr>
+                <tr><td><strong>Correct Answer</strong></td><td>{% trans "Yes" %}</td><td>{% trans "See syntax below." %}</td></tr>
+                <tr><td><strong>Points</strong></td><td>{% trans "No" %}</td><td>{% trans "Numeric score for a fully correct answer. Default: 1." %}</td></tr>
+                <tr><td><strong>Category</strong></td><td>{% trans "No" %}</td><td>{% trans "Topic label. Created automatically if it does not exist." %}</td></tr>
+                <tr><td><strong>Level</strong></td><td>{% trans "No" %}</td><td>{% trans "Difficulty — choose from dropdown:" %} <code>Easy</code>, <code>Medium</code>, <code>Hard</code>. {% trans "Default: Easy." %}</td></tr>
+                <tr><td><strong>Explanation</strong></td><td>{% trans "No" %}</td><td>{% trans "General explanation shown to students after they submit. Markdown supported." %}</td></tr>
+                <tr><td><strong>Shuffle Choices</strong></td><td>{% trans "No" %}</td><td>{% trans "Yes / No — randomise the order of choices shown to each student." %}</td></tr>
+                <tr><td><strong>MA Strategy</strong></td><td>{% trans "MA only" %}</td><td>{% trans "How Multiple Answer questions are scored — choose from dropdown." %}</td></tr>
+                <tr><td><strong>Answer Display</strong></td><td>{% trans "No" %}</td><td>{% trans "SA only — human-readable answer shown on the result page (e.g." %} <code>Paris</code>{% trans "). Leave blank to show the raw regex patterns." %}</td></tr>
+            </tbody>
+        </table>
+
+        <h3>{% trans "Correct Answer syntax by question type" %}</h3>
+        <table>
+            <thead><tr><th>{% trans "Type" %}</th><th>{% trans "Syntax" %}</th><th>{% trans "Example" %}</th></tr></thead>
+            <tbody>
+                <tr><td><strong>MC</strong></td><td>{% trans "Choice number (1-based)" %}</td><td><code>2</code></td></tr>
+                <tr><td><strong>MA</strong></td><td>{% trans "Comma-separated choice numbers" %}</td><td><code>1,3,5</code></td></tr>
+                <tr><td><strong>TF</strong></td><td><code>True</code> {% trans "or" %} <code>False</code></td><td><code>True</code></td></tr>
+                <tr><td><strong>SA</strong></td><td>{% trans "Regex patterns separated by" %} <code>|</code></td><td><code>(?i)paris | (?i)paris france</code></td></tr>
+            </tbody>
+        </table>
+
+        <h3>{% trans "Short Answer regex tips" %}</h3>
+        <div class="tip-box">
+            <strong>{% trans "Any one pattern matching the student's answer = correct." %}</strong><br>
+            <code>(?i)</code> — {% trans "case-insensitive prefix (recommended for most answers)" %}<br>
+            <code>\d+</code> — {% trans "one or more digits" %}<br>
+            <code>\w+</code> — {% trans "one or more word characters (letters, digits, underscore)" %}<br>
+            <code>len\(?\)?</code> — {% trans "matches" %} <em>len</em>, <em>len(</em>, <em>len()</em><br>
+            <strong>{% trans "Example:" %}</strong> <code>(?i)python | (?i)python 3 | (?i)py3</code> — {% trans "accepts any of the three, case-insensitively." %}
+        </div>
+
+    </div>
+</details>
+
+<div class="module aligned">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <fieldset class="module aligned">
+            <h2>{% trans "Upload file" %}</h2>
+            {% for field in form %}
+            <div class="form-row{% if field.errors %} errors{% endif %}">
+                {{ field.errors }}
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}<p class="help">{{ field.help_text }}</p>{% endif %}
+            </div>
+            {% endfor %}
+        </fieldset>
+        <div class="submit-row">
+            <input type="submit" value="{% trans 'Preview import' %}" class="default">
+            <a href="{% url 'admin:quiz_quizquestion_import_template' %}" class="button">
+                {% trans "Download template" %}
+            </a>
+        </div>
+    </form>
+</div>
+
+{% if preview %}
+<div class="module">
+    <h2>
+        {% if has_errors %}
+            {% trans "Import preview — errors found, fix file and re-upload" %}
+        {% else %}
+            {% blocktrans count n=preview|length %}Preview — {{ n }} question{% plural %}Preview — {{ n }} questions{% endblocktrans %}
+        {% endif %}
+    </h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Row" %}</th>
+                <th>{% trans "Type" %}</th>
+                <th>{% trans "Title" %}</th>
+                <th>{% trans "Category" %}</th>
+                <th>{% trans "Level" %}</th>
+                <th>{% trans "Errors" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for q in preview %}
+            <tr class="{% if q.errors %}errornote{% endif %}">
+                <td>{{ q.row }}</td>
+                <td>{{ q.type }}</td>
+                <td>{{ q.title }}</td>
+                <td>{{ q.category }}</td>
+                <td>{{ q.level }}</td>
+                <td>
+                    {% if q.errors %}
+                        {% for e in q.errors %}<span class="errornote">{{ e }}</span><br>{% endfor %}
+                    {% else %}—{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if not has_errors %}
+    <form method="post" action="{% url 'admin:quiz_quizquestion_import_confirm' %}">
+        {% csrf_token %}
+        <div class="submit-row">
+            <input type="submit" value="{% trans 'Confirm import' %}" class="default">
+            <a href="{% url 'admin:quiz_quizquestion_changelist' %}">{% trans "Cancel" %}</a>
+        </div>
+    </form>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

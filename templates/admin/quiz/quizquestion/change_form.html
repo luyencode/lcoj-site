@@ -1,0 +1,329 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block extrahead %}{{ block.super }}
+<style>
+/* ── Choices pairs UI ── */
+#cp-wrap { margin: 10px 0; }
+#cp-note {
+    background: #fffce8; border: 1px solid #ffe28a; border-radius: 4px;
+    padding: 9px 13px; font-size: 12px; color: #555; line-height: 1.55;
+    margin-bottom: 10px;
+}
+#cp-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+#cp-table th {
+    padding: 5px 8px; font-size: 11px; font-weight: 700; color: #666;
+    text-transform: uppercase; letter-spacing: .05em;
+    border-bottom: 2px solid #ddd; text-align: left; background: #f9f9f9;
+}
+#cp-table th.th-n   { width: 28px; text-align: center; }
+#cp-table th.th-ok  { width: 58px; text-align: center; }
+#cp-table th.th-del { width: 32px; }
+#cp-table td { padding: 4px 5px; vertical-align: middle; }
+#cp-table td.td-n  { text-align: center; color: #aaa; font-size: 12px; }
+#cp-table td.td-ok { text-align: center; }
+#cp-table .cp-text {
+    width: 100%; box-sizing: border-box;
+    border: 1px solid #ccc; border-radius: 3px;
+    padding: 5px 8px; font-size: 13px; font-family: inherit;
+}
+#cp-table .cp-expl {
+    width: 100%; box-sizing: border-box;
+    border: 1px solid #e0e0e0; border-radius: 3px;
+    padding: 5px 8px; font-size: 12px; font-family: inherit;
+    background: #fafafa; color: #555;
+}
+#cp-table .cp-text:focus, #cp-table .cp-expl:focus {
+    outline: none; border-color: #417690; box-shadow: 0 0 0 1px #c4dce8;
+}
+#cp-table .cp-del {
+    background: none; border: none; color: #ccc; cursor: pointer;
+    font-size: 17px; padding: 2px 6px; border-radius: 3px; line-height: 1;
+}
+#cp-table .cp-del:hover { color: #ba2121; background: #fff0f0; }
+#cp-add {
+    border: 1px dashed #bbb; border-radius: 3px; background: #f8f8f8;
+    padding: 5px 14px; font-size: 12px; cursor: pointer; color: #555;
+    margin-top: 2px;
+}
+#cp-add:hover:not(:disabled) { background: #e8f4ea; border-color: #417690; color: #2a7; }
+#cp-count { font-size: 11px; color: #aaa; margin-top: 5px; }
+
+/* ── Correct-answers help (TF / SA) ── */
+.ca-hint-box {
+    margin-top: 6px; background: #f5f5f5; border: 1px solid #ddd;
+    border-radius: 4px; padding: 8px 12px; font-size: 12px; color: #555; line-height: 1.5;
+}
+.ca-hint-box code {
+    background: #e8e8e8; border-radius: 3px; padding: 1px 5px; font-size: 11px;
+}
+
+/* ── MA grading strategy callout ── */
+.ma-strat-callout {
+    margin-top: 8px; background: #f0f4ff; border: 1px solid #c5d0ef;
+    border-radius: 4px; padding: 10px 14px; font-size: 12px; color: #333; line-height: 1.6;
+}
+.ma-strat-callout strong { color: #2a6496; }
+.ma-strat-callout table { border-collapse: collapse; width: 100%; margin-top: 6px; }
+.ma-strat-callout td { padding: 3px 8px; vertical-align: top; }
+.ma-strat-callout td:first-child { font-weight: 600; white-space: nowrap; width: 230px; }
+.ma-strat-callout tr:nth-child(even) td { background: rgba(255,255,255,.55); }
+</style>
+<script>
+(function () {
+'use strict';
+
+django.jQuery(function ($) {
+
+    var $type  = $('#id_type');
+    var chTA   = document.getElementById('id_choices');
+    var caTA   = document.getElementById('id_correct_answers');
+    var $adRow = $('#id_answer_display').closest('.form-row');
+    if (!chTA) return;
+
+    /* ── tiny helpers ── */
+    function pj(el, fb) {
+        if (!el) return fb;
+        try { var v = JSON.parse(el.value); return (v != null) ? v : fb; }
+        catch (e) { return fb; }
+    }
+    function esc(s) {
+        return String(s || '')
+            .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    /* ── hide the raw JSON textarea ── */
+    $(chTA).closest('.form-row').hide();
+
+    /* ── inject UI before the now-hidden choices row ── */
+    var $wrap = $('<div id="cp-wrap"></div>');
+    $(chTA).closest('.form-row').before($wrap);
+
+    $wrap.append(
+        '<div id="cp-note">' +
+        '<strong>{% trans "Choices" %}</strong> — ' +
+        '{% trans "Add choices below (for MC and MA types). Mark the correct answer with the radio button (MC) or checkboxes (MA). The Explanation column is optional — shown to students after they submit." %}' +
+        '</div>'
+    );
+
+    $wrap.append(
+        '<table id="cp-table">' +
+        '<thead><tr>' +
+        '<th class="th-n">#</th>' +
+        '<th class="th-ok">{% trans "Correct" %}</th>' +
+        '<th>{% trans "Choice text" %} <span style="color:#ba2121;">*</span></th>' +
+        '<th>{% trans "Explanation" %} <span style="font-weight:400;color:#aaa;">({% trans "optional" %})</span></th>' +
+        '<th class="th-del"></th>' +
+        '</tr></thead>' +
+        '<tbody id="cp-tbody"></tbody>' +
+        '</table>' +
+        '<button type="button" id="cp-add">+ {% trans "Add choice" %}</button>' +
+        '<div id="cp-count"></div>'
+    );
+
+    var MAX = 8;
+    function rowCount() { return $('#cp-tbody tr').length; }
+    function updateCount() {
+        var n = rowCount();
+        $('#cp-count').text(n + ' / ' + MAX + ' {% trans "choices" %}');
+        $('#cp-add').prop('disabled', n >= MAX).css('opacity', n >= MAX ? 0.4 : 1);
+    }
+
+    function selHtml(type, idx, checked) {
+        if (type === 'MC')
+            return '<input type="radio" name="cp_mc" value="' + idx + '"' + (checked ? ' checked' : '') + '>';
+        if (type === 'MA')
+            return '<input type="checkbox" name="cp_ma" value="' + idx + '"' + (checked ? ' checked' : '') + '>';
+        return '—';
+    }
+
+    function addRow(text, expl, isCorrect) {
+        if (rowCount() >= MAX) return;
+        var type = $type.val() || '';
+        var idx  = rowCount();
+        var $tr  = $(
+            '<tr>' +
+            '<td class="td-n">' + (idx + 1) + '</td>' +
+            '<td class="td-ok">' + selHtml(type, idx, isCorrect) + '</td>' +
+            '<td><input class="cp-text" type="text"' +
+                ' placeholder="{% trans "Choice text" %}"' +
+                ' value="' + esc(text) + '"></td>' +
+            '<td><input class="cp-expl" type="text"' +
+                ' placeholder="{% trans "e.g. This is wrong because…" %}"' +
+                ' value="' + esc(expl) + '"></td>' +
+            '<td><button type="button" class="cp-del" title="{% trans "Remove" %}">×</button></td>' +
+            '</tr>'
+        );
+        $tr.find('.cp-del').on('click', function () {
+            if (rowCount() <= 2) return;
+            $tr.remove();
+            reindex();
+            updateCount();
+        });
+        $('#cp-tbody').append($tr);
+        updateCount();
+    }
+
+    function reindex() {
+        var type = $type.val() || '';
+        $('#cp-tbody tr').each(function (i) {
+            var $tr = $(this);
+            $tr.find('.td-n').text(i + 1);
+            var wasChecked = $tr.find('.td-ok input').prop('checked');
+            $tr.find('.td-ok').html(selHtml(type, i, wasChecked));
+        });
+    }
+
+    $('#cp-add').on('click', function () { addRow('', '', false); });
+
+    /* ── seed from existing saved data ── */
+    var choices  = pj(chTA, []);
+    var correct  = pj(caTA, null);
+    var initType = $type.val();
+
+    var correctSet = {};
+    if (initType === 'MC' && correct !== null && correct !== undefined) {
+        correctSet[parseInt(correct)] = true;
+    } else if (initType === 'MA' && Array.isArray(correct)) {
+        correct.forEach(function (i) { correctSet[parseInt(i)] = true; });
+    }
+
+    if (choices.length >= 2) {
+        choices.forEach(function (item, i) {
+            var text = (item && typeof item === 'object') ? (item.text || '') : String(item || '');
+            var expl = (item && typeof item === 'object') ? (item.explanation || '') : '';
+            addRow(text, expl, !!correctSet[i]);
+        });
+    } else {
+        addRow('', '', false);
+        addRow('', '', false);
+    }
+
+    /* ── TF radio UI ── */
+    var $tfWrap = $(
+        '<div id="tf-wrap" class="form-row" style="display:none;">' +
+        '<div>' +
+        '<label style="display:block;margin-bottom:6px;">{% trans "Correct Answer" %}</label>' +
+        '<div style="display:flex;gap:24px;">' +
+        '<label style="display:flex;align-items:center;gap:8px;font-weight:500;cursor:pointer;">' +
+        '<input type="radio" name="tf_admin_pick" value="0" id="tf-admin-t" style="width:16px;height:16px;cursor:pointer;"> {% trans "True" %}' +
+        '</label>' +
+        '<label style="display:flex;align-items:center;gap:8px;font-weight:500;cursor:pointer;">' +
+        '<input type="radio" name="tf_admin_pick" value="1" id="tf-admin-f" style="width:16px;height:16px;cursor:pointer;"> {% trans "False" %}' +
+        '</label>' +
+        '</div>' +
+        '</div>' +
+        '</div>'
+    );
+    $(caTA).closest('.form-row').before($tfWrap);
+
+    /* pre-populate radios from saved value */
+    if (initType === 'TF' && correct !== null && correct !== undefined) {
+        var tfInit = parseInt(correct);
+        if (tfInit === 0) document.getElementById('tf-admin-t').checked = true;
+        else if (tfInit === 1) document.getElementById('tf-admin-f').checked = true;
+    }
+
+    /* ── correct_answers row: hide for MC/MA (managed by table), show with hints for SA ── */
+    var SA_HINT =
+        '<div class="ca-hint-box">' +
+        '{% trans "JSON list of accepted answer patterns (regex). Any one match = correct. Example:" %}<br>' +
+        '<code>["(?i)python", "\\\\d+", "3\\\\.14"]</code><br>' +
+        '{% trans "Prefix" %} <code>(?i)</code> {% trans "for case-insensitive matching." %}' +
+        '</div>';
+
+    function applyType(type) {
+        /* choices UI */
+        var showChoices = (type === 'MC' || type === 'MA' || !type);
+        $wrap.toggle(showChoices);
+        reindex();
+
+        /* correct_answers raw row */
+        if (caTA) {
+            var $caRow = $(caTA).closest('.form-row');
+            if (type === 'MC' || type === 'MA' || type === 'TF') {
+                $caRow.hide();
+            } else {
+                $caRow.show();
+                $caRow.find('.ca-hint-box').remove();
+                if (type === 'SA') {
+                    if (caTA && caTA.value.trim() === 'null') caTA.value = '';
+                    $caRow.append(SA_HINT);
+                }
+            }
+            $tfWrap.toggle(type === 'TF');
+        }
+
+        /* answer_display: only relevant for SA */
+        $adRow.toggle(type === 'SA');
+
+        /* MA grading strategy callout */
+        var $maRow = $('.field-ma_grading_strategy');
+        if (type === 'MA') {
+            $maRow.show();
+            if (!$maRow.find('.ma-strat-callout').length) {
+                $maRow.append(
+                    '<div class="ma-strat-callout">' +
+                    '<strong>{% trans "How each strategy grades Multiple Answer questions:" %}</strong>' +
+                    '<table>' +
+                    '<tr>' +
+                        '<td>{% trans "All or nothing" %}</td>' +
+                        '<td>{% trans "Student must select every correct choice and none of the wrong ones. Full points or zero — no in-between." %}</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td>{% trans "Partial credit with penalty" %}</td>' +
+                        '<td>{% trans "Earns credit for each correct selection and loses credit for each wrong one. Score is floored at 0." %}</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td>{% trans "Right minus wrong" %}</td>' +
+                        '<td>{% trans "(correct selected − wrong selected) ÷ total correct choices. Floored at 0." %}</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td>{% trans "Correct only, no penalty" %}</td>' +
+                        '<td>{% trans "correct selected ÷ total correct choices. Wrong selections are ignored — no penalty." %}</td>' +
+                    '</tr>' +
+                    '</table>' +
+                    '</div>'
+                );
+            }
+        } else {
+            $maRow.hide();
+        }
+    }
+
+    $type.on('change', function () { applyType($(this).val()); });
+    applyType(initType);
+
+    /* ── serialize choices back to JSON on submit ── */
+    $('#content-main form').on('submit', function () {
+        var rows = [];
+        $('#cp-tbody tr').each(function () {
+            rows.push({
+                text: $(this).find('.cp-text').val(),
+                explanation: $(this).find('.cp-expl').val()
+            });
+        });
+        chTA.value = JSON.stringify(rows);
+
+        /* also update correct_answers for MC / MA / TF */
+        if (caTA) {
+            var type = $type.val();
+            if (type === 'MC') {
+                var r = $('input[name="cp_mc"]:checked').val();
+                caTA.value = (r !== undefined) ? String(parseInt(r)) : 'null';
+            } else if (type === 'MA') {
+                var checked = $('input[name="cp_ma"]:checked')
+                    .map(function () { return parseInt($(this).val()); }).get();
+                caTA.value = JSON.stringify(checked);
+            } else if (type === 'TF') {
+                var tfr = $('input[name="tf_admin_pick"]:checked').val();
+                caTA.value = (tfr !== undefined) ? tfr : '0';
+            }
+        }
+    });
+
+});
+})();
+</script>
+{% endblock %}

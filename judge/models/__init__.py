@@ -5,9 +5,8 @@ from judge.models.comment import Comment, CommentLock, CommentVote
 from judge.models.contest import Contest, ContestAnnouncement, ContestMoss, ContestParticipation, ContestProblem, \
     ContestSubmission, ContestTag, Rating
 from judge.models.interface import BlogPost, BlogVote, MiscConfig, NavigationBar, validate_regex
-from judge.models.problem import LanguageLimit, License, Problem, ProblemClarification, ProblemGroup, \
-    ProblemEditorialReveal, ProblemTranslation, ProblemType, Solution, SubmissionSourceAccess, \
-    TranslatedProblemQuerySet
+from judge.models.problem import LanguageLimit, License, Problem, ProblemClarification, ProblemEditorialReveal, \
+    ProblemGroup, ProblemTranslation, ProblemType, Solution, SubmissionSourceAccess, TranslatedProblemQuerySet
 from judge.models.problem_data import CHECKERS, ProblemData, ProblemTestCase, problem_data_storage, \
     problem_directory_file
 from judge.models.profile import Badge, Organization, OrganizationMonthlyUsage, OrganizationRequest, \
