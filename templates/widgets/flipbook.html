@@ -5,6 +5,7 @@
     template's js_media block.
 #}
 <div class="flipbook-wrapper">
-    <div id="{{ flipbook_id|default('flipbook') }}" class="flipbook-container" data-pdf-url="{{ flipbook_pdf_url }}"></div>
+    <div id="{{ flipbook_id|default('flipbook') }}" class="flipbook-container" data-pdf-url="{{ flipbook_pdf_url }}"
+         data-flip-sound-url="{{ static('page-flip.mp3') }}"></div>
     <noscript><a href="{{ flipbook_pdf_url }}">{{ _('Download PDF') }}</a></noscript>
 </div>

@@ -82,6 +82,22 @@
         var targetWidth = container.clientWidth || 600;
         var isMobile = targetWidth < MOBILE_BREAKPOINT;
 
+        // "Turning a page.ogg" by planish (via PDSounds.org), public domain,
+        // https://commons.wikimedia.org/wiki/File:Turning_a_page.ogg
+        var flipSoundUrl = container.getAttribute('data-flip-sound-url');
+        var flipSound = null;
+        if (flipSoundUrl) {
+            flipSound = new Audio(flipSoundUrl);
+            flipSound.preload = 'auto';
+            flipSound.volume = 0.5;
+        }
+        // loadFromImages/updateFromImages re-render the current spread and,
+        // as a side effect, fire the library's 'flip' event even though no
+        // page actually turned (initial load, and once per page while we
+        // progressively swap in rendered images below) — suppress the sound
+        // during those synchronous calls so it only plays on real page turns.
+        var suppressFlipSound = false;
+
         // pdf.js v6 dropped the bare-string shorthand: the source must be an
         // options object ({url: ...}) for `url`/`data`/`range` to be recognized.
         window.pdfjsLib.getDocument({url: pdfUrl}).promise.then(function (pdfDocument) {
@@ -103,10 +119,26 @@
                         maxHeight: Math.round(1400 * aspectRatio),
                         usePortrait: isMobile,
                         showCover: true,
+                        // Default is 1000ms; shortened so the flip sound (which fires on
+                        // completion, since StPageFlip has no reliable "flip started" event
+                        // for drag-released turns) doesn't lag too far behind the click/release.
+                        flippingTime: 600,
                     }, options));
 
+                    if (flipSound) {
+                        pageFlip.on('flip', function () {
+                            if (suppressFlipSound) {
+                                return;
+                            }
+                            flipSound.currentTime = 0;
+                            flipSound.play().catch(function () {});
+                        });
+                    }
+
                     var images = new Array(numPages).fill(firstImage);
+                    suppressFlipSound = true;
                     pageFlip.loadFromImages(images);
+                    suppressFlipSound = false;
                     // `size: 'stretch'` makes StPageFlip track its own container size on
                     // window resize internally — no manual resize handling needed here.
 
@@ -116,7 +148,9 @@
                             pending = pending.then(function () {
                                 return renderPageToImage(pdfDocument, pageNumber, targetWidth).then(function (image) {
                                     images[pageNumber - 1] = image;
+                                    suppressFlipSound = true;
                                     pageFlip.updateFromImages(images);
+                                    suppressFlipSound = false;
                                 });
                             });
                         })(n);
