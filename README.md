@@ -21,7 +21,7 @@ Check out the base feature set [here](https://github.com/DMOJ/online-judge#featu
 
 ## Installation
 
-Refer to the VNOJ install documentation [here](https://vnoi-admin.github.io/vnoj-docs/#/site/installation). Almost all installation steps remain the same as the docs, but there are several minor differences, including cloning this repo instead of DMOJ's or VNOJ's repo.
+Refer to the LCOJ install documentation [here](https://docs.luyencode.net/#/site/installation).
 
 This repo is typically deployed via a separate Docker Compose setup that wraps `manage.py` commands and mounts this repo at `/site/`.
 
