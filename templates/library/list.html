@@ -48,7 +48,7 @@
                         <td class="library-name">
                             <a href="{{ exam.get_absolute_url() }}">{{ exam.title }}</a>
                             {% if exam.description %}
-                                <div>{{ exam.description|markdown('default')|striptags|truncate(160) }}</div>
+                                <div class="library-excerpt">{{ exam.description|markdown('default')|striptags|truncate(160) }}</div>
                             {% endif %}
                         </td>
                         <td><span class="library-category">{{ exam.category.name }}</span></td>
