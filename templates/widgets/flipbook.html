@@ -1,0 +1,10 @@
+{#
+    Usage: set `flipbook_pdf_url` (required) and `flipbook_id` (optional, must
+    be unique on the page) before including this partial, then include the
+    flipbook script tags from templates/widgets/flipbook-media-js.html in your
+    template's js_media block.
+#}
+<div class="flipbook-wrapper">
+    <div id="{{ flipbook_id|default('flipbook') }}" class="flipbook-container" data-pdf-url="{{ flipbook_pdf_url }}"></div>
+    <noscript><a href="{{ flipbook_pdf_url }}">{{ _('Download PDF') }}</a></noscript>
+</div>

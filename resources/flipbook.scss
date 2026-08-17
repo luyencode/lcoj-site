@@ -1,0 +1,35 @@
+@use "vars" as *;
+
+.flipbook-wrapper {
+    margin: 1em 0;
+
+    noscript a {
+        display: inline-block;
+    }
+}
+
+.flipbook-container {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    min-height: 350px;
+    margin: 0 auto;
+}
+
+.flipbook-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 350px;
+    color: $color_primary66;
+    font-style: italic;
+}
+
+.flipbook-fallback-link {
+    display: block;
+    padding: 1em;
+    text-align: center;
+    border: 1px solid $color_primary25;
+    background: $color_primary5;
+    border-radius: 4px;
+}
