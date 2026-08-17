@@ -36,6 +36,14 @@ class ExamStatementAdminFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('pdf_file', form.errors)
 
+    def test_empty_publish_on_cleans_to_now(self):
+        form = self.make_form()
+        self.assertTrue(form.is_valid(), form.errors)
+        publish_on = form.cleaned_data['publish_on']
+        self.assertIsNotNone(publish_on)
+        self.assertLessEqual(publish_on, timezone.now())
+        self.assertGreaterEqual(publish_on, timezone.now() - timezone.timedelta(seconds=5))
+
     @patch('judge.admin.library.pdf_statement_uploader', return_value='/pdf/stored.pdf')
     def test_save_model_uploads_pdf(self, uploader):
         admin = ExamStatementAdmin(ExamStatement, None)
@@ -73,7 +81,8 @@ class LibraryViewTestCase(CommonDataMixin, TestCase):
             defaults.update(kwargs)
             return ExamStatement.objects.create(**defaults)
 
-        cls.exam_visible = exam('Đề HSG Hà Nội', 'hsg-hn', province='ha_noi', year=2024)
+        cls.exam_visible = exam('Đề HSG Hà Nội', 'hsg-hn', province='ha_noi', year=2024,
+                                description='Đề marathon vòng chung kết')
         cls.exam_invisible = exam('Đề ẩn', 'hidden', is_visible=False)
         cls.exam_future = exam('Đề tương lai', 'future',
                                publish_on=timezone.now() + timezone.timedelta(days=1))
@@ -104,10 +113,21 @@ class LibraryViewTestCase(CommonDataMixin, TestCase):
         self.assertContains(response, 'Đề HSG Hà Nội')
         self.assertNotContains(response, 'Đề ICPC 2025')
 
+    def test_invalid_year_filter_does_not_crash(self):
+        response = self.client.get(reverse('library_list'), {'year': 'abc'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Đề HSG Hà Nội')
+        self.assertContains(response, 'Đề ICPC 2025')
+
     def test_search_matches_title_and_description(self):
         response = self.client.get(reverse('library_list'), {'q': 'ICPC'})
         self.assertContains(response, 'Đề ICPC 2025')
         self.assertNotContains(response, 'Đề HSG Hà Nội')
+
+        # A term that appears only in a description (not in any title).
+        response = self.client.get(reverse('library_list'), {'q': 'marathon'})
+        self.assertContains(response, 'Đề HSG Hà Nội')
+        self.assertNotContains(response, 'Đề ICPC 2025')
 
     def test_detail_renders_flipbook_and_contest_link(self):
         exam = self.exam_with_contest

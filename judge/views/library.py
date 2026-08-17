@@ -40,7 +40,12 @@ class LibraryList(ListView):
 
         year = self.request.GET.get('year', '').strip()
         if year:
-            queryset = queryset.filter(year=year)
+            try:
+                year = int(year)
+            except ValueError:
+                year = None
+            if year is not None:
+                queryset = queryset.filter(year=year)
 
         return queryset.order_by('-publish_on')
 

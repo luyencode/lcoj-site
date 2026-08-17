@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.core.validators import FileExtensionValidator
 from django.template.defaultfilters import filesizeformat
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from judge.models import ExamCategory, ExamStatement
@@ -25,6 +26,12 @@ class ExamStatementAdminForm(forms.ModelForm):
     class Meta:
         model = ExamStatement
         fields = '__all__'
+
+    def clean_publish_on(self):
+        value = self.cleaned_data.get('publish_on')
+        if value is None:
+            return timezone.now()
+        return value
 
     def clean_pdf_file(self):
         content = self.cleaned_data.get('pdf_file')
