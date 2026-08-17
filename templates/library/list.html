@@ -88,7 +88,7 @@
         {% else %}
         <p class="library-empty">{{ _('Không tìm thấy đề thi.') }}</p>
         {% endif %}
-        <div class="bottom-pagination-bar">{% include "list-pages.html" %}</div>
+        {% if page_obj.has_other_pages() %}<div class="bottom-pagination-bar">{% include "list-pages.html" %}</div>{% endif %}
     </div>
 </div>
 {% endblock %}
