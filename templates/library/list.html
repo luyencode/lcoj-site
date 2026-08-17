@@ -3,73 +3,92 @@
 {% block content_title %}{{ _('Thư viện đề thi') }}{% endblock %}
 
 {% block body %}
-<div class="library">
-    <form class="library-filters" method="get" action="{{ url('library_list') }}">
-        <input type="search" name="q" value="{{ current_q }}" placeholder="{{ _('Tìm kiếm đề thi…') }}">
-        <select name="category">
-            <option value="">{{ _('Tất cả loại đề') }}</option>
-            {% for category in categories %}
-                <option value="{{ category.slug }}"{% if category.slug == current_category %} selected{% endif %}>
-                    {{ category.name }}
-                </option>
-            {% endfor %}
-        </select>
-        <select name="province">
-            <option value="">{{ _('Tất cả tỉnh/thành') }}</option>
-            {% for value, label in provinces %}
-                <option value="{{ value }}"{% if value == current_province %} selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-        </select>
-        <select name="year">
-            <option value="">{{ _('Tất cả năm') }}</option>
-            {% for year in years %}
-                <option value="{{ year }}"{% if year|string == current_year %} selected{% endif %}>{{ year }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">{{ _('Lọc') }}</button>
-    </form>
+{% if page_obj.has_other_pages() %}
+<div class="top-pagination-bar">{% include "list-pages.html" %}</div>
+{% endif %}
 
-    {% if exams %}
-        <div class="h-scrollable-table">
-            <table class="table striped library-table">
-                <thead>
-                    <tr>
-                        <th class="library-name">{{ _('Đề thi') }}</th>
-                        <th>{{ _('Loại') }}</th>
-                        <th>{{ _('Tỉnh/TP') }}</th>
-                        <th>{{ _('Năm') }}</th>
-                        <th>{{ _('Contest') }}</th>
-                        <th>{{ _('Xem đề') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for exam in exams %}
-                    <tr>
-                        <td class="library-name">
-                            <a href="{{ exam.get_absolute_url() }}">{{ exam.title }}</a>
-                            {% if exam.description %}
-                                <div class="library-excerpt">{{ exam.description|markdown('default')|striptags|truncate(160) }}</div>
-                            {% endif %}
-                        </td>
-                        <td><span class="library-category">{{ exam.category.name }}</span></td>
-                        <td>{% if exam.province %}<span class="library-badge">{{ exam.get_province_display() }}</span>{% endif %}</td>
-                        <td>{% if exam.year %}<span class="library-badge">{{ exam.year }}</span>{% endif %}</td>
-                        <td>
-                            {% if exam.contest %}
-                                <a class="library-contest-btn button" href="{{ exam.contest.get_absolute_url() }}">
-                                    {{ _('Tham gia contest') }}
-                                </a>
-                            {% endif %}
-                        </td>
-                        <td><a href="{{ exam.get_absolute_url() }}">{{ _('Xem đề') }}</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<div id="common-content">
+    <div id="content-right">
+        <div class="info-float">
+            <div class="sidebox">
+                <h3>{{ _('Lọc đề thi') }} <i class="fa fa-filter"></i></h3>
+                <div class="sidebox-content">
+                    <form id="filter-form" name="form" action="{{ url('library_list') }}" method="get">
+                        <div>
+                            <input id="search" type="search" name="q" value="{{ current_q }}"
+                                   placeholder="{{ _('Tìm kiếm đề thi…') }}">
+                        </div>
+                        <div class="filter-form-group">
+                            <label for="library-category"><i>{{ _('Loại đề') }}</i></label>
+                            <select id="library-category" name="category">
+                                <option value="">{{ _('Tất cả') }}</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.slug }}"{% if category.slug == current_category %} selected{% endif %}>{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="filter-form-group">
+                            <label for="library-province"><i>{{ _('Tỉnh/TP') }}</i></label>
+                            <select id="library-province" name="province">
+                                <option value="">{{ _('Tất cả') }}</option>
+                                {% for value, label in provinces %}
+                                    <option value="{{ value }}"{% if value == current_province %} selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="filter-form-group">
+                            <label for="library-year"><i>{{ _('Năm') }}</i></label>
+                            <select id="library-year" name="year">
+                                <option value="">{{ _('Tất cả') }}</option>
+                                {% for year in years %}
+                                    <option value="{{ year }}"{% if year|string == current_year %} selected{% endif %}>{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="bottom-pagination-bar">{% include "list-pages.html" %}</div>
-    {% else %}
+    </div>
+    <div id="content-left" class="h-scrollable-table">
+        {% if exams %}
+        <table class="table striped library-table">
+            <thead>
+                <tr>
+                    <th class="library-name">{{ _('Đề thi') }}</th>
+                    <th>{{ _('Loại') }}</th>
+                    <th>{{ _('Tỉnh/TP') }}</th>
+                    <th>{{ _('Năm') }}</th>
+                    <th>{{ _('Contest') }}</th>
+                    <th>{{ _('Xem đề') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exam in exams %}
+                <tr>
+                    <td class="library-name">
+                        <a href="{{ exam.get_absolute_url() }}">{{ exam.title }}</a>
+                        {% if exam.description %}
+                            <div class="library-excerpt">{{ exam.description|markdown('default')|striptags|truncate(160) }}</div>
+                        {% endif %}
+                    </td>
+                    <td>{{ exam.category.name }}</td>
+                    <td>{% if exam.province %}{{ exam.get_province_display() }}{% endif %}</td>
+                    <td>{% if exam.year %}{{ exam.year }}{% endif %}</td>
+                    <td>
+                        {% if exam.contest %}
+                            <a href="{{ exam.contest.get_absolute_url() }}">{{ _('Tham gia contest') }}</a>
+                        {% endif %}
+                    </td>
+                    <td><a href="{{ exam.get_absolute_url() }}">{{ _('Xem đề') }}</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
         <p class="library-empty">{{ _('Không tìm thấy đề thi.') }}</p>
-    {% endif %}
+        {% endif %}
+        <div class="bottom-pagination-bar">{% include "list-pages.html" %}</div>
+    </div>
 </div>
 {% endblock %}

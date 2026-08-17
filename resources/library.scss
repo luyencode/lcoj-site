@@ -1,33 +1,9 @@
 @use "vars" as *;
 
-.library-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5em;
-    align-items: center;
-    padding: 1em;
-    margin-bottom: 1em;
-    background: $color_primary5;
-    border: 1px solid $color_primary25;
-    border-radius: 4px;
-
-    input[type="search"] {
-        flex: 1 1 200px;
-    }
-
-    select {
-        min-width: 140px;
-    }
-}
-
 .library-table {
     th.library-name,
     td.library-name {
         text-align: left;
-    }
-
-    .library-contest-btn {
-        margin-top: 0;
     }
 
     .library-excerpt {
