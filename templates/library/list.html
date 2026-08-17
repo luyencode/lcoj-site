@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content_title %}{{ _('Thư viện đề thi') }}{% endblock %}
+
+{% block body %}
+<div class="library">
+    <form class="library-filters" method="get" action="{{ url('library_list') }}">
+        <input type="search" name="q" value="{{ current_q }}" placeholder="{{ _('Tìm kiếm đề thi…') }}">
+        <select name="category">
+            <option value="">{{ _('Tất cả loại đề') }}</option>
+            {% for category in categories %}
+                <option value="{{ category.slug }}"{% if category.slug == current_category %} selected{% endif %}>
+                    {{ category.name }}
+                </option>
+            {% endfor %}
+        </select>
+        <select name="province">
+            <option value="">{{ _('Tất cả tỉnh/thành') }}</option>
+            {% for value, label in provinces %}
+                <option value="{{ value }}"{% if value == current_province %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="year">
+            <option value="">{{ _('Tất cả năm') }}</option>
+            {% for year in years %}
+                <option value="{{ year }}"{% if year|string == current_year %} selected{% endif %}>{{ year }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">{{ _('Lọc') }}</button>
+    </form>
+
+    {% if exams %}
+        <div class="library-grid">
+            {% for exam in exams %}
+                <div class="library-card">
+                    <a class="library-card-link" href="{{ exam.get_absolute_url() }}">
+                        <span class="library-category">{{ exam.category.name }}</span>
+                        <h3 class="library-title">{{ exam.title }}</h3>
+                        <div class="library-badges">
+                            {% if exam.province %}
+                                <span class="library-badge">{{ exam.get_province_display() }}</span>
+                            {% endif %}
+                            {% if exam.year %}
+                                <span class="library-badge">{{ exam.year }}</span>
+                            {% endif %}
+                        </div>
+                        {% if exam.description %}
+                            <p class="library-excerpt">
+                                {{ exam.description|markdown('default')|striptags|truncate(160) }}
+                            </p>
+                        {% endif %}
+                        <span class="library-view">{{ _('Xem đề thi') }} »</span>
+                    </a>
+                    {% if exam.contest %}
+                        <a class="library-contest-btn button" href="{{ exam.contest.get_absolute_url() }}">
+                            {{ _('Tham gia contest') }}
+                        </a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="bottom-pagination-bar">{% include "list-pages.html" %}</div>
+    {% else %}
+        <p class="library-empty">{{ _('Không tìm thấy đề thi.') }}</p>
+    {% endif %}
+</div>
+{% endblock %}

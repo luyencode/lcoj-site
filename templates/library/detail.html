@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block js_media %}
+    {{ super() }}
+    {% if exam.pdf_url %}
+        {% include "widgets/flipbook-media-js.html" %}
+    {% endif %}
+{% endblock %}
+
+{% block content_title %}{{ exam.title }}{% endblock %}
+
+{% block body %}
+    {% if exam.pdf_url %}
+        {% set flipbook_pdf_url = exam.pdf_url %}
+        {% set flipbook_id = 'library-flipbook-' ~ exam.id %}
+        {% include "widgets/flipbook.html" %}
+    {% endif %}
+
+    <div class="library-meta">
+        <span class="library-category">{{ exam.category.name }}</span>
+        {% if exam.province %}
+            <span class="library-badge">{{ exam.get_province_display() }}</span>
+        {% endif %}
+        {% if exam.year %}
+            <span class="library-badge">{{ exam.year }}</span>
+        {% endif %}
+        <span class="library-date">
+            {% trans trimmed date=exam.publish_on|date(_("N j, Y")) %}
+                published on {{ date }}
+            {% endtrans %}
+        </span>
+        {% if exam.contest %}
+            <a class="library-contest-btn button" href="{{ exam.contest.get_absolute_url() }}">
+                {{ _('Tham gia contest') }}
+            </a>
+        {% endif %}
+    </div>
+
+    {% if exam.description %}
+        <div class="library-description content-description">
+            {{ exam.description|markdown('default') }}
+        </div>
+    {% endif %}
+{% endblock %}
