@@ -3,9 +3,12 @@ from unittest.mock import patch
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+from django.urls import reverse
+from django.utils import timezone
 
 from judge.admin.library import ExamStatementAdmin, ExamStatementAdminForm
 from judge.models import ExamCategory, ExamStatement
+from judge.models.tests.util import CommonDataMixin, create_contest
 
 
 class ExamStatementAdminFormTest(TestCase):
@@ -42,3 +45,87 @@ class ExamStatementAdminFormTest(TestCase):
         admin.save_model(None, obj, form, change=False)
         self.assertEqual(obj.pdf_url, '/pdf/stored.pdf')
         uploader.assert_called_once()
+
+
+class ExamStatementModelTest(TestCase):
+    def test_model_get_absolute_url(self):
+        from judge.models import ExamStatement
+        exam = ExamStatement.objects.create(
+            title='Đề URL', slug='de-url',
+            category=ExamCategory.objects.create(name='URL cat', slug='url-cat'))
+        self.assertEqual(exam.get_absolute_url(),
+                         reverse('library_detail', args=(exam.id, exam.slug)))
+
+
+class LibraryViewTestCase(CommonDataMixin, TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.cat_hsg = ExamCategory.objects.create(name='HSG', slug='hsg', order=0)
+        cls.cat_olp = ExamCategory.objects.create(name='OLP', slug='olp', order=1)
+        cls.contest = create_contest(key='libcontest', name='Lib Contest',
+                                     start_time=timezone.now() - timezone.timedelta(days=1),
+                                     end_time=timezone.now() + timezone.timedelta(days=1))
+
+        def exam(title, slug, **kwargs):
+            defaults = {'title': title, 'slug': slug, 'category': cls.cat_hsg,
+                        'publish_on': timezone.now() - timezone.timedelta(days=1)}
+            defaults.update(kwargs)
+            return ExamStatement.objects.create(**defaults)
+
+        cls.exam_visible = exam('Đề HSG Hà Nội', 'hsg-hn', province='ha_noi', year=2024)
+        cls.exam_invisible = exam('Đề ẩn', 'hidden', is_visible=False)
+        cls.exam_future = exam('Đề tương lai', 'future',
+                               publish_on=timezone.now() + timezone.timedelta(days=1))
+        cls.exam_olp = exam('Đề ICPC 2025', 'icpc-2025', category=cls.cat_olp,
+                            province='tp_ho_chi_minh', year=2025)
+        cls.exam_with_contest = exam('Đề thi có contest', 'contest-linked', contest=cls.contest,
+                                     pdf_url='/pdf/contest.pdf')
+
+    def test_list_shows_only_visible_published(self):
+        response = self.client.get(reverse('library_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Đề HSG Hà Nội')
+        self.assertNotContains(response, 'Đề ẩn')
+        self.assertNotContains(response, 'Đề tương lai')
+
+    def test_filter_by_category(self):
+        response = self.client.get(reverse('library_list'), {'category': 'olp'})
+        self.assertContains(response, 'Đề ICPC 2025')
+        self.assertNotContains(response, 'Đề HSG Hà Nội')
+
+    def test_filter_by_province(self):
+        response = self.client.get(reverse('library_list'), {'province': 'tp_ho_chi_minh'})
+        self.assertContains(response, 'Đề ICPC 2025')
+        self.assertNotContains(response, 'Đề HSG Hà Nội')
+
+    def test_filter_by_year(self):
+        response = self.client.get(reverse('library_list'), {'year': '2024'})
+        self.assertContains(response, 'Đề HSG Hà Nội')
+        self.assertNotContains(response, 'Đề ICPC 2025')
+
+    def test_search_matches_title_and_description(self):
+        response = self.client.get(reverse('library_list'), {'q': 'ICPC'})
+        self.assertContains(response, 'Đề ICPC 2025')
+        self.assertNotContains(response, 'Đề HSG Hà Nội')
+
+    def test_detail_renders_flipbook_and_contest_link(self):
+        exam = self.exam_with_contest
+        response = self.client.get(reverse('library_detail', args=(exam.id, exam.slug)))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'flipbook-container')
+        self.assertContains(response, 'library-flipbook-%d' % exam.id)
+        self.assertContains(response, 'Tham gia contest')
+
+    def test_detail_hidden_is_404(self):
+        exam = self.exam_invisible
+        response = self.client.get(reverse('library_detail', args=(exam.id, exam.slug)))
+        self.assertEqual(response.status_code, 404)
+
+    def test_pagination_preserves_filters(self):
+        for i in range(13):
+            ExamStatement.objects.create(
+                title='Đề phụ %d' % i, slug='phu-%d' % i, category=self.cat_hsg, year=2024,
+                publish_on=timezone.now() - timezone.timedelta(days=1))
+        response = self.client.get(reverse('library_list'), {'category': 'hsg'})
+        self.assertContains(response, 'library/2?category=hsg')
