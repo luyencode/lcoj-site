@@ -7089,20 +7089,18 @@ msgid ""
 "Past exam statements from provincial, national, and other competitions — "
 "pick one, take the linked contest, and get graded right away."
 msgstr ""
+"Đề thi từ các kỳ thi cấp tỉnh, quốc gia và các kỳ thi khác — chọn một đề, "
+"làm kỳ thi liên kết, và được chấm điểm ngay."
 
 #: templates/library/list.html:24
 msgid "exams ready to practice"
-msgstr ""
+msgstr "đề thi sẵn sàng để luyện tập"
 
 #: templates/library/list.html:25
-#, fuzzy
-#| msgid "All categories"
 msgid "categories"
-msgstr "Tất cả danh mục"
+msgstr "danh mục"
 
 #: templates/library/list.html:26
-#, fuzzy
-#| msgid "province"
 msgid "provinces"
 msgstr "tỉnh/thành phố"
 
@@ -7118,39 +7116,26 @@ msgid "All"
 msgstr "Tất cả"
 
 #: templates/library/list.html:60
-#, fuzzy
-#| msgid "province"
 msgid "All provinces"
-msgstr "tỉnh/thành phố"
+msgstr "Tất cả tỉnh/thành phố"
 
 #: templates/library/list.html:66
-#, fuzzy
-#| msgid "All types"
 msgid "All years"
-msgstr "Tất cả loại"
+msgstr "Tất cả năm"
 
 #: templates/library/list.html:72
-#, fuzzy
-#| msgid "Clear search"
 msgid "Clear filters"
-msgstr "Xóa tìm kiếm"
+msgstr "Xóa bộ lọc"
 
 #: templates/library/list.html:75
-#, fuzzy, python-format
-#| msgid "No exams found."
+#, python-format
 msgid "%(count)s exam found"
 msgid_plural "%(count)s exams found"
-msgstr[0] "Không tìm thấy đề thi."
+msgstr[0] "Tìm thấy %(count)s đề thi"
 
 #: templates/library/list.html:99
 msgid "Take the contest"
 msgstr "Làm bài ngay"
-
-#: templates/library/list.html:102
-#, fuzzy
-#| msgid "View all"
-msgid "View exam"
-msgstr "Xem đầy đủ"
 
 #: templates/library/list.html:109
 msgid "No exams found."
@@ -7158,7 +7143,7 @@ msgstr "Không tìm thấy đề thi."
 
 #: templates/library/list.html:109
 msgid "Try clearing the filters or searching a different keyword."
-msgstr ""
+msgstr "Hãy thử xóa bộ lọc hoặc tìm kiếm với từ khóa khác."
 
 #: templates/license.html:12
 msgid "Visit source"
