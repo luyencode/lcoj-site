@@ -98,7 +98,7 @@ class ExamCategory(models.Model):
 
 class ExamStatement(models.Model):
     title = models.CharField(max_length=100, verbose_name=_('title'))
-    slug = models.SlugField(verbose_name=_('slug'))
+    slug = models.SlugField(unique=True, verbose_name=_('slug'))
     category = models.ForeignKey(ExamCategory, related_name='statements',
                                  on_delete=models.PROTECT, verbose_name=_('category'))
     province = models.CharField(max_length=50, choices=EXAM_PROVINCES, blank=True, default='',
@@ -109,13 +109,13 @@ class ExamStatement(models.Model):
     pdf_url = models.CharField(max_length=200, blank=True, default='', verbose_name=_('PDF URL'))
     contest = models.ForeignKey(Contest, null=True, blank=True, on_delete=models.SET_NULL,
                                 related_name='exam_statements', verbose_name=_('contest'))
-    is_visible = models.BooleanField(default=True, verbose_name=_('visible'))
+    is_visible = models.BooleanField(default=True, verbose_name=_('publicly visible'))
     publish_on = models.DateTimeField(default=timezone.now, verbose_name=_('publish on'))
 
     class Meta:
         ordering = ['-publish_on']
-        verbose_name = _('exam statement')
-        verbose_name_plural = _('exam statements')
+        verbose_name = _('resource')
+        verbose_name_plural = _('resources')
 
     def __str__(self):
         return self.title
@@ -125,4 +125,4 @@ class ExamStatement(models.Model):
         return get_absolute_pdf_url(self.pdf_url) if self.pdf_url else None
 
     def get_absolute_url(self):
-        return reverse('library_detail', args=(self.id, self.slug))
+        return reverse('library_detail', args=(self.slug,))

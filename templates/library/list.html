@@ -1,121 +1,112 @@
-{% extends "base.html" %}
+{% extends "common-content.html" %}
 
-{% block content_title %}{{ _('Thư viện đề thi') }}{% endblock %}
+{% block content_title %}{{ _('Library') }}{% endblock %}
 
 {% block js_media %}
+{% compress js %}
 <script>
     $(function () {
-        var $form = $('form#filter-form');
-        var $search = $('#search');
-
-        $('#library-category, #library-province, #library-year').select2({
+        $('#library-province, #library-year').select2({
             theme: '{{ DMOJ_SELECT2_THEME }}'
-        }).change(function () {
-            $form.submit();
-        });
-
-        $search.keypress(function (e) {
-            if (e.keyCode == 13)
-                $('#go').click();
-        });
-
-        $('#go').click(function () {
-            $form.submit();
+        }).on('change', function () {
+            $('#library-filters-form').submit();
         });
     });
 </script>
+{% endcompress %}
 {% endblock %}
 
 {% block body %}
-{% if page_obj.has_other_pages() %}
-<div class="top-pagination-bar">{% include "list-pages.html" %}</div>
-{% endif %}
+<div class="library-hero">
+    <h1>{{ _('Exam') }} <span class="library-hero-hl">{{ _('Library') }}</span></h1>
+    <p>{{ _('Past exam statements from provincial, national, and other competitions — pick one, take the linked contest, and get graded right away.') }}</p>
+    <div class="library-stats">
+        <span><strong>{{ total_exams }}</strong> {{ _('exams ready to practice') }}</span>
+        <span><strong>{{ categories|length }}</strong> {{ _('categories') }}</span>
+        <span><strong>{{ total_provinces }}</strong> {{ _('provinces') }}</span>
+    </div>
+    <form id="library-search-form" action="{{ url('library_list') }}" method="get">
+        {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
+        {% if current_province %}<input type="hidden" name="province" value="{{ current_province }}">{% endif %}
+        {% if current_year %}<input type="hidden" name="year" value="{{ current_year }}">{% endif %}
+        <div class="library-searchbox">
+            <input id="search" type="search" name="q" value="{{ current_q }}"
+                   placeholder="{{ _('Search exams…') }}">
+            <button type="submit"><i class="fa fa-search"></i> {{ _('Search') }}</button>
+        </div>
+    </form>
+</div>
 
-<div id="common-content">
-    <div id="content-right">
-        <div class="info-float">
-            <div class="sidebox">
-                <h3>{{ _('Lọc đề thi') }} <i class="fa fa-filter"></i></h3>
-                <div class="sidebox-content">
-                    <form id="filter-form" name="form" action="{{ url('library_list') }}" method="get">
-                        <div>
-                            <input id="search" type="search" name="q" value="{{ current_q }}"
-                                   placeholder="{{ _('Tìm kiếm đề thi…') }}">
-                        </div>
-                        <div class="filter-form-group">
-                            <label for="library-category"><i>{{ _('Loại đề') }}</i></label>
-                            <select id="library-category" name="category">
-                                <option value="">{{ _('Tất cả') }}</option>
-                                {% for category in categories %}
-                                    <option value="{{ category.slug }}"{% if category.slug == current_category %} selected{% endif %}>{{ category.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="filter-form-group">
-                            <label for="library-province"><i>{{ _('Tỉnh/TP') }}</i></label>
-                            <select id="library-province" name="province">
-                                <option value="">{{ _('Tất cả') }}</option>
-                                {% for value, label in provinces %}
-                                    <option value="{{ value }}"{% if value == current_province %} selected{% endif %}>{{ label }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="filter-form-group">
-                            <label for="library-year"><i>{{ _('Năm') }}</i></label>
-                            <select id="library-year" name="year">
-                                <option value="">{{ _('Tất cả') }}</option>
-                                {% for year in years %}
-                                    <option value="{{ year }}"{% if year|string == current_year %} selected{% endif %}>{{ year }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-submit-group">
-                            <a id="go" class="button">{{ _('Go') }}</a>
-                        </div>
-                    </form>
-                </div>
-            </div>
+<div class="library-tabs">
+    <a class="library-tab{% if not current_category %} active{% endif %}"
+       href="{{ url('library_list') }}{% if tab_query %}?{{ tab_query }}{% endif %}">
+        {{ _('All') }}<span class="library-tab-count">{{ total_exams }}</span>
+    </a>
+    {% for category in categories %}
+        {% if category_counts.get(category.slug) %}
+        <a class="library-tab{% if category.slug == current_category %} active{% endif %}"
+           href="{{ url('library_list') }}?category={{ category.slug }}{% if tab_query %}&{{ tab_query }}{% endif %}">
+            {{ category.name }}<span class="library-tab-count">{{ category_counts.get(category.slug) }}</span>
+        </a>
+        {% endif %}
+    {% endfor %}
+</div>
+
+<form id="library-filters-form" action="{{ url('library_list') }}" method="get">
+    {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
+    {% if current_q %}<input type="hidden" name="q" value="{{ current_q }}">{% endif %}
+    <div class="library-filters">
+        <select id="library-province" name="province">
+            <option value="">{{ _('All provinces') }}</option>
+            {% for value, label in provinces %}
+                <option value="{{ value }}"{% if value == current_province %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select id="library-year" name="year">
+            <option value="">{{ _('All years') }}</option>
+            {% for year in years %}
+                <option value="{{ year }}"{% if year|string == current_year %} selected{% endif %}>{{ year }}</option>
+            {% endfor %}
+        </select>
+        {% if current_category or current_province or current_year or current_q %}
+            <a class="library-clear" href="{{ url('library_list') }}">{{ _('Clear filters') }}</a>
+        {% endif %}
+        <span class="library-rescount">
+            {% trans trimmed count=page_obj.paginator.count %}
+                {{ count }} exam found
+            {% pluralize %}
+                {{ count }} exams found
+            {% endtrans %}
+        </span>
+    </div>
+</form>
+
+{% if exams %}
+<div class="library-grid">
+    {% for exam in exams %}
+    <div class="library-card">
+        <span class="library-card-badge" style="background:{{ category_colors.get(exam.category.slug, '#5b6770') }}">{{ exam.category.name }}</span>
+        <h3><a href="{{ exam.get_absolute_url() }}">{{ exam.title }}</a></h3>
+        <div class="library-card-meta">
+            {% if exam.province %}<span class="library-chip">{{ exam.get_province_display() }}</span>{% endif %}
+        </div>
+        {% if exam.description %}
+            <p class="library-card-excerpt">{{ exam.description|markdown('default')|striptags|truncate(140) }}</p>
+        {% endif %}
+        <div class="library-card-actions">
+            {% if exam.contest %}
+                <a class="library-btn library-btn-contest" href="{{ exam.contest.get_absolute_url() }}">
+                    <i class="fa fa-trophy"></i> {{ _('Take the contest') }}
+                </a>
+            {% endif %}
+            {% if exam.year %}<span class="library-card-year">{{ exam.year }}</span>{% endif %}
         </div>
     </div>
-    <div id="content-left" class="h-scrollable-table">
-        {% if exams %}
-        <table class="table striped library-table">
-            <thead>
-                <tr>
-                    <th class="library-name">{{ _('Đề thi') }}</th>
-                    <th>{{ _('Loại') }}</th>
-                    <th>{{ _('Tỉnh/TP') }}</th>
-                    <th>{{ _('Năm') }}</th>
-                    <th>{{ _('Liên kết') }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for exam in exams %}
-                <tr>
-                    <td class="library-name">
-                        <a href="{{ exam.get_absolute_url() }}">{{ exam.title }}</a>
-                        {% if exam.description %}
-                            <div class="library-excerpt">{{ exam.description|markdown('default')|striptags|truncate(160) }}</div>
-                        {% endif %}
-                    </td>
-                    <td>{{ exam.category.name }}</td>
-                    <td>{% if exam.province %}{{ exam.get_province_display() }}{% endif %}</td>
-                    <td>{% if exam.year %}{{ exam.year }}{% endif %}</td>
-                    <td>
-                        {% if exam.contest %}
-                            <a href="{{ exam.contest.get_absolute_url() }}"><i class="fa fa-trophy"></i> {{ _('Tham gia contest') }}</a>
-                            <br>
-                        {% endif %}
-                        <a href="{{ exam.get_absolute_url() }}"><i class="fa fa-file-pdf-o"></i> {{ _('Xem đề') }}</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p class="library-empty">{{ _('Không tìm thấy đề thi.') }}</p>
-        {% endif %}
-        {% if page_obj.has_other_pages() %}<div class="bottom-pagination-bar">{% include "list-pages.html" %}</div>{% endif %}
-    </div>
+    {% endfor %}
 </div>
+{% else %}
+<p class="library-empty">{{ _('No exams found.') }} {{ _('Try clearing the filters or searching a different keyword.') }}</p>
+{% endif %}
+
+{% if page_obj.has_other_pages() %}<div class="bottom-pagination-bar">{% include "list-pages.html" %}</div>{% endif %}
 {% endblock %}

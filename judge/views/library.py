@@ -1,6 +1,7 @@
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, ListView
 
 from judge.models import ExamCategory, ExamStatement
@@ -8,6 +9,10 @@ from judge.models.library import EXAM_PROVINCES
 from judge.utils.diggpaginator import DiggPaginator
 from judge.utils.opengraph import generate_opengraph
 from judge.utils.views import TitleMixin
+
+# Accent colors cycled across exam categories (by display order) for the
+# tab/badge chips on the library pages.
+CATEGORY_PALETTE = ['#1f8b3f', '#2e86c9', '#7a4fb5', '#c9762e', '#0e6a54', '#b5384f', '#5b6770']
 
 
 class LibraryList(ListView):
@@ -51,20 +56,36 @@ class LibraryList(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(LibraryList, self).get_context_data(**kwargs)
+        visible = ExamStatement.objects.filter(is_visible=True, publish_on__lte=timezone.now())
+
+        categories = list(ExamCategory.objects.order_by('order', 'name'))
+        category_counts = dict(visible.values_list('category__slug')
+                               .annotate(c=Count('id')).values_list('category__slug', 'c'))
+
+        context['title'] = _('Library')
         context['first_page_href'] = None
-        context['categories'] = ExamCategory.objects.order_by('order', 'name')
+        context['categories'] = categories
+        context['category_counts'] = category_counts
+        context['category_colors'] = {cat.slug: CATEGORY_PALETTE[i % len(CATEGORY_PALETTE)]
+                                      for i, cat in enumerate(categories)}
         context['provinces'] = EXAM_PROVINCES
-        context['years'] = (ExamStatement.objects
-                            .filter(is_visible=True, year__isnull=False)
+        context['years'] = (visible.filter(year__isnull=False)
                             .order_by('-year')
                             .values_list('year', flat=True)
                             .distinct())
+        context['total_exams'] = visible.count()
+        context['total_provinces'] = visible.exclude(province='').values('province').distinct().count()
         context['current_q'] = self.request.GET.get('q', '')
         context['current_category'] = self.request.GET.get('category', '')
         context['current_province'] = self.request.GET.get('province', '')
         context['current_year'] = self.request.GET.get('year', '')
         context['page_prefix'] = reverse('library_list')
         context['page_suffix'] = ('?' + self.request.GET.urlencode()) if self.request.GET else ''
+
+        tab_params = self.request.GET.copy()
+        tab_params.pop('category', None)
+        tab_params.pop('page', None)
+        context['tab_query'] = tab_params.urlencode()
         return context
 
 
@@ -87,4 +108,7 @@ class LibraryDetail(TitleMixin, DetailView):
                                       self.object.description or self.object.title, 'default')
         context['meta_description'] = metadata[0]
         context['og_image'] = metadata[1]
+        categories = list(ExamCategory.objects.order_by('order', 'name'))
+        index = categories.index(self.object.category) if self.object.category in categories else 0
+        context['category_color'] = CATEGORY_PALETTE[index % len(CATEGORY_PALETTE)]
         return context

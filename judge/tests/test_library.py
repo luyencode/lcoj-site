@@ -72,7 +72,7 @@ class ExamStatementModelTest(TestCase):
             title='Đề URL', slug='de-url',
             category=ExamCategory.objects.create(name='URL cat', slug='url-cat'))
         self.assertEqual(exam.get_absolute_url(),
-                         reverse('library_detail', args=(exam.id, exam.slug)))
+                         reverse('library_detail', args=(exam.slug,)))
 
 
 class LibraryViewTestCase(CommonDataMixin, TestCase):
@@ -141,15 +141,16 @@ class LibraryViewTestCase(CommonDataMixin, TestCase):
 
     def test_detail_renders_flipbook_and_contest_link(self):
         exam = self.exam_with_contest
-        response = self.client.get(reverse('library_detail', args=(exam.id, exam.slug)))
+        response = self.client.get(reverse('library_detail', args=(exam.slug,)))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'flipbook-container')
         self.assertContains(response, 'library-flipbook-%d' % exam.id)
-        self.assertContains(response, 'Tham gia contest')
+        self.assertContains(response, 'library-action-link')
+        self.assertContains(response, 'Xem kỳ thi')
 
     def test_detail_hidden_is_404(self):
         exam = self.exam_invisible
-        response = self.client.get(reverse('library_detail', args=(exam.id, exam.slug)))
+        response = self.client.get(reverse('library_detail', args=(exam.slug,)))
         self.assertEqual(response.status_code, 404)
 
     def test_pagination_preserves_filters(self):

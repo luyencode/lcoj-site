@@ -328,7 +328,7 @@ urlpatterns = [
     path('status/oj/', status.status_oj, name='status_oj'),
 
     path('library/', paged_list_view(library.LibraryList, 'library_list')),
-    path('library/<int:id>-<slug:slug>', library.LibraryDetail.as_view(), name='library_detail'),
+    path('library/<slug:slug>', library.LibraryDetail.as_view(), name='library_detail'),
 
     path('posts/', paged_list_view(blog.PostList, 'blog_post_list')),
     path('posts/new', blog.BlogPostCreate.as_view(), name='blog_post_new'),

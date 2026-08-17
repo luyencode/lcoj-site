@@ -39,13 +39,13 @@ class ExamStatementModelTest(TestCase):
         self.assertIsNone(exam.absolute_pdf_url)
 
     def test_year_validator(self):
-        self.create_exam(year=timezone.now().year).full_clean()
+        self.create_exam(slug='de-1', year=timezone.now().year).full_clean()
 
         with self.assertRaises(ValidationError):
-            self.create_exam(year=1800).full_clean()
+            self.create_exam(slug='de-2', year=1800).full_clean()
 
         with self.assertRaises(ValidationError):
-            self.create_exam(year=timezone.now().year + 5).full_clean()
+            self.create_exam(slug='de-3', year=timezone.now().year + 5).full_clean()
 
     def test_blank_province_and_year_allowed(self):
         exam = self.create_exam(province='', year=None)
