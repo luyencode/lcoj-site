@@ -2,6 +2,30 @@
 
 {% block content_title %}{{ _('Thư viện đề thi') }}{% endblock %}
 
+{% block js_media %}
+<script>
+    $(function () {
+        var $form = $('form#filter-form');
+        var $search = $('#search');
+
+        $('#library-category, #library-province, #library-year').select2({
+            theme: '{{ DMOJ_SELECT2_THEME }}'
+        }).change(function () {
+            $form.submit();
+        });
+
+        $search.keypress(function (e) {
+            if (e.keyCode == 13)
+                $('#go').click();
+        });
+
+        $('#go').click(function () {
+            $form.submit();
+        });
+    });
+</script>
+{% endblock %}
+
 {% block body %}
 {% if page_obj.has_other_pages() %}
 <div class="top-pagination-bar">{% include "list-pages.html" %}</div>
@@ -45,6 +69,9 @@
                                 {% endfor %}
                             </select>
                         </div>
+                        <div class="form-submit-group">
+                            <a id="go" class="button">{{ _('Go') }}</a>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -59,8 +86,7 @@
                     <th>{{ _('Loại') }}</th>
                     <th>{{ _('Tỉnh/TP') }}</th>
                     <th>{{ _('Năm') }}</th>
-                    <th>{{ _('Contest') }}</th>
-                    <th>{{ _('Xem đề') }}</th>
+                    <th>{{ _('Liên kết') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -77,10 +103,11 @@
                     <td>{% if exam.year %}{{ exam.year }}{% endif %}</td>
                     <td>
                         {% if exam.contest %}
-                            <a href="{{ exam.contest.get_absolute_url() }}">{{ _('Tham gia contest') }}</a>
+                            <a href="{{ exam.contest.get_absolute_url() }}"><i class="fa fa-trophy"></i> {{ _('Tham gia contest') }}</a>
+                            <br>
                         {% endif %}
+                        <a href="{{ exam.get_absolute_url() }}"><i class="fa fa-file-pdf-o"></i> {{ _('Xem đề') }}</a>
                     </td>
-                    <td><a href="{{ exam.get_absolute_url() }}">{{ _('Xem đề') }}</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
