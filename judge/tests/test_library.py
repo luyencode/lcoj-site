@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from django.conf import settings
+from django.contrib.admin.widgets import AdminSplitDateTime
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
@@ -9,6 +10,7 @@ from django.utils import timezone
 from judge.admin.library import ExamStatementAdmin, ExamStatementAdminForm
 from judge.models import ExamCategory, ExamStatement
 from judge.models.tests.util import CommonDataMixin, create_contest
+from judge.widgets import AdminHeavySelect2Widget
 
 
 class ExamStatementAdminFormTest(TestCase):
@@ -43,6 +45,14 @@ class ExamStatementAdminFormTest(TestCase):
         self.assertIsNotNone(publish_on)
         self.assertLessEqual(publish_on, timezone.now())
         self.assertGreaterEqual(publish_on, timezone.now() - timezone.timedelta(seconds=5))
+
+    def test_publish_on_uses_admin_datetime_picker(self):
+        form = self.make_form()
+        self.assertIsInstance(form.fields['publish_on'].widget, AdminSplitDateTime)
+
+    def test_contest_uses_searchable_select2(self):
+        form = self.make_form()
+        self.assertIsInstance(form.fields['contest'].widget, AdminHeavySelect2Widget)
 
     @patch('judge.admin.library.pdf_statement_uploader', return_value='/pdf/stored.pdf')
     def test_save_model_uploads_pdf(self, uploader):

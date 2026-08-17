@@ -1,13 +1,15 @@
 from django import forms
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.admin.widgets import AdminSplitDateTime
 from django.core.validators import FileExtensionValidator
 from django.template.defaultfilters import filesizeformat
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from judge.models import ExamCategory, ExamStatement
+from judge.models import Contest, ExamCategory, ExamStatement
 from judge.views.widgets import pdf_statement_uploader
+from judge.widgets import AdminHeavySelect2Widget
 
 
 class ExamStatementAdminForm(forms.ModelForm):
@@ -21,7 +23,15 @@ class ExamStatementAdminForm(forms.ModelForm):
 
     # publish_on has a model default (timezone.now); the form field must be
     # optional so the default applies when left blank.
-    publish_on = forms.DateTimeField(required=False)
+    # SplitDateTimeField is required: AdminSplitDateTime submits two fields
+    # (publish_on_0 / publish_on_1), which only a MultiValueField can consume.
+    publish_on = forms.SplitDateTimeField(required=False, widget=AdminSplitDateTime)
+
+    contest = forms.ModelChoiceField(
+        queryset=Contest.objects.all(),
+        required=False,
+        widget=AdminHeavySelect2Widget(data_view='contest_select2'),
+    )
 
     class Meta:
         model = ExamStatement

@@ -30,34 +30,42 @@
     </form>
 
     {% if exams %}
-        <div class="library-grid">
-            {% for exam in exams %}
-                <div class="library-card">
-                    <a class="library-card-link" href="{{ exam.get_absolute_url() }}">
-                        <span class="library-category">{{ exam.category.name }}</span>
-                        <h3 class="library-title">{{ exam.title }}</h3>
-                        <div class="library-badges">
-                            {% if exam.province %}
-                                <span class="library-badge">{{ exam.get_province_display() }}</span>
+        <div class="h-scrollable-table">
+            <table class="table striped library-table">
+                <thead>
+                    <tr>
+                        <th class="library-name">{{ _('Đề thi') }}</th>
+                        <th>{{ _('Loại') }}</th>
+                        <th>{{ _('Tỉnh/TP') }}</th>
+                        <th>{{ _('Năm') }}</th>
+                        <th>{{ _('Contest') }}</th>
+                        <th>{{ _('Xem đề') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for exam in exams %}
+                    <tr>
+                        <td class="library-name">
+                            <a href="{{ exam.get_absolute_url() }}">{{ exam.title }}</a>
+                            {% if exam.description %}
+                                <div>{{ exam.description|markdown('default')|striptags|truncate(160) }}</div>
                             {% endif %}
-                            {% if exam.year %}
-                                <span class="library-badge">{{ exam.year }}</span>
+                        </td>
+                        <td><span class="library-category">{{ exam.category.name }}</span></td>
+                        <td>{% if exam.province %}<span class="library-badge">{{ exam.get_province_display() }}</span>{% endif %}</td>
+                        <td>{% if exam.year %}<span class="library-badge">{{ exam.year }}</span>{% endif %}</td>
+                        <td>
+                            {% if exam.contest %}
+                                <a class="library-contest-btn button" href="{{ exam.contest.get_absolute_url() }}">
+                                    {{ _('Tham gia contest') }}
+                                </a>
                             {% endif %}
-                        </div>
-                        {% if exam.description %}
-                            <p class="library-excerpt">
-                                {{ exam.description|markdown('default')|striptags|truncate(160) }}
-                            </p>
-                        {% endif %}
-                        <span class="library-view">{{ _('Xem đề thi') }} »</span>
-                    </a>
-                    {% if exam.contest %}
-                        <a class="library-contest-btn button" href="{{ exam.contest.get_absolute_url() }}">
-                            {{ _('Tham gia contest') }}
-                        </a>
-                    {% endif %}
-                </div>
-            {% endfor %}
+                        </td>
+                        <td><a href="{{ exam.get_absolute_url() }}">{{ _('Xem đề') }}</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
         <div class="bottom-pagination-bar">{% include "list-pages.html" %}</div>
     {% else %}
