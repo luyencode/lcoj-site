@@ -200,6 +200,7 @@
         var zoomLevel = ZOOM_MIN;
         var toolbarUi = null;
         var currentFitWidth = 0;
+        var currentTotalWidth = 0;
 
         function updateSinglePageState() {
             // showCover:true renders the first/last page alone in desktop double-page
@@ -208,7 +209,10 @@
             // physical book's front/back cover) — the other half of the canvas is
             // blank. There's no library option for this, so it's fixed here: clip the
             // wrapper down to one page's width and shift the spread so the drawn half
-            // lands centered instead of flush to one side.
+            // lands centered instead of flush to one side. .flipbook-container's own
+            // width never changes between single/multi states (see the CSS custom
+            // property set in buildPageFlip) — only wrapper width and margin-left do,
+            // so those alone are what a CSS transition needs to animate.
             var isSingle = false;
             var isFrontCover = false;
             if (pageFlip && pageFlip.getOrientation() === 'landscape') {
@@ -217,26 +221,17 @@
                 isFrontCover = index === 0;
             }
             // Fullscreen already flex-centers the (still full-spread-width) container
-            // itself via CSS; narrowing the wrapper's own `width` there would fight the
-            // browser's `:fullscreen` sizing, so this framing is only applied outside
-            // fullscreen.
-            var applyFrame = isSingle && !isFullscreenElement(wrapper);
+            // itself via CSS `width: 100vw`; leave that in control there instead of
+            // fighting it with an inline pixel width.
+            var isFullscreen = isFullscreenElement(wrapper);
+            var applyFrame = isSingle && !isFullscreen;
             wrapper.classList.toggle('flipbook-wrapper--single-page', applyFrame);
-            if (applyFrame) {
-                // .flipbook-container's own CSS width is `100%` of this wrapper, and
-                // StPageFlip's `size: 'stretch'` reacts to the container's own measured
-                // box — so narrowing the wrapper alone would make the library think its
-                // available space shrank and redraw the whole spread smaller. Pin the
-                // container to its full (still two-page) spread width explicitly first,
-                // so only the wrapper's overflow clips it, nothing gets redrawn.
-                container.style.width = (currentFitWidth * 2) + 'px';
-                wrapper.style.width = currentFitWidth + 'px';
-                container.style.marginLeft = isFrontCover ? (-currentFitWidth) + 'px' : '0';
-            } else {
-                container.style.width = '';
+            if (isFullscreen) {
                 wrapper.style.width = '';
-                container.style.marginLeft = '';
+            } else {
+                wrapper.style.width = (applyFrame ? currentFitWidth : currentTotalWidth) + 'px';
             }
+            container.style.marginLeft = (applyFrame && isFrontCover) ? (-currentFitWidth) + 'px' : '0';
         }
 
         function buildPageFlip(fitWidth, imagesToLoad) {
@@ -270,6 +265,22 @@
             suppressFlipSound = true;
             instance.loadFromImages(imagesToLoad);
             suppressFlipSound = false;
+
+            // `usePortrait` above is only a hint — StPageFlip decides the actual
+            // rendered layout itself (it can end up in landscape/double-page even when
+            // `fitWidth` alone would suggest "mobile"), so ask it directly rather than
+            // re-deriving from our own isMobile guess, which has disagreed with this in
+            // practice for tall-aspect-ratio documents. It also isn't safe to call
+            // until after loadFromImages — the library throws if asked any earlier.
+            currentTotalWidth = instance.getOrientation() === 'landscape' ? fitWidth * 2 : fitWidth;
+            // StPageFlip resets .flipbook-container's own inline `width` back to `100%`
+            // as part of its own construction/load, so pinning it via plain
+            // `container.style.width` gets silently clobbered (and re-clobbered on
+            // every progressive `updateFromImages` call while later pages render). A
+            // CSS custom property is invisible to the library — it only ever touches
+            // the plain `width` property — so the `!important` rule in flipbook.scss
+            // that reads this variable always wins, regardless of timing.
+            container.style.setProperty('--flipbook-total-width', currentTotalWidth + 'px');
             // `size: 'stretch'` makes StPageFlip track its own container size on
             // window resize internally, but `maxWidth`/`maxHeight` above are pinned to
             // the viewport-fit size computed at (re)build time, so it can never grow

@@ -3,6 +3,7 @@
 .flipbook-wrapper {
     position: relative;
     margin: 1em 0;
+    transition: width 0.35s ease;
 
     noscript a {
         display: inline-block;
@@ -43,11 +44,17 @@
 
 .flipbook-container {
     position: relative;
-    width: 100%;
+    // StPageFlip repeatedly resets its own inline `width` back to `100%` as pages
+    // load — flipbook.js sets --flipbook-total-width once construction is done
+    // (immune to that, since the library never touches custom properties), and
+    // this `!important` is what makes it stick regardless of when the library
+    // last wrote its own width. Falls back to 100% before JS/the library init.
+    width: var(--flipbook-total-width, 100%) !important;
     max-width: 900px;
     min-height: 350px;
     margin: 0 auto;
     transform-origin: top center;
+    transition: margin-left 0.35s ease;
 }
 
 .flipbook-toolbar {
