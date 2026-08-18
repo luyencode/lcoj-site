@@ -186,7 +186,7 @@
         if (flipSoundUrl) {
             flipSound = new Audio(flipSoundUrl);
             flipSound.preload = 'auto';
-            flipSound.volume = 0.5;
+            flipSound.volume = 0.25;
             flipSound.muted = localStorage.getItem('flipbook-muted') === '1';
         }
         // loadFromImages/updateFromImages re-render the current spread and,
