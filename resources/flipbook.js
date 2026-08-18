@@ -2,7 +2,8 @@
     'use strict';
 
     var MOBILE_BREAKPOINT = 600;
-    var RENDER_SCALE_CAP = 2;
+    var RENDER_SCALE_CAP = 3;
+    var JPEG_QUALITY = 0.92;
     var BOTTOM_MARGIN = 24;
     var MIN_FIT_HEIGHT = 350; // matches .flipbook-container's CSS min-height floor
     var FULLSCREEN_MARGIN = 48;
@@ -20,7 +21,7 @@
         canvas.height = viewport.height;
 
         return page.render({canvasContext: canvas.getContext('2d'), viewport: viewport}).promise.then(function () {
-            return canvas.toDataURL('image/jpeg', 0.85);
+            return canvas.toDataURL('image/jpeg', JPEG_QUALITY);
         });
     }
 
@@ -368,8 +369,13 @@
                 aspectRatio = baseViewport.height / baseViewport.width;
 
                 var fitWidth = Math.min(targetWidth, Math.round(computeAvailableHeight() / aspectRatio));
+                // Rasterize at the container's natural width, not the (possibly much smaller)
+                // on-screen fit width — the viewport-height fit is a display concern only and
+                // shouldn't also determine source resolution, or tall PDFs on short windows end
+                // up blurry even though there was room to rasterize them sharper.
+                var renderWidth = Math.max(fitWidth, targetWidth);
 
-                return renderCanvasImage(firstPage, fitWidth).then(function (firstImage) {
+                return renderCanvasImage(firstPage, renderWidth).then(function (firstImage) {
                     images = new Array(numPages).fill(firstImage);
                     pageFlip = buildPageFlip(fitWidth, images);
                     toolbarUi = buildToolbar(wrapper, api);
@@ -379,7 +385,7 @@
                     for (var n = 2; n <= numPages; n++) {
                         (function (pageNumber) {
                             pending = pending.then(function () {
-                                return renderPageToImage(pdfDocument, pageNumber, fitWidth).then(function (image) {
+                                return renderPageToImage(pdfDocument, pageNumber, renderWidth).then(function (image) {
                                     images[pageNumber - 1] = image;
                                     suppressFlipSound = true;
                                     pageFlip.updateFromImages(images);
