@@ -178,8 +178,9 @@
         var wrapper = container.closest('.flipbook-wrapper') || container.parentNode;
         var targetWidth = container.clientWidth || 600;
 
-        // "Turning a page.ogg" by planish (via PDSounds.org), public domain,
-        // https://commons.wikimedia.org/wiki/File:Turning_a_page.ogg
+        // Trimmed from a freesound.org community "book page flip" sample pack
+        // (source filename: freesound_community-book-page-flip-28603.mp3) — verify the
+        // exact author/license on freesound.org before any redistribution that requires it.
         var flipSoundUrl = container.getAttribute('data-flip-sound-url');
         var flipSound = null;
         if (flipSoundUrl) {
