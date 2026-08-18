@@ -392,6 +392,13 @@ else:
                 },
                 ('judge.BlogPost', 'fa-rss-square'),
                 {
+                    'model': 'judge.ExamStatement',
+                    'icon': 'fa-book',
+                    'children': [
+                        'judge.ExamCategory',
+                    ],
+                },
+                {
                     'model': 'judge.Comment',
                     'icon': 'fa-comment-o',
                     'children': [
