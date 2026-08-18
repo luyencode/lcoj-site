@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block meta %}
+    <script type="application/ld+json">{{ structured_data|safe }}</script>
+{% endblock %}
+
 {% block js_media %}
     {{ super() }}
     {% if exam.pdf_url %}
@@ -30,8 +34,8 @@
                 {% endtrans %}
             </span>
             {% if exam.contest %}
-                <a class="library-action-link" href="{{ exam.contest.get_absolute_url() }}">
-                    <i class="fa fa-trophy"></i> {{ _('View contest') }}
+                <a class="library-btn library-btn-contest" href="{{ exam.contest.get_absolute_url() }}">
+                    <i class="fa fa-trophy"></i> {{ _('Take the test now') }}
                 </a>
             {% endif %}
         </div>
@@ -48,6 +52,18 @@
     {% if exam.description %}
         <div class="library-description content-description">
             {{ exam.description|markdown('default') }}
+        </div>
+    {% endif %}
+
+    {% if exam.contest %}
+        <div class="library-detail-cta">
+            <div class="library-detail-cta-text">
+                <strong>{{ _('Ready to try it yourself?') }}</strong>
+                <span>{{ _('Submit your solution on the judge and get the result immediately.') }}</span>
+            </div>
+            <a class="library-btn library-btn-contest library-btn-lg" href="{{ exam.contest.get_absolute_url() }}">
+                <i class="fa fa-trophy"></i> {{ _('Take the test now') }}
+            </a>
         </div>
     {% endif %}
 {% endblock %}
