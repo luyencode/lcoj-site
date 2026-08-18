@@ -3,6 +3,12 @@
 
     var MOBILE_BREAKPOINT = 600;
     var RENDER_SCALE_CAP = 2;
+    var BOTTOM_MARGIN = 24;
+    var MIN_FIT_HEIGHT = 350; // matches .flipbook-container's CSS min-height floor
+    var FULLSCREEN_MARGIN = 48;
+    var ZOOM_MIN = 1;
+    var ZOOM_MAX = 2.5;
+    var ZOOM_STEP = 0.25;
 
     function renderCanvasImage(page, targetWidth) {
         var baseViewport = page.getViewport({scale: 1});
@@ -39,6 +45,95 @@
 
     function gettext(s) {
         return (window.gettext || function (x) { return x; })(s);
+    }
+
+    // Only the navbar is fixed chrome that permanently eats into the viewport.
+    // The footer and any content above the flipbook (hero/back-link) are
+    // normal scrollable flow — the user can scroll the flipbook into view, so
+    // they're not subtracted here; doing so would needlessly shrink the book.
+    function getNavbarHeight() {
+        var navbar = document.getElementById('navigation') || document.querySelector('nav');
+        return navbar ? navbar.getBoundingClientRect().height : 56;
+    }
+
+    function computeAvailableHeight() {
+        var available = window.innerHeight - getNavbarHeight() - BOTTOM_MARGIN;
+        return Math.max(MIN_FIT_HEIGHT, available);
+    }
+
+    function computeFullscreenHeight() {
+        return Math.max(MIN_FIT_HEIGHT, window.innerHeight - FULLSCREEN_MARGIN);
+    }
+
+    function isFullscreenElement(el) {
+        return document.fullscreenElement === el || document.webkitFullscreenElement === el;
+    }
+
+    function requestFullscreen(el) {
+        var request = el.requestFullscreen || el.webkitRequestFullscreen;
+        if (request) {
+            request.call(el);
+        }
+    }
+
+    function exitFullscreen() {
+        var exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if (exit) {
+            exit.call(document);
+        }
+    }
+
+    function buildToolbar(wrapper, api) {
+        var toolbar = document.createElement('div');
+        toolbar.className = 'flipbook-toolbar';
+
+        function makeButton(iconClass, title, onClick) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'flipbook-toolbar-btn';
+            btn.title = title;
+            btn.setAttribute('aria-label', title);
+            var icon = document.createElement('i');
+            icon.className = 'fa ' + iconClass;
+            btn.appendChild(icon);
+            btn.addEventListener('click', onClick);
+            return {button: btn, icon: icon};
+        }
+
+        var zoomOut = makeButton('fa-search-minus', gettext('Zoom out'), function () {
+            api.zoomOut();
+        });
+        var zoomIn = makeButton('fa-search-plus', gettext('Zoom in'), function () {
+            api.zoomIn();
+        });
+        toolbar.appendChild(zoomOut.button);
+        toolbar.appendChild(zoomIn.button);
+
+        var sound = null;
+        if (api.hasSound()) {
+            sound = makeButton(api.isMuted() ? 'fa-volume-off' : 'fa-volume-up', gettext('Toggle sound'), function () {
+                var muted = api.toggleSound();
+                sound.icon.className = 'fa ' + (muted ? 'fa-volume-off' : 'fa-volume-up');
+            });
+            toolbar.appendChild(sound.button);
+        }
+
+        var fullscreen = makeButton('fa-expand', gettext('Fullscreen'), function () {
+            api.toggleFullscreen();
+        });
+        toolbar.appendChild(fullscreen.button);
+
+        wrapper.appendChild(toolbar);
+
+        return {
+            updateZoomButtons: function (zoomLevel) {
+                zoomOut.button.disabled = zoomLevel <= ZOOM_MIN;
+                zoomIn.button.disabled = zoomLevel >= ZOOM_MAX;
+            },
+            updateFullscreenIcon: function (isFullscreen) {
+                fullscreen.icon.className = 'fa ' + (isFullscreen ? 'fa-compress' : 'fa-expand');
+            },
+        };
     }
 
     // pdfjs-init.js loads as a deferred `type="module"` script, so it can finish
@@ -79,8 +174,8 @@
 
         options = options || {};
 
+        var wrapper = container.closest('.flipbook-wrapper') || container.parentNode;
         var targetWidth = container.clientWidth || 600;
-        var isMobile = targetWidth < MOBILE_BREAKPOINT;
 
         // "Turning a page.ogg" by planish (via PDSounds.org), public domain,
         // https://commons.wikimedia.org/wiki/File:Turning_a_page.ogg
@@ -90,6 +185,7 @@
             flipSound = new Audio(flipSoundUrl);
             flipSound.preload = 'auto';
             flipSound.volume = 0.5;
+            flipSound.muted = localStorage.getItem('flipbook-muted') === '1';
         }
         // loadFromImages/updateFromImages re-render the current spread and,
         // as a side effect, fire the library's 'flip' event even though no
@@ -98,6 +194,131 @@
         // during those synchronous calls so it only plays on real page turns.
         var suppressFlipSound = false;
 
+        var pageFlip = null;
+        var images = null;
+        var aspectRatio = 1;
+        var zoomLevel = ZOOM_MIN;
+        var toolbarUi = null;
+
+        function updateSinglePageState() {
+            // showCover:true renders the first/last page alone (no facing page) in
+            // desktop double-page ("landscape") mode; StPageFlip has no CSS hook for
+            // this state, so it's flagged here for flipbook.scss to center it.
+            var isSingle = false;
+            if (pageFlip && pageFlip.getOrientation() === 'landscape') {
+                var index = pageFlip.getCurrentPageIndex();
+                isSingle = index === 0 || index === pageFlip.getPageCount() - 1;
+            }
+            container.classList.toggle('flipbook-container--single-page', isSingle);
+        }
+
+        function buildPageFlip(fitWidth, imagesToLoad) {
+            var isMobile = fitWidth < MOBILE_BREAKPOINT;
+            container.innerHTML = '';
+            var instance = new window.St.PageFlip(container, Object.assign({
+                width: fitWidth,
+                height: Math.round(fitWidth * aspectRatio),
+                size: 'stretch',
+                minWidth: 250,
+                maxWidth: fitWidth,
+                minHeight: Math.round(250 * aspectRatio),
+                maxHeight: Math.round(fitWidth * aspectRatio),
+                usePortrait: isMobile,
+                showCover: true,
+                // Default is 1000ms; shortened so the flip sound (which fires on
+                // completion, since StPageFlip has no reliable "flip started" event
+                // for drag-released turns) doesn't lag too far behind the click/release.
+                flippingTime: 600,
+            }, options));
+
+            instance.on('flip', function () {
+                if (!suppressFlipSound && flipSound) {
+                    flipSound.currentTime = 0;
+                    flipSound.play().catch(function () {});
+                }
+                updateSinglePageState();
+            });
+
+            suppressFlipSound = true;
+            instance.loadFromImages(imagesToLoad);
+            suppressFlipSound = false;
+            // `size: 'stretch'` makes StPageFlip track its own container size on
+            // window resize internally, but `maxWidth`/`maxHeight` above are pinned to
+            // the viewport-fit size computed at (re)build time, so it can never grow
+            // past what's actually visible on screen without a rebuild (see
+            // rebuildAtFit, called only on fullscreen enter/exit).
+            return instance;
+        }
+
+        function currentAvailableHeight() {
+            return isFullscreenElement(wrapper) ? computeFullscreenHeight() : computeAvailableHeight();
+        }
+
+        function applyZoom() {
+            container.style.transform = zoomLevel === ZOOM_MIN ? '' : 'scale(' + zoomLevel + ')';
+            if (zoomLevel > ZOOM_MIN) {
+                wrapper.style.maxHeight = currentAvailableHeight() + 'px';
+            } else {
+                wrapper.style.maxHeight = '';
+            }
+            wrapper.classList.toggle('flipbook-wrapper--zoomed', zoomLevel > ZOOM_MIN);
+        }
+
+        function rebuildAtFit() {
+            if (!images) {
+                return;
+            }
+            var fitWidth = Math.min(container.clientWidth || targetWidth, Math.round(currentAvailableHeight() / aspectRatio));
+            pageFlip = buildPageFlip(fitWidth, images);
+            applyZoom();
+            updateSinglePageState();
+        }
+
+        var api = {
+            zoomIn: function () {
+                zoomLevel = Math.min(ZOOM_MAX, Math.round((zoomLevel + ZOOM_STEP) * 100) / 100);
+                applyZoom();
+                toolbarUi.updateZoomButtons(zoomLevel);
+            },
+            zoomOut: function () {
+                zoomLevel = Math.max(ZOOM_MIN, Math.round((zoomLevel - ZOOM_STEP) * 100) / 100);
+                applyZoom();
+                toolbarUi.updateZoomButtons(zoomLevel);
+            },
+            hasSound: function () {
+                return !!flipSound;
+            },
+            isMuted: function () {
+                return !!flipSound && flipSound.muted;
+            },
+            toggleSound: function () {
+                if (!flipSound) {
+                    return false;
+                }
+                flipSound.muted = !flipSound.muted;
+                localStorage.setItem('flipbook-muted', flipSound.muted ? '1' : '0');
+                return flipSound.muted;
+            },
+            toggleFullscreen: function () {
+                if (isFullscreenElement(wrapper)) {
+                    exitFullscreen();
+                } else {
+                    requestFullscreen(wrapper);
+                }
+            },
+        };
+
+        function onFullscreenChange() {
+            var isFullscreen = isFullscreenElement(wrapper);
+            wrapper.classList.toggle('flipbook-wrapper--fullscreen', isFullscreen);
+            if (toolbarUi) {
+                toolbarUi.updateFullscreenIcon(isFullscreen);
+            }
+            rebuildAtFit();
+        }
+        document.addEventListener('fullscreenchange', onFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+
         // pdf.js v6 dropped the bare-string shorthand: the source must be an
         // options object ({url: ...}) for `url`/`data`/`range` to be recognized.
         window.pdfjsLib.getDocument({url: pdfUrl}).promise.then(function (pdfDocument) {
@@ -105,48 +326,21 @@
 
             return pdfDocument.getPage(1).then(function (firstPage) {
                 var baseViewport = firstPage.getViewport({scale: 1});
-                var aspectRatio = baseViewport.height / baseViewport.width;
+                aspectRatio = baseViewport.height / baseViewport.width;
 
-                return renderCanvasImage(firstPage, targetWidth).then(function (firstImage) {
-                    container.innerHTML = '';
-                    var pageFlip = new window.St.PageFlip(container, Object.assign({
-                        width: targetWidth,
-                        height: Math.round(targetWidth * aspectRatio),
-                        size: 'stretch',
-                        minWidth: 250,
-                        maxWidth: 1400,
-                        minHeight: Math.round(250 * aspectRatio),
-                        maxHeight: Math.round(1400 * aspectRatio),
-                        usePortrait: isMobile,
-                        showCover: true,
-                        // Default is 1000ms; shortened so the flip sound (which fires on
-                        // completion, since StPageFlip has no reliable "flip started" event
-                        // for drag-released turns) doesn't lag too far behind the click/release.
-                        flippingTime: 600,
-                    }, options));
+                var fitWidth = Math.min(targetWidth, Math.round(computeAvailableHeight() / aspectRatio));
 
-                    if (flipSound) {
-                        pageFlip.on('flip', function () {
-                            if (suppressFlipSound) {
-                                return;
-                            }
-                            flipSound.currentTime = 0;
-                            flipSound.play().catch(function () {});
-                        });
-                    }
-
-                    var images = new Array(numPages).fill(firstImage);
-                    suppressFlipSound = true;
-                    pageFlip.loadFromImages(images);
-                    suppressFlipSound = false;
-                    // `size: 'stretch'` makes StPageFlip track its own container size on
-                    // window resize internally — no manual resize handling needed here.
+                return renderCanvasImage(firstPage, fitWidth).then(function (firstImage) {
+                    images = new Array(numPages).fill(firstImage);
+                    pageFlip = buildPageFlip(fitWidth, images);
+                    toolbarUi = buildToolbar(wrapper, api);
+                    updateSinglePageState();
 
                     var pending = Promise.resolve();
                     for (var n = 2; n <= numPages; n++) {
                         (function (pageNumber) {
                             pending = pending.then(function () {
-                                return renderPageToImage(pdfDocument, pageNumber, targetWidth).then(function (image) {
+                                return renderPageToImage(pdfDocument, pageNumber, fitWidth).then(function (image) {
                                     images[pageNumber - 1] = image;
                                     suppressFlipSound = true;
                                     pageFlip.updateFromImages(images);

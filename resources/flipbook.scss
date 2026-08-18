@@ -1,10 +1,30 @@
 @use "vars" as *;
 
 .flipbook-wrapper {
+    position: relative;
     margin: 1em 0;
 
     noscript a {
         display: inline-block;
+    }
+
+    &.flipbook-wrapper--zoomed {
+        overflow: auto;
+    }
+
+    &:fullscreen,
+    &:-webkit-full-screen {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        background: #1a1a1a;
+
+        .flipbook-container {
+            max-width: none;
+        }
     }
 }
 
@@ -14,6 +34,54 @@
     max-width: 900px;
     min-height: 350px;
     margin: 0 auto;
+    transform-origin: top center;
+
+    // showCover:true renders the first/last page alone (no facing page) in
+    // desktop double-page mode; flipbook.js toggles this class based on the
+    // library's current page index since it exposes no CSS hook for it.
+    &.flipbook-container--single-page .stf__block {
+        margin: 0 auto;
+    }
+}
+
+.flipbook-toolbar {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 20px;
+    background: rgba(35, 31, 32, 0.68);
+    backdrop-filter: blur(6px);
+}
+
+.flipbook-toolbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    &:disabled {
+        opacity: 0.35;
+        cursor: default;
+    }
+
+    i {
+        font-size: 14px;
+    }
 }
 
 .flipbook-loading {
