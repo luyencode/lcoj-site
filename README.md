@@ -1,16 +1,29 @@
-# VNOJ: VNOI Online Judge [![Build Status](https://github.com/VNOI-Admin/OJ/workflows/build/badge.svg)](https://github.com/VNOI-Admin/OJ/actions/) [![AGPL License](https://img.shields.io/badge/license-AGPLv3.0-blue.svg)](http://www.gnu.org/licenses/agpl-3.0) [![Discord link](https://img.shields.io/discord/660930260405190688?color=%237289DA&label=Discord&logo=Discord)](https://discord.com/invite/TDyYVyd)
+# LCOJ: Luyện Code Online Judge [![AGPL License](https://img.shields.io/badge/license-AGPLv3.0-blue.svg)](http://www.gnu.org/licenses/agpl-3.0)
 
-As a fork of [DMOJ](https://github.com/DMOJ/online-judge), VNOJ serves as [VNOI](https://team.vnoi.info/)'s official online judge and hosts its programming contests.
+LCOJ (Luyện Code Online Judge) is a free, practice-focused online judge and learning platform. It offers a large bank of programming problems with instant online grading, organized by difficulty and topic, so learners can immediately verify whether their solutions are correct — from beginner exercises to competitive-programming and technical-interview prep.
 
-See it live at [oj.vnoi.info](https://oj.vnoi.info/)!
+This repository is the Django application that powers LCOJ. It is a fork of [VNOJ](https://github.com/VNOI-Admin/OJ) (VNOI's online judge), which is itself a fork of [DMOJ](https://github.com/DMOJ/online-judge). See [License & attribution](#license--attribution) below for how credit is preserved across this fork chain.
+
+## Live deployments
+
+This codebase is deployed to more than one site. Each production site is tracked on its own `prod/*` branch:
+
+| Site | URL | Branch |
+| --- | --- | --- |
+| LCOJ | [luyencode.net](https://luyencode.net/) | `prod/luyencode` |
+| Có Thì Lập Trình | [code.cothilaptrinh.vn](https://code.cothilaptrinh.vn/) | `prod/cothilaptrinh` |
+
+Feature work happens on `feature/*`/`feat/*` branches off `main`/`master` and is merged into the relevant `prod/*` branch(es) to ship.
 
 ## Features
 
-Check out its features [here](https://github.com/DMOJ/online-judge#features).
+Check out the base feature set [here](https://github.com/DMOJ/online-judge#features). On top of that, LCOJ adds its own features on `feature/*` branches (e.g. the quiz system under `quiz/`).
 
 ## Installation
 
-Refer to the install documentation [here](https://vnoi-admin.github.io/vnoj-docs/#/site/installation). Almost all installation steps remain the same as the docs, but there are several minor differences, including cloning this repo instead of DMOJ's repo.
+Refer to the LCOJ install documentation [here](https://docs.luyencode.net/#/site/installation).
+
+This repo is typically deployed via a separate Docker Compose setup that wraps `manage.py` commands and mounts this repo at `/site/`.
 
 ### Additional installation steps
 
@@ -29,10 +42,19 @@ Refer to the install documentation [here](https://vnoi-admin.github.io/vnoj-docs
 
 ## Contributing ![PR's Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)
 
-Take a look at [our contribution guideline](contributing.md).
+Take a look at [our contribution guideline](CONTRIBUTING.md).
 
-If you find any bug, please feel free to contact us via Discord [![Discord Chat](https://img.shields.io/discord/660930260405190688?color=%237289DA&label=Discord&logo=Discord)](https://discord.gg/TDyYVyd) or open an issue.
+If you find a bug, please open an issue on this repo.
 
 Pull requests are welcome as well. Before you submit your PR, please check your code with [flake8](https://flake8.pycqa.org/en/latest/) and format it if needed. There's also `prettier` if you need to format JS code (in `websocket/`).
 
 Translation contributions are also welcome.
+
+## License & attribution
+
+LCOJ is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0), the same license used by its upstream projects. This project builds on the work of:
+
+- **[DMOJ: Modern Online Judge](https://github.com/DMOJ/online-judge)** — the original online judge platform this is forked from.
+- **[VNOJ: VNOI Online Judge](https://github.com/VNOI-Admin/OJ)** — VNOI's fork of DMOJ, from which this repository was in turn forked, and whose additions this project continues to build on.
+
+As required by the AGPL, the full source of this repository (including modifications) is available, and any network-accessible deployment of this code (such as the sites listed above) must likewise make its complete corresponding source available to its users.

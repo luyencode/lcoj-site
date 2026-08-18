@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block js_media %}
+    {{ super() }}
+    {% if exam.pdf_url %}
+        {% include "widgets/flipbook-media-js.html" %}
+    {% endif %}
+{% endblock %}
+
+{% block content_title %}{{ exam.title }}{% endblock %}
+
+{% block body %}
+    <a class="library-back-link" href="{{ url('library_list') }}"><i class="fa fa-angle-left"></i> {{ _('Back to library') }}</a>
+
+    <div class="library-detail-hero">
+        <div class="library-detail-tags">
+            <span class="library-category" style="background:{{ category_color }}">{{ exam.category.name }}</span>
+            {% if exam.province %}
+                <span class="library-badge"><i class="fa fa-map-marker"></i> {{ exam.get_province_display() }}</span>
+            {% endif %}
+            {% if exam.year %}
+                <span class="library-badge"><i class="fa fa-calendar-o"></i> {{ exam.year }}</span>
+            {% endif %}
+        </div>
+        <div class="library-detail-footer">
+            <span class="library-date">
+                <i class="fa fa-clock-o"></i>
+                {% trans trimmed date=exam.publish_on|date(_("N j, Y")) %}
+                    Published on {{ date }}
+                {% endtrans %}
+            </span>
+            {% if exam.contest %}
+                <a class="library-action-link" href="{{ exam.contest.get_absolute_url() }}">
+                    <i class="fa fa-trophy"></i> {{ _('View contest') }}
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if exam.pdf_url %}
+        {% set flipbook_pdf_url = exam.pdf_url %}
+        {% set flipbook_id = 'library-flipbook-' ~ exam.id %}
+        <div class="library-flipbook-frame">
+            {% include "widgets/flipbook.html" %}
+        </div>
+    {% endif %}
+
+    {% if exam.description %}
+        <div class="library-description content-description">
+            {{ exam.description|markdown('default') }}
+        </div>
+    {% endif %}
+{% endblock %}
