@@ -100,6 +100,19 @@ a {
 .comment-body {
     word-wrap: break-word;
     word-break: break-word;
+
+    &.collapsed {
+        max-height: 100px;
+        overflow: hidden;
+    }
+}
+
+.comment-toggle {
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
 }
 
 .previous-revision,
@@ -196,54 +209,8 @@ a {
     }
 }
 
-// Comment truncation styles
-.comment-body-content {
-    &.comment-truncated {
-        max-height: 200px;
-        overflow: hidden;
-        position: relative;
-
-        &::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
-            background: linear-gradient(to bottom, transparent, $color_primary5);
-            pointer-events: none;
-        }
-    }
-
-    &.comment-expanded {
-        max-height: none;
-        overflow: visible;
-    }
-}
-
-.comment-show-more {
+.comments-loading {
+    padding: 1em 0;
     text-align: center;
-    padding: 10px 0;
-    margin-top: 10px;
-
-    .show-more-link {
-        display: inline-block;
-        padding: 6px 16px;
-        background: $color_primary10;
-        color: $color_primary100;
-        border-radius: $widget_border_radius;
-        text-decoration: none;
-        font-weight: 500;
-        transition: all 0.2s ease;
-
-        &:hover {
-            background: $color_primary25;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        &:active {
-            transform: translateY(0);
-        }
-    }
+    color: #888;
 }
