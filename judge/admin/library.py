@@ -7,7 +7,7 @@ from django.template.defaultfilters import filesizeformat
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from judge.models import Contest, ExamCategory, ExamStatement
+from judge.models import Contest, ExamStatement
 from judge.views.widgets import pdf_statement_uploader
 from judge.widgets import AdminHeavySelect2Widget
 

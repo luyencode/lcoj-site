@@ -146,7 +146,7 @@ class LibraryViewTestCase(CommonDataMixin, TestCase):
         self.assertContains(response, 'flipbook-container')
         self.assertContains(response, 'library-flipbook-%d' % exam.id)
         self.assertContains(response, 'library-action-link')
-        self.assertContains(response, 'Xem kỳ thi')
+        self.assertContains(response, exam.contest.get_absolute_url())
 
     def test_detail_hidden_is_404(self):
         exam = self.exam_invisible
