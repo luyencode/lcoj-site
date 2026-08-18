@@ -8,6 +8,19 @@
         display: inline-block;
     }
 
+    // StPageFlip renders pages onto a canvas rather than per-page DOM
+    // elements, so a lone cover page can't be centered by styling an inner
+    // element — flipbook.js instead sizes this wrapper down to one page's
+    // width and shifts the (still full-spread-width) container inside it.
+    &.flipbook-wrapper--single-page {
+        overflow: hidden;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    // Rule order matters: when both classes are present (rare — zoomed while
+    // viewing a cover), this comes after --single-page so scrolling wins over
+    // clipping.
     &.flipbook-wrapper--zoomed {
         overflow: auto;
     }
@@ -35,13 +48,6 @@
     min-height: 350px;
     margin: 0 auto;
     transform-origin: top center;
-
-    // showCover:true renders the first/last page alone (no facing page) in
-    // desktop double-page mode; flipbook.js toggles this class based on the
-    // library's current page index since it exposes no CSS hook for it.
-    &.flipbook-container--single-page .stf__block {
-        margin: 0 auto;
-    }
 }
 
 .flipbook-toolbar {

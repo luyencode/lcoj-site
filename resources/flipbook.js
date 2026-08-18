@@ -199,21 +199,49 @@
         var aspectRatio = 1;
         var zoomLevel = ZOOM_MIN;
         var toolbarUi = null;
+        var currentFitWidth = 0;
 
         function updateSinglePageState() {
-            // showCover:true renders the first/last page alone (no facing page) in
-            // desktop double-page ("landscape") mode; StPageFlip has no CSS hook for
-            // this state, so it's flagged here for flipbook.scss to center it.
+            // showCover:true renders the first/last page alone in desktop double-page
+            // ("landscape") mode, but StPageFlip still draws a full two-page-spread
+            // canvas and positions that lone page flush to the outer edge (mimicking a
+            // physical book's front/back cover) — the other half of the canvas is
+            // blank. There's no library option for this, so it's fixed here: clip the
+            // wrapper down to one page's width and shift the spread so the drawn half
+            // lands centered instead of flush to one side.
             var isSingle = false;
+            var isFrontCover = false;
             if (pageFlip && pageFlip.getOrientation() === 'landscape') {
                 var index = pageFlip.getCurrentPageIndex();
                 isSingle = index === 0 || index === pageFlip.getPageCount() - 1;
+                isFrontCover = index === 0;
             }
-            container.classList.toggle('flipbook-container--single-page', isSingle);
+            // Fullscreen already flex-centers the (still full-spread-width) container
+            // itself via CSS; narrowing the wrapper's own `width` there would fight the
+            // browser's `:fullscreen` sizing, so this framing is only applied outside
+            // fullscreen.
+            var applyFrame = isSingle && !isFullscreenElement(wrapper);
+            wrapper.classList.toggle('flipbook-wrapper--single-page', applyFrame);
+            if (applyFrame) {
+                // .flipbook-container's own CSS width is `100%` of this wrapper, and
+                // StPageFlip's `size: 'stretch'` reacts to the container's own measured
+                // box — so narrowing the wrapper alone would make the library think its
+                // available space shrank and redraw the whole spread smaller. Pin the
+                // container to its full (still two-page) spread width explicitly first,
+                // so only the wrapper's overflow clips it, nothing gets redrawn.
+                container.style.width = (currentFitWidth * 2) + 'px';
+                wrapper.style.width = currentFitWidth + 'px';
+                container.style.marginLeft = isFrontCover ? (-currentFitWidth) + 'px' : '0';
+            } else {
+                container.style.width = '';
+                wrapper.style.width = '';
+                container.style.marginLeft = '';
+            }
         }
 
         function buildPageFlip(fitWidth, imagesToLoad) {
             var isMobile = fitWidth < MOBILE_BREAKPOINT;
+            currentFitWidth = fitWidth;
             container.innerHTML = '';
             var instance = new window.St.PageFlip(container, Object.assign({
                 width: fitWidth,
