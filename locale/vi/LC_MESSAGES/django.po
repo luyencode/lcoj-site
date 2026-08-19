@@ -7102,9 +7102,14 @@ msgstr ""
 msgid "Past exam paper"
 msgstr "Đề thi các năm trước"
 
-#: templates/library/list.html:21
-msgid "Exam <span class=\"library-hero-hl\">library</span>"
-msgstr "Thư viện <span class=\"library-hero-hl\">đề thi</span>"
+#: templates/library/list.html:39
+msgid "library"
+msgstr "đề thi"
+
+#: templates/library/list.html:40
+#, python-format
+msgid "Exam %(hl)s"
+msgstr "Thư viện %(hl)s"
 
 #: templates/library/list.html:31
 msgid "Exam practice resources"

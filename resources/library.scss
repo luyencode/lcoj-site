@@ -315,10 +315,10 @@ $lib-radius: 14px;
     }
 }
 
-// Select2 renders its dropdown as a direct child of <body>, out of reach of
-// the .library-filters scope, so the list template tags it with a class of its
-// own. The !important flags match the ones in select2-dmoj.
-.select2-dropdown.library-select-dropdown {
+// The list template sets dropdownParent so the dropdown mounts inside
+// .library-filters instead of <body>, keeping it reachable here by descent.
+// The !important flags match the ones in select2-dmoj.
+.library-filters .select2-dropdown {
     border: 1.5px solid $lib-green !important;
     border-radius: 10px !important;
     overflow: hidden;

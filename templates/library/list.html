@@ -16,9 +16,11 @@
     $(function () {
         $('#library-province, #library-year').select2({
             theme: '{{ DMOJ_SELECT2_THEME }}',
-            // Select2 hangs its dropdown off <body>, so tag it to let the
-            // library stylesheet reach it.
-            dropdownCssClass: 'library-select-dropdown'
+            // dropdownCssClass needs the select2/compat/dropdownCss module, which
+            // isn't in this project's vendored build (throws "No select2/compat/
+            // dropdownCss" and aborts init). Parent the dropdown under the filters
+            // bar instead so the library stylesheet can reach it by descent.
+            dropdownParent: $('.library-filters')
         }).on('change', function () {
             $('#library-filters-form').submit();
         });
@@ -33,7 +35,13 @@
         <span></span><span></span><span></span><span></span>
     </div>
     <span class="library-hero-kicker"><i class="fa fa-graduation-cap"></i> {{ _('Exam practice resources') }}</span>
-    <h1>{% trans %}Exam <span class="library-hero-hl">library</span>{% endtrans %}</h1>
+    {# HTML must stay out of the translated string: safe_translations escapes gettext() output,
+       so a <span> baked into the msgid would render as literal text. Build the highlighted
+       word as its own safe fragment and let translators place it via {{ hl }}. Each literal
+       tag must be marked |safe before the ~ join, since markup_join() escapes plain string
+       literals individually — a |safe on the joined result would be too late. #}
+    {% set hl = '<span class="library-hero-hl">'|safe ~ _('library') ~ '</span>'|safe %}
+    <h1>{% trans hl=hl %}Exam {{ hl }}{% endtrans %}</h1>
     <p>{% trans trimmed count=total_exams %}
         The library holds {{ count }} official exam statements collected and retypeset by Co Thi Lap Trinh:
         informatics olympiads at district, provincial and national level, the Tin hoc tre contest across
