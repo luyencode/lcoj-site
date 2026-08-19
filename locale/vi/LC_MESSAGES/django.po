@@ -7069,44 +7069,94 @@ msgstr "Quay lại thư viện"
 
 #: templates/library/detail.html:28
 msgid "N j, Y"
-msgstr "j, M, Y"
+msgstr "d/m/Y"
 
 #: templates/library/detail.html:28
 #, python-format
 msgid "Published on %(date)s"
-msgstr "công bố ngày %(date)s"
+msgstr "Đăng ngày %(date)s"
 
-#: templates/library/detail.html:34
-msgid "View contest"
-msgstr "Xem kỳ thi"
+#: judge/views/library.py:130 judge/views/library.py:170
+#: judge/views/library.py:236
+msgid "Exam library"
+msgstr "Thư viện đề thi"
 
-#: templates/library/list.html:21
-msgid "Exam"
-msgstr "Đề thi"
+#: judge/views/library.py:126
+#, python-format
+msgid "year %s"
+msgstr "năm %s"
 
-#: templates/library/list.html:22
+#: judge/views/library.py:139
+#, python-format
 msgid ""
-"Past exam statements from provincial, national, and other competitions — "
-"pick one, take the linked contest, and get graded right away."
+"%(count)d exam statements from informatics olympiads at every level, the Tin "
+"hoc tre contest, and entrance exams for specialised computer science "
+"classes. Each comes with the full statement as a PDF and a practice contest "
+"graded automatically."
 msgstr ""
-"Đề thi từ các kỳ thi cấp tỉnh, quốc gia và các kỳ thi khác — chọn một đề, "
-"làm kỳ thi liên kết, và được chấm điểm ngay."
+"%(count)d đề thi học sinh giỏi Tin học các cấp, Tin học trẻ và tuyển sinh "
+"lớp 10 chuyên Tin. Mỗi đề có bản PDF đầy đủ, kèm kỳ thi luyện tập chấm điểm "
+"tự động."
 
-#: templates/library/list.html:24
-msgid "exams ready to practice"
-msgstr "đề thi sẵn sàng để luyện tập"
+#: judge/views/library.py:212
+msgid "Past exam paper"
+msgstr "Đề thi các năm trước"
+
+#: templates/library/list.html:39
+msgid "library"
+msgstr "đề thi"
+
+#: templates/library/list.html:40
+#, python-format
+msgid "Exam %(hl)s"
+msgstr "Thư viện %(hl)s"
+
+#: templates/library/list.html:31
+msgid "Exam practice resources"
+msgstr "Tài nguyên luyện thi"
+
+#: templates/library/list.html:33
+#, python-format
+msgid ""
+"The library holds %(count)s official exam statements collected and retypeset "
+"by Co Thi Lap Trinh: informatics olympiads at district, provincial and "
+"national level, the Tin hoc tre contest across its divisions, and entrance "
+"exams for specialised computer science classes."
+msgstr ""
+"Thư viện hiện có %(count)s đề thi chính thức được Cô Thi Lập Trình sưu tầm "
+"và biên soạn lại: thi học sinh giỏi môn Tin học các cấp huyện/quận, tỉnh/"
+"thành phố và quốc gia, thi Tin học trẻ các bảng, và thi tuyển sinh vào lớp "
+"10 chuyên Tin."
+
+#: templates/library/list.html:37
+#, python-format
+msgid ""
+"%(count)s of them come with a matching practice contest: read the full "
+"statement as a PDF, then submit your solution on the judge and have it "
+"graded automatically."
+msgstr ""
+"Trong đó %(count)s đề đã có kỳ thi luyện tập tương ứng: bạn xem bản PDF đầy "
+"đủ của đề, sau đó nộp bài trên hệ thống chấm và nhận ngay kết quả."
 
 #: templates/library/list.html:25
-msgid "categories"
-msgstr "danh mục"
+msgid "published exams"
+msgstr "đề thi đã đăng"
 
 #: templates/library/list.html:26
-msgid "provinces"
+msgid "exam types"
+msgstr "nhóm kỳ thi"
+
+#: templates/library/list.html:44
+msgid "provinces and cities"
 msgstr "tỉnh/thành phố"
 
-#: templates/library/list.html:34
-msgid "Search exams…"
-msgstr "Tìm kiếm đề thi…"
+#: templates/library/list.html:45
+msgid "graded automatically"
+msgstr "đề có chấm tự động"
+
+#: templates/library/list.html:35
+msgid "Search by exam title or description..."
+msgstr "Tìm theo tên đề hoặc mô tả..."
 
 #: templates/library/list.html:43 templates/problem/search-form.html:38
 #: templates/problem/search-form.html:40 templates/quiz/list.html:395
@@ -7133,9 +7183,30 @@ msgid "%(count)s exam found"
 msgid_plural "%(count)s exams found"
 msgstr[0] "Tìm thấy %(count)s đề thi"
 
-#: templates/library/list.html:99
-msgid "Take the contest"
+#: templates/library/list.html:122 templates/library/list.html:139
+msgid "Read the statement"
+msgstr "Xem đề thi"
+
+#: templates/library/list.html:129
+msgid "Full statement in PDF"
+msgstr "Đề đầy đủ bản PDF"
+
+#: templates/library/detail.html:40 templates/library/detail.html:66
+#: templates/library/list.html:135
+msgid "Take the test now"
 msgstr "Làm bài ngay"
+
+#: templates/library/list.html:138
+msgid "Statement only"
+msgstr "Mới có đề, chưa chấm"
+
+#: templates/library/detail.html:63
+msgid "Ready to try it yourself?"
+msgstr "Bạn đã sẵn sàng tự làm thử chưa?"
+
+#: templates/library/detail.html:64
+msgid "Submit your solution on the judge and get the result immediately."
+msgstr "Bạn nộp bài trên hệ thống chấm và nhận ngay kết quả."
 
 #: templates/library/list.html:109
 msgid "No exams found."
@@ -7143,7 +7214,7 @@ msgstr "Không tìm thấy đề thi."
 
 #: templates/library/list.html:109
 msgid "Try clearing the filters or searching a different keyword."
-msgstr "Hãy thử xóa bộ lọc hoặc tìm kiếm với từ khóa khác."
+msgstr "Bạn hãy thử xóa bộ lọc hoặc tìm kiếm với từ khóa khác."
 
 #: templates/license.html:12
 msgid "Visit source"
