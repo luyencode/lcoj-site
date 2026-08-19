@@ -16,14 +16,49 @@ $lib-radius: 14px;
 }
 
 .library-hero {
+    position: relative;
+    overflow: hidden;
     background: linear-gradient(135deg, $lib-green 0%, #177235 55%, #0f5f2a 100%);
     color: #fff;
     border-radius: $lib-radius;
     padding: 28px 28px 26px;
     margin-bottom: 18px;
 
+    // Brand cue: the two-colour rule that tops every Co Thi Lap Trinh handout.
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, $lib-green 0%, $lib-green 50%, $lib-blue 50%, $lib-blue 100%);
+    }
+
+    // Oversized rounded square echoing a logo tile, drifting off the
+    // bottom-right corner so the banner is not a flat block of green.
+    &::after {
+        content: '';
+        position: absolute;
+        right: -60px;
+        bottom: -90px;
+        width: 260px;
+        height: 260px;
+        border: 2px solid rgba(255, 255, 255, 0.13);
+        border-radius: 58px;
+        transform: rotate(18deg);
+        pointer-events: none;
+    }
+
+    // Everything real sits above the decorative ring drawn by ::after.
+    h1,
+    .library-hero-kicker,
+    .library-searchbox {
+        position: relative;
+    }
+
     h1 {
-        font-size: 1.7rem;
+        font-size: 1.85rem;
         font-weight: 800;
         letter-spacing: 0.2px;
     }
@@ -33,24 +68,88 @@ $lib-radius: 14px;
     }
 
     p {
-        margin-top: 8px;
-        max-width: 620px;
+        position: relative;
+        margin-top: 10px;
+        max-width: 640px;
         color: #dff0e4;
         font-size: 0.98rem;
     }
 }
 
+// Small kicker above the title, in the yellow used for highlights.
+.library-hero-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    margin-bottom: 10px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #ffe89a;
+}
+
+// Monogram echo of the logo: four rounded squares in a 2x2 block, alternating
+// the two brand colours along the diagonal, sitting in the banner corner.
+.library-hero-mark {
+    position: absolute;
+    top: 26px;
+    right: 28px;
+    display: grid;
+    grid-template-columns: repeat(2, 38px);
+    grid-auto-rows: 38px;
+    gap: 7px;
+    opacity: 0.55;
+
+    span {
+        // 22% of the side, the same corner radius as the logo tiles.
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.3);
+
+        &:nth-child(1),
+        &:nth-child(4) {
+            background: rgba(255, 255, 255, 0.55);
+        }
+
+        &:nth-child(2),
+        &:nth-child(3) {
+            background: rgba(46, 134, 201, 0.85);
+        }
+    }
+}
+
+// Four figures as rounded-square tiles, the same shape language as the logo
+// and the admission posters.
 .library-stats {
+    position: relative;
     display: flex;
-    gap: 22px;
-    margin-top: 16px;
+    gap: 12px;
+    margin-top: 20px;
     flex-wrap: wrap;
-    font-size: 0.95rem;
+
+    > span {
+        flex: 1 1 145px;
+        min-width: 145px;
+        padding: 12px 14px 11px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.13);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        color: #e6f3e9;
+        font-size: 0.85rem;
+        line-height: 1.35;
+    }
 
     strong {
-        font-size: 1.2rem;
+        display: block;
+        margin-bottom: 1px;
+        font-size: 1.75rem;
+        font-weight: 800;
         color: #ffd75e;
-        margin-right: 0.3em;
+        line-height: 1.1;
     }
 }
 
@@ -135,17 +234,115 @@ $lib-radius: 14px;
     margin-bottom: 16px;
 
     select {
-        min-width: 170px;
+        min-width: 190px;
+    }
+
+    // The province and year pickers are select2 widgets: the real <select> is
+    // hidden and replaced by this markup, so the styling has to reach into it.
+    // Three class levels here beat the two-level defaults in select2-dmoj,
+    // which is pulled into style.css after this file.
+    .select2-container--dmoj {
+        min-width: 210px;
+
+        .select2-selection--single {
+            height: 40px;
+            padding: 0 8px 0 14px;
+            border: 1.5px solid $color_primary25;
+            border-radius: 10px;
+            background: $color_primary10;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+
+            .select2-selection__rendered {
+                padding: 0 24px 0 0;
+                line-height: 37px;
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: $color_primary100;
+            }
+
+            .select2-selection__arrow {
+                height: 100%;
+                top: 0;
+                right: 10px;
+
+                b {
+                    border-width: 6px 5px 0 5px;
+                    border-top-color: $lib-green;
+                    margin-left: -5px;
+                }
+            }
+        }
+
+        &:hover .select2-selection--single {
+            border-color: $lib-green;
+            background: $color_primary0;
+        }
+
+        &.select2-container--open .select2-selection--single,
+        &.select2-container--focus .select2-selection--single {
+            border-color: $lib-green;
+            background: $color_primary0;
+            box-shadow: 0 0 0 3px $lib-green-soft;
+        }
+
+        &.select2-container--open .select2-selection--single .select2-selection__arrow b {
+            border-width: 0 5px 6px 5px;
+            border-bottom-color: $lib-green;
+        }
     }
 
     .library-clear {
-        border: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35em;
+        height: 40px;
+        padding: 0 14px;
+        border: 1.5px solid transparent;
+        border-radius: 10px;
         background: none;
         color: $lib-blue;
         cursor: pointer;
         font-size: 0.88rem;
-        text-decoration: underline;
-        padding: 0;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.15s ease, border-color 0.15s ease;
+
+        &:hover {
+            border-color: $lib-blue;
+            background: rgba(46, 134, 201, 0.08);
+            text-decoration: none;
+        }
+    }
+}
+
+// The list template sets dropdownParent so the dropdown mounts inside
+// .library-filters instead of <body>, keeping it reachable here by descent.
+// The !important flags match the ones in select2-dmoj.
+.library-filters .select2-dropdown {
+    border: 1.5px solid $lib-green !important;
+    border-radius: 10px !important;
+    overflow: hidden;
+    box-shadow: 0 12px 28px rgba(20, 60, 35, 0.18);
+
+    .select2-results__option {
+        padding: 8px 14px;
+        font-size: 0.9rem;
+    }
+
+    .select2-results__option--highlighted[aria-selected] {
+        background: $lib-green-soft;
+        color: $lib-green-dark;
+    }
+
+    .select2-results__option[aria-selected='true'] {
+        background: $lib-green;
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .select2-search--dropdown .select2-search__field {
+        border-radius: 8px;
+        padding: 6px 10px;
     }
 }
 
@@ -167,6 +364,7 @@ $lib-radius: 14px;
 }
 
 .library-card {
+    position: relative;
     background: $color_primary10;
     border: 1px solid $color_primary25;
     border-radius: $lib-radius;
@@ -174,12 +372,40 @@ $lib-radius: 14px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    overflow: hidden;
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 
+    // Left edge in the brand green, filling in on hover.
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 4px;
+        background: $lib-green;
+        opacity: 0.25;
+        transition: opacity 0.15s ease;
+    }
+
     &:hover {
-        box-shadow: 0 6px 18px rgba(20, 60, 35, 0.15);
-        transform: translateY(-2px);
+        box-shadow: 0 8px 22px rgba(20, 60, 35, 0.18);
+        transform: translateY(-3px);
         border-color: $lib-green;
+        cursor: pointer;
+
+        &::before {
+            opacity: 1;
+        }
+
+        .library-card-cue {
+            color: $lib-green;
+            opacity: 1;
+        }
+
+        h3 a {
+            color: $lib-green;
+        }
     }
 
     h3 {
@@ -188,12 +414,46 @@ $lib-radius: 14px;
 
         a {
             color: $color_primary100;
+            transition: color 0.15s ease;
 
             &:hover {
-                color: $lib-blue;
+                text-decoration: none;
             }
         }
     }
+}
+
+// The whole card is one click target: the title link is stretched over the
+// card, and anything that needs its own click (the contest button) is lifted
+// back above it.
+.library-card-link::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.library-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.library-card-cue {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: $color_primary66;
+    opacity: 0.75;
+    transition: color 0.15s ease, opacity 0.15s ease;
+    white-space: nowrap;
 }
 
 .library-card-badge {
@@ -215,6 +475,9 @@ $lib-radius: 14px;
 }
 
 .library-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
     font-size: 0.76rem;
     font-weight: 600;
     padding: 3px 9px;
@@ -224,6 +487,12 @@ $lib-radius: 14px;
     border: 1px solid rgba(31, 139, 63, 0.3);
 }
 
+.library-chip-soft {
+    background: rgba(46, 134, 201, 0.1);
+    color: $lib-blue-dark;
+    border-color: rgba(46, 134, 201, 0.3);
+}
+
 .library-card-excerpt {
     margin: 0;
     color: $color_primary66;
@@ -231,11 +500,13 @@ $lib-radius: 14px;
 }
 
 .library-card-actions {
+    position: relative;
+    z-index: 2; // above the stretched title link, so the button is clickable
     margin-top: auto;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding-top: 6px;
+    padding-top: 10px;
     flex-wrap: wrap;
 }
 
@@ -249,25 +520,48 @@ $lib-radius: 14px;
     padding: 8px 16px;
     border-radius: 10px;
     border: 1px solid transparent;
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+        box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .library-btn-contest {
-    background: $lib-blue;
+    background: linear-gradient(135deg, $lib-blue 0%, $lib-blue-dark 100%);
     color: #fff;
+    box-shadow: 0 3px 10px rgba(46, 134, 201, 0.35);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 
-    &:hover {
-        background: $lib-blue-dark;
+    .fa {
+        font-size: 1.05em;
+    }
+
+    &:hover,
+    &:focus {
+        background: linear-gradient(135deg, $lib-blue-dark 0%, #1b5c8e 100%);
+        box-shadow: 0 5px 16px rgba(46, 134, 201, 0.45);
+        transform: translateY(-1px);
         color: #fff;
         text-decoration: none;
     }
 }
 
+.library-btn-muted {
+    background: $color_primary10;
+    border-color: $color_primary25;
+    color: $color_primary66;
+    font-weight: 600;
+    cursor: default;
+}
+
+.library-btn-lg {
+    font-size: 1rem;
+    padding: 12px 24px;
+}
+
 .library-card-year {
-    margin-left: auto;
     color: $color_primary66;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .library-action-link {
@@ -388,13 +682,60 @@ $lib-radius: 14px;
     margin-top: 1em;
 }
 
+.library-detail-cta {
+    margin-top: 1.6em;
+    padding: 18px 22px;
+    border-radius: $lib-radius;
+    background: $lib-green-soft;
+    border: 1px solid rgba(31, 139, 63, 0.28);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.library-detail-cta-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2em;
+
+    strong {
+        font-size: 1.05rem;
+        color: $lib-green;
+    }
+
+    span {
+        color: $color_primary66;
+        font-size: 0.92rem;
+    }
+}
+
 @media (max-width: 640px) {
     .library-hero h1 {
         font-size: 1.4rem;
     }
 
+    .library-hero-mark,
+    .library-hero::after {
+        display: none;
+    }
+
+    .library-stats > span {
+        flex-basis: 100%;
+    }
+
     .library-rescount {
         margin-left: 0;
         width: 100%;
+    }
+
+    .library-card-cue {
+        display: none;
+    }
+
+    .library-detail-cta {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }

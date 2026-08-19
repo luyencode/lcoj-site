@@ -11,7 +11,7 @@ This codebase is deployed to more than one site. Each production site is tracked
 | Site | URL | Branch |
 | --- | --- | --- |
 | LCOJ | [luyencode.net](https://luyencode.net/) | `prod/luyencode` |
-| Có Thì Lập Trình | [code.cothilaptrinh.vn](https://code.cothilaptrinh.vn/) | `prod/cothilaptrinh` |
+| Cô Thi Lập Trình | [code.cothilaptrinh.vn](https://code.cothilaptrinh.vn/) | `prod/cothilaptrinh` |
 
 Feature work happens on `feature/*`/`feat/*` branches off `main`/`master` and is merged into the relevant `prod/*` branch(es) to ship.
 
