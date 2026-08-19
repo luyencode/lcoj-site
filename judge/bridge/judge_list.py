@@ -5,6 +5,7 @@ from threading import RLock
 
 from django.conf import settings
 
+from judge.bridge.judge_handler import SubmissionUnavailable
 from judge.judge_priority import REJUDGE_PRIORITY
 from judge.tasks import on_long_queue
 
@@ -30,7 +31,7 @@ class JudgeList(object):
         self.lock = RLock()
         self.min_tier = None
         self.problems = set()
-        self.problem_ids = []
+        self.problem_ids = set()
 
     def _handle_free_judge(self, judge):
         with self.lock:
@@ -47,13 +48,19 @@ class JudgeList(object):
                 else:
                     id, problem, language, source, judge_id, banned_judges = node.value
                     if judge.name not in banned_judges and judge.can_judge(problem, language, judge_id):
-                        self.submission_map[id] = judge
                         try:
                             judge.submit(id, problem, language, source)
+                        except SubmissionUnavailable:
+                            logger.error('Dropping queued submission %d, it is no longer available', id)
+                            self.queue.remove(node)
+                            del self.node_map[id]
+                            # The judge is fine, so let it pick up the next queued submission.
+                            return self._handle_free_judge(judge)
                         except Exception:
                             logger.exception('Failed to dispatch %d (%s, %s) to %s', id, problem, language, judge.name)
                             self.judges.remove(judge)
                             return
+                        self.submission_map[id] = judge
                         logger.info('Dispatched queued submission %d: %s', id, judge.name)
                         self.queue.remove(node)
                         del self.node_map[id]
@@ -109,18 +116,28 @@ class JudgeList(object):
                 if judge.name == judge_id:
                     judge.disconnect(force=force)
 
-    def update_problems_all(self, problems, problem_ids):
+    def update_problems_all(
+        self,
+        new_problems,
+        new_problem_ids,
+        deleted_problems,
+        deleted_problem_ids,
+    ):
         with self.lock:
-            self.problems = problems
-            self.problem_ids = problem_ids
+            self.problems = (self.problems | new_problems) - deleted_problems
+            self.problem_ids = (
+                self.problem_ids | new_problem_ids
+            ) - deleted_problem_ids
             for judge in self.judges:
-                judge.update_problems(problems, problem_ids)
+                judge.update_problems(
+                    new_problems, new_problem_ids, deleted_problems, deleted_problem_ids,
+                )
                 if not judge.working:
                     self._handle_free_judge(judge)
 
     def update_problems(self, judge, problems, problem_ids):
         with self.lock:
-            judge.update_problems(problems, problem_ids)
+            judge.replace_problems(problems, problem_ids)
             if not judge.working:
                 self._handle_free_judge(judge)
 
@@ -204,13 +221,16 @@ class JudgeList(object):
                 # Schedule the submission on the judge reporting least load.
                 judge = min(available, key=lambda judge: (judge.load, random()))
                 logger.info('Dispatched submission %d to: %s', id, judge.name)
-                self.submission_map[id] = judge
                 try:
                     judge.submit(id, problem, language, source)
+                except SubmissionUnavailable:
+                    logger.error('Dropping submission %d, it is no longer available', id)
+                    return
                 except Exception:
                     logger.exception('Failed to dispatch %d (%s, %s) to %s', id, problem, language, judge.name)
                     self.judges.discard(judge)
                     return self.judge(id, problem, language, source, judge_id, priority, banned_judges)
+                self.submission_map[id] = judge
             else:
                 self.node_map[id] = self.queue.insert(
                     (id, problem, language, source, judge_id, banned_judges),
