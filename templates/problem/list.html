@@ -5,7 +5,8 @@
 <noscript>
     <style>
         #category,
-        #types {
+        #types,
+        #org-tags {
             visibility: visible;
         }
     </style>
@@ -14,8 +15,14 @@
     #problem-table th {
         padding: 0;
     }
-
-
+    label[for="org-tags"] {
+        padding-bottom: 0.25em;
+        display: block;
+    }
+    #org-tags {
+        width: 100%;
+        visibility: hidden;
+    }
 </style>
 {% endblock %}
 
@@ -55,6 +62,10 @@
             theme: '{{ DMOJ_SELECT2_THEME }}',
             multiple: 1, placeholder: {{ _('Filter by type...')|htmltojs }}
         }).css({'visibility': 'visible'});
+        $('#org-tags').select2({
+            theme: '{{ DMOJ_SELECT2_THEME }}',
+            multiple: 1, placeholder: {{ _('Filter by tag...')|htmltojs }}
+        }).css({'visibility': 'visible'});
 
         // This is incredibly nasty to do but it's needed because otherwise the select2 steals the focus
         $search.keypress(function (e) {
@@ -64,7 +75,8 @@
 
         $('#random').click(function (e) {
             var action = $form.attr('action');
-            $form.attr('action', '{{ url('problem_random') }}').attr('target', '_blank').submit();
+            var random_url = '{% if show_org_tags %}{{ url('problem_random_organization', organization.slug) }}{% else %}{{ url('problem_random') }}{% endif %}';
+            $form.attr('action', random_url).attr('target', '_blank').submit();
             $form.attr('action', action).attr('target', '');
             e.preventDefault();
         });
@@ -169,9 +181,11 @@
                     <th class="problem-name">
                         <a href="{{ sort_links.name }}">{{ _('Problem') }}{{ sort_order.name }}</a>
                     </th>
+                    {% if not show_org_tags %}
                     <th class="category">
                         <a href="{{ sort_links.group }}">{{ _('Category') }}{{ sort_order.group }}</a>
                     </th>
+                    {% endif %}
                     {% if show_types %}
                     <th class="types">
                         <a href="{{ sort_links.type }}">{{ _('Types') }}{{ sort_order.type }}</a>
@@ -233,7 +247,9 @@
                     <td class="problem-name">
                         <a href="{{ url('problem_detail', problem.code) }}">{{ problem.i18n_name or problem.name }}</a>
                     </td>
+                    {% if not show_org_tags %}
                     <td class="category">{{ problem.group.full_name }}</td>
+                    {% endif %}
                     {% if show_types %}
                     <td class="types">
                         {% for type in problem.types_list %}
@@ -251,7 +267,7 @@
                     <td>
                         {% if problem.has_public_editorial %}
                         <a href="{{ url('problem_editorial', problem.code) }}">
-                            <i class="has-editorial-color fa fa-check"></i>
+                            <i class="has-editorial-color fa fa-check-circle"></i>
                         </a>
                         {% else %}
                         <i class="no-editorial-color fa fa-minus-circle"></i>

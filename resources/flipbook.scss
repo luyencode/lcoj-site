@@ -1,0 +1,116 @@
+@use "vars" as *;
+
+.flipbook-wrapper {
+    position: relative;
+    margin: 1em 0;
+    transition: width 0.35s ease;
+
+    noscript a {
+        display: inline-block;
+    }
+
+    // StPageFlip renders pages onto a canvas rather than per-page DOM
+    // elements, so a lone cover page can't be centered by styling an inner
+    // element — flipbook.js instead sizes this wrapper down to one page's
+    // width and shifts the (still full-spread-width) container inside it.
+    &.flipbook-wrapper--single-page {
+        overflow: hidden;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    // Rule order matters: when both classes are present (rare — zoomed while
+    // viewing a cover), this comes after --single-page so scrolling wins over
+    // clipping.
+    &.flipbook-wrapper--zoomed {
+        overflow: auto;
+    }
+
+    &:fullscreen,
+    &:-webkit-full-screen {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        background: #1a1a1a;
+
+        .flipbook-container {
+            max-width: none;
+        }
+    }
+}
+
+.flipbook-container {
+    position: relative;
+    // StPageFlip repeatedly resets its own inline `width` back to `100%` as pages
+    // load — flipbook.js sets --flipbook-total-width once construction is done
+    // (immune to that, since the library never touches custom properties), and
+    // this `!important` is what makes it stick regardless of when the library
+    // last wrote its own width. Falls back to 100% before JS/the library init.
+    width: var(--flipbook-total-width, 100%) !important;
+    max-width: 900px;
+    min-height: 350px;
+    margin: 0 auto;
+    transform-origin: top center;
+    transition: margin-left 0.35s ease;
+}
+
+.flipbook-toolbar {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 20px;
+    background: rgba(35, 31, 32, 0.68);
+    backdrop-filter: blur(6px);
+}
+
+.flipbook-toolbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    &:disabled {
+        opacity: 0.35;
+        cursor: default;
+    }
+
+    i {
+        font-size: 14px;
+    }
+}
+
+.flipbook-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 350px;
+    color: $color_primary66;
+    font-style: italic;
+}
+
+.flipbook-fallback-link {
+    display: block;
+    padding: 1em;
+    text-align: center;
+    border: 1px solid $color_primary25;
+    background: $color_primary5;
+    border-radius: 4px;
+}

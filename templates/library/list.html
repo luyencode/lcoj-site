@@ -1,0 +1,159 @@
+{% extends "common-content.html" %}
+
+{% block title_row %}{% endblock %}
+{% block title_ruler %}{% endblock %}
+
+{% block meta %}
+    {# og:title, twitter:title va cac the description do base.html tu sinh
+       tu bien title va meta_description ma view nay dat. #}
+    {% if seo_noindex %}<meta name="robots" content="noindex, follow">{% endif %}
+    <script type="application/ld+json">{{ structured_data|safe }}</script>
+{% endblock %}
+
+{% block js_media %}
+{% compress js %}
+<script>
+    $(function () {
+        $('#library-province, #library-year').select2({
+            theme: '{{ DMOJ_SELECT2_THEME }}',
+            // dropdownCssClass needs the select2/compat/dropdownCss module, which
+            // isn't in this project's vendored build (throws "No select2/compat/
+            // dropdownCss" and aborts init). Parent the dropdown under the filters
+            // bar instead so the library stylesheet can reach it by descent.
+            dropdownParent: $('.library-filters')
+        }).on('change', function () {
+            $('#library-filters-form').submit();
+        });
+    });
+</script>
+{% endcompress %}
+{% endblock %}
+
+{% block body %}
+<div class="library-hero">
+    <div class="library-hero-mark" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+    </div>
+    <span class="library-hero-kicker"><i class="fa fa-graduation-cap"></i> {{ _('Exam practice resources') }}</span>
+    {# HTML must stay out of the translated string: safe_translations escapes gettext() output,
+       so a <span> baked into the msgid would render as literal text. Build the highlighted
+       word as its own safe fragment and let translators place it via {{ hl }}. Each literal
+       tag must be marked |safe before the ~ join, since markup_join() escapes plain string
+       literals individually — a |safe on the joined result would be too late. #}
+    {% set hl = '<span class="library-hero-hl">'|safe ~ _('library') ~ '</span>'|safe %}
+    <h1>{% trans hl=hl %}Exam {{ hl }}{% endtrans %}</h1>
+    <p>{% trans trimmed count=total_exams %}
+        The library holds {{ count }} official exam statements collected and retypeset by Co Thi Lap Trinh:
+        informatics olympiads at district, provincial and national level, the Tin hoc tre contest across
+        its divisions, and entrance exams for specialised computer science classes.
+    {% endtrans %}</p>
+    <p>{% trans trimmed count=total_with_contest %}
+        {{ count }} of them come with a matching practice contest: read the full statement as a PDF, then
+        submit your solution on the judge and have it graded automatically.
+    {% endtrans %}</p>
+    <div class="library-stats">
+        <span><strong>{{ total_exams }}</strong> {{ _('published exams') }}</span>
+        <span><strong>{{ total_categories }}</strong> {{ _('exam types') }}</span>
+        <span><strong>{{ total_provinces }}</strong> {{ _('provinces and cities') }}</span>
+        <span><strong>{{ total_with_contest }}</strong> {{ _('graded automatically') }}</span>
+    </div>
+    <form id="library-search-form" action="{{ url('library_list') }}" method="get">
+        {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
+        {% if current_province %}<input type="hidden" name="province" value="{{ current_province }}">{% endif %}
+        {% if current_year %}<input type="hidden" name="year" value="{{ current_year }}">{% endif %}
+        <div class="library-searchbox">
+            <input id="search" type="search" name="q" value="{{ current_q }}"
+                   placeholder="{{ _('Search by exam title or description...') }}">
+            <button type="submit"><i class="fa fa-search"></i> {{ _('Search') }}</button>
+        </div>
+    </form>
+</div>
+
+<div class="library-tabs">
+    <a class="library-tab{% if not current_category %} active{% endif %}"
+       href="{{ url('library_list') }}{% if tab_query %}?{{ tab_query }}{% endif %}">
+        {{ _('All') }}<span class="library-tab-count">{{ total_exams }}</span>
+    </a>
+    {% for category in categories %}
+        {% if category_counts.get(category.slug) %}
+        <a class="library-tab{% if category.slug == current_category %} active{% endif %}"
+           href="{{ url('library_list') }}?category={{ category.slug }}{% if tab_query %}&{{ tab_query }}{% endif %}">
+            {{ category.name }}<span class="library-tab-count">{{ category_counts.get(category.slug) }}</span>
+        </a>
+        {% endif %}
+    {% endfor %}
+</div>
+
+<form id="library-filters-form" action="{{ url('library_list') }}" method="get">
+    {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
+    {% if current_q %}<input type="hidden" name="q" value="{{ current_q }}">{% endif %}
+    <div class="library-filters">
+        <select id="library-province" name="province">
+            <option value="">{{ _('All provinces') }}</option>
+            {% for value, label in provinces %}
+                <option value="{{ value }}"{% if value == current_province %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select id="library-year" name="year">
+            <option value="">{{ _('All years') }}</option>
+            {% for year in years %}
+                <option value="{{ year }}"{% if year|string == current_year %} selected{% endif %}>{{ year }}</option>
+            {% endfor %}
+        </select>
+        {% if current_category or current_province or current_year or current_q %}
+            <a class="library-clear" href="{{ url('library_list') }}">{{ _('Clear filters') }}</a>
+        {% endif %}
+        <span class="library-rescount">
+            {% trans trimmed count=page_obj.paginator.count %}
+                {{ count }} exam found
+            {% pluralize %}
+                {{ count }} exams found
+            {% endtrans %}
+        </span>
+    </div>
+</form>
+
+{% if exams %}
+<div class="library-grid">
+    {% for exam in exams %}
+    <article class="library-card">
+        <div class="library-card-top">
+            <span class="library-card-badge" style="background:{{ category_colors.get(exam.category.slug, '#5b6770') }}">{{ exam.category.name }}</span>
+            {% if exam.year %}<span class="library-card-year">{{ exam.year }}</span>{% endif %}
+        </div>
+        <h3>
+            <a class="library-card-link" href="{{ exam.get_absolute_url() }}"
+               title="{{ _('Read the statement') }}: {{ exam.title }}">{{ exam.title }}</a>
+        </h3>
+        <div class="library-card-meta">
+            {% if exam.province %}
+                <span class="library-chip"><i class="fa fa-map-marker"></i> {{ exam.get_province_display() }}</span>
+            {% endif %}
+            {% if exam.pdf_url %}
+                <span class="library-chip library-chip-soft"><i class="fa fa-file-pdf-o"></i> {{ _('Full statement in PDF') }}</span>
+            {% endif %}
+        </div>
+        {% if exam.description %}
+            <p class="library-card-excerpt">{{ exam.description|markdown('default')|striptags|truncate(140) }}</p>
+        {% endif %}
+        <div class="library-card-actions">
+            {% if exam.contest %}
+                <a class="library-btn library-btn-contest" href="{{ exam.contest.get_absolute_url() }}">
+                    <i class="fa fa-trophy"></i> {{ _('Take the test now') }}
+                </a>
+            {% else %}
+                <span class="library-btn library-btn-muted">
+                    <i class="fa fa-file-text-o"></i> {{ _('Statement only') }}
+                </span>
+            {% endif %}
+            <span class="library-card-cue"><i class="fa fa-angle-right"></i> {{ _('Read the statement') }}</span>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<p class="library-empty">{{ _('No exams found.') }} {{ _('Try clearing the filters or searching a different keyword.') }}</p>
+{% endif %}
+
+{% if page_obj.has_other_pages() %}<div class="bottom-pagination-bar">{% include "list-pages.html" %}</div>{% endif %}
+{% endblock %}

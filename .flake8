@@ -1,6 +1,6 @@
 [flake8]
 max-line-length = 120
-application-import-names = dmoj,judge,django_ace,martor,quiz
+application-import-names = dmoj,judge,urlshortener,django_ace,martor,quiz
 import-order-style = pycharm
 ignore =
     # line break occurred after a binary operator
@@ -28,3 +28,4 @@ exclude =
     # is actually a fragment to be included by settings.py
     ./.ci.settings.py,
     fc_*
+    _mytempfile/

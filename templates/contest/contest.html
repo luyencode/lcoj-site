@@ -5,15 +5,13 @@
 {% block title_row %}
     {% set tab = 'detail' %}
     {% include "contest/contest-tabs.html" %}
-    {% if contest.is_organization_private %}
+    {% if contest.is_organization_private and contest.organization %}
         <span class="organization-tags">
-            {% for org in contest.organizations.all() %}
-                <span class="organization-tag">
-                    <a href="{{ org.get_absolute_url() }}">
-                        <i class="fa fa-lock"></i> {{ org.name }}
-                    </a>
-                </span>
-            {% endfor %}
+            <span class="organization-tag">
+                <a href="{{ contest.organization.get_absolute_url() }}">
+                    <i class="fa fa-lock"></i> {{ contest.organization.name }}
+                </a>
+            </span>
         </span>
     {% endif %}
 {% endblock %}
@@ -28,7 +26,12 @@
     </script>
     {% include "contest/media-js.html" %}
     {% if not comment_lock %}
-        {% include "comments/media-js.html" %}
+        {% if comment_form and comment_form.errors %}
+            {# comments/list.html is SSR'd directly below (not via the AJAX fragment) in
+               this case, so it needs its own media JS (martor editor, vote/hide/edit). #}
+            {% include "comments/media-js.html" %}
+        {% endif %}
+        {% include "comments/lazy-load-js.html" %}
     {% endif %}
 {% endblock %}
 
@@ -83,7 +86,7 @@
         {% if contest.show_short_display %}
             <div id="details">
                 <ul>
-                    {% with authors=contest.authors.all() %}
+                    {% with authors=contest.authors.all().prefetch_related('user') %}
                         {% if not contest.hide_problem_authors and authors %}
                             <li>
                                 {% trans trimmed count=authors|length, link_authors=link_users(authors) %}
@@ -94,7 +97,7 @@
                             </li>
                         {% endif %}
                     {% endwith %}
-                    {% with testers=contest.testers.all() %}
+                    {% with testers=contest.testers.all().prefetch_related('user') %}
                         {% if not contest.hide_problem_authors and testers %}
                             <li>
                                 {% trans trimmed count=testers|length, link_testers=link_users(testers) %}
@@ -187,6 +190,14 @@
     {% if is_in_contest or contest.ended or request.user.is_superuser or is_editor or is_tester %}
         <div class="contest-problems">
             <h2 style="margin-bottom: 0.2em; float:left;"><i class="fa fa-fw fa-question-circle"></i>{{ _('Problems') }} </h2>
+            {% if can_edit %}
+                <form method="post" action="{{ url('contest_problems_make_public', contest.key) }}" style="display: inline; float:right; margin-left: 10px;">
+                    {% csrf_token %}
+                    <button type="submit" class="button" onclick="return confirm('{{ _('Are you sure you want to make all problems in this contest public?') }}');">
+                        <i class="fa fa-unlock"></i> {{ _('Make All Problems Public') }}
+                    </button>
+                </form>
+            {% endif %}
             {% if can_edit and can_download_data %}
                 <a class="button" style="float:right" href="{{ url('contest_prepare_data', contest.key) }}">{{ _('Download data') }}</a>
             {% endif %}
@@ -346,7 +357,15 @@
 
 
     {% if not comment_lock %}
-        {% include "comments/list.html" %}
+        <div id="comments" data-comments-url="{{ url('contest_comments', contest.key) }}"
+             data-comments-trigger="auto"
+             data-comments-preloaded="{{ 'true' if comment_form and comment_form.errors else 'false' }}">
+            {% if comment_form and comment_form.errors %}
+                {% include "comments/list.html" %}
+            {% else %}
+                <div class="comments-loading">{{ _('Loading...') }}</div>
+            {% endif %}
+        </div>
     {% endif %}
 
     <div style="clear: both;"></div>
