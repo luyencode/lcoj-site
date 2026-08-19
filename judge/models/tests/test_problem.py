@@ -26,13 +26,6 @@ class ProblemTestCase(CommonDataMixin, TestCase):
             ),
         })
 
-        self.users.update({
-            'suggester': create_user(
-                username='suggester',
-                user_permissions=('edit_own_problem', 'suggest_new_problem', 'rejudge_submission'),
-            ),
-        })
-
         create_problem_type(name='type')
 
         self.basic_problem = create_problem(
@@ -112,16 +105,11 @@ class ProblemTestCase(CommonDataMixin, TestCase):
         self.organization_admin_private_problem = create_problem(
             code='org_admin_private',
             is_organization_private=True,
-            organizations=('problem organization',),
+            organization=self.problem_organization,
         )
         self.organization_admin_problem = create_problem(
             code='organization_admin',
-            organizations=('problem organization',),
-        )
-
-        self.suggesting_problem = create_problem(
-            code='suggesting',
-            suggester=self.users['suggester'].profile,
+            organization=self.problem_organization,
         )
 
     def test_basic_problem(self):
@@ -266,7 +254,8 @@ class ProblemTestCase(CommonDataMixin, TestCase):
         self.assertFalse(self.organization_private_problem.is_accessible_by(self.users['normal']))
         self.users['normal'].profile.organizations.add(self.organizations['open'])
         self.assertFalse(self.organization_private_problem.is_accessible_by(self.users['normal']))
-        self.organization_private_problem.organizations.add(self.organizations['open'])
+        self.organization_private_problem.organization = self.organizations['open']
+        self.organization_private_problem.save()
 
         data = {
             'staff_problem_edit_own': {
@@ -374,59 +363,13 @@ class ProblemTestCase(CommonDataMixin, TestCase):
         }
         self._test_object_methods_with_users(self.organization_admin_problem, data)
 
-    def test_suggesting_problem_methods(self):
-        data = {
-            'superuser': {
-                'is_accessible_by': self.assertTrue,
-                'is_editable_by': self.assertTrue,
-            },
-            'staff_problem_edit_own': {
-                'is_accessible_by': self.assertFalse,
-                'is_editable_by': self.assertFalse,
-            },
-            'staff_problem_see_all': {
-                'is_accessible_by': self.assertTrue,
-                'is_editable_by': self.assertFalse,
-            },
-            'staff_problem_edit_all': {
-                'is_accessible_by': self.assertTrue,
-                'is_editable_by': self.assertTrue,
-            },
-            'staff_problem_edit_public': {
-                'is_accessible_by': self.assertFalse,
-                'is_editable_by': self.assertFalse,
-            },
-            'staff_organization_admin': {
-                'is_accessible_by': self.assertFalse,
-                'is_editable_by': self.assertFalse,
-            },
-            'staff_problem_see_organization': {
-                'is_accessible_by': self.assertFalse,
-                'is_editable_by': self.assertFalse,
-            },
-            'normal': {
-                'is_accessible_by': self.assertFalse,
-                'is_editable_by': self.assertFalse,
-            },
-            'anonymous': {
-                'is_accessible_by': self.assertFalse,
-                'is_editable_by': self.assertFalse,
-            },
-            'suggester': {
-                'is_accessible_by': self.assertTrue,
-                'is_editable_by': self.assertTrue,
-                'is_rejudgeable_by': self.assertTrue,
-            },
-        }
-        self._test_object_methods_with_users(self.suggesting_problem, data)
-
     def test_problems_list(self):
         for name, user in self.users.items():
             with self.subTest(user=name):
                 with self.subTest(list='accessible problems'):
                     # We only care about consistency between Problem.is_accessible_by and Problem.get_visible_problems
                     problem_codes = []
-                    for problem in Problem.objects.prefetch_related('authors', 'curators', 'testers', 'organizations'):
+                    for problem in Problem.objects.prefetch_related('authors', 'curators', 'testers', 'organization'):
                         if problem.is_accessible_by(user):
                             problem_codes.append(problem.code)
 
