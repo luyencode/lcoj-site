@@ -2,7 +2,11 @@
 
 .flipbook-wrapper {
     position: relative;
-    margin: 1em 0;
+    // flipbook.js pins this wrapper's width inline to the flipbook's actual
+    // rendered width (one page or a two-page spread), so it's narrower than
+    // its parent and needs auto side margins to sit centered rather than
+    // flush left.
+    margin: 1em auto;
     transition: width 0.35s ease;
 
     noscript a {
@@ -15,8 +19,6 @@
     // width and shifts the (still full-spread-width) container inside it.
     &.flipbook-wrapper--single-page {
         overflow: hidden;
-        margin-left: auto;
-        margin-right: auto;
     }
 
     // Rule order matters: when both classes are present (rare — zoomed while

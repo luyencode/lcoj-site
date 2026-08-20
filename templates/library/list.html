@@ -146,7 +146,7 @@
                     <i class="fa fa-file-text-o"></i> {{ _('Statement only') }}
                 </span>
             {% endif %}
-            <span class="library-card-cue"><i class="fa fa-angle-right"></i> {{ _('Read the statement') }}</span>
+            <a class="library-card-cue" href="{{ exam.get_absolute_url() }}"><i class="fa fa-angle-right"></i> {{ _('Read the statement') }}</a>
         </div>
     </article>
     {% endfor %}
