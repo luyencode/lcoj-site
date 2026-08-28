@@ -8,12 +8,20 @@ class CtaFragmentTest(TestCase):
         self.assertIn('cothilaptrinh.vn/khoa-hoc', html)
         self.assertIn('zalo.me/0985188655', html)
         self.assertIn('cta-box', html)
+        # Subtle design: no filled primary button, uses muted pill + cue link (library style)
+        self.assertIn('cta-action', html)
+        self.assertIn('cta-cue', html)
+        self.assertNotIn('cta-primary', html)
+        self.assertNotIn('button cta-primary', html)
 
     def test_bar_renders(self):
         from django.template.loader import render_to_string
         html = render_to_string('cta/bar.html', {})
         self.assertIn('cta-bar', html)
         self.assertIn('cothilaptrinh.vn/khoa-hoc', html)
+        self.assertIn('cta-bar-btn', html)
+        self.assertIn('cta-bar-cue', html)
+        self.assertNotIn('cta-primary', html)
 
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
@@ -65,11 +73,12 @@ class CtaProblemDetailTest(TestCase):
         from judge.models.tests.util import create_problem
         cls.problem = create_problem('cta-prob', is_public=True, is_organization_private=False)
 
-    def test_problem_detail_contains_both_cta(self):
+    def test_problem_detail_contains_bottom_bar_only(self):
         response = self.client.get(f'/problem/{self.problem.code}')
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'cta-box')
+        # Bottom bar at end of main area, not sidebar — sidebar is too narrow per feedback
         self.assertContains(response, 'cta-bar')
+        self.assertNotContains(response, 'cta-box')
 
     def test_problem_detail_cta_hidden_when_disabled(self):
         from django.core.cache import cache
@@ -78,7 +87,6 @@ class CtaProblemDetailTest(TestCase):
         cache.delete('misc_config')
         try:
             response = self.client.get(f'/problem/{self.problem.code}')
-            self.assertNotContains(response, 'cta-box')
             self.assertNotContains(response, 'cta-bar')
         finally:
             MiscConfig.objects.filter(key='cta_enabled').delete()

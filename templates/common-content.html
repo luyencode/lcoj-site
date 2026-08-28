@@ -59,12 +59,7 @@
 {% block body %}
     <div id="common-content">
         <div id="content-right">
-            <div class="info-float">
-                {% block info_float %}{% endblock %}
-                {% if misc_config.cta_enabled != '0' and request.resolver_match.view_name == 'problem_detail' %}
-                    {% include "cta/box.html" %}
-                {% endif %}
-            </div>
+            <div class="info-float">{% block info_float %}{% endblock %}</div>
         </div>
         <div id="content-left" class="split-common-content">
             <div class="content-description screen">

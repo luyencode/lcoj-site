@@ -1,34 +1,152 @@
 @use "vars" as *;
 
+// Keep CTA subtle — learning experience first. No filled primary button.
+// Palette mirrors library/list.html muted tokens so CTA feels native, not ads.
+$cta-green: #1f8b3f;
+$cta-green-soft: rgba(31, 139, 63, 0.08);
+$cta-green-border: rgba(31, 139, 63, 0.18);
+$cta-radius: 10px;
+
 .cta-box {
-  border: 1px solid $color_primary25;
+  // sidebox already supplies border/background — keep inner subtle
   .cta-box-content {
-    .cta-text { color: $color_primary66; line-height: 1.5; margin-bottom: .8em; }
-    .cta-actions { display: flex; flex-direction: column; gap: .45em; margin-bottom: .6em; }
-    .cta-primary {
-      background: linear-gradient(to bottom, #6abf6e 0, #3a8a3e 100%);
-      color: #fff; text-align:center;
-      border: 1px solid #3a8a3e;
-      &:hover { background: linear-gradient(to bottom, #7ac87e 0, #4a9a4e 100%); color: #fff; }
+    .cta-text {
+      color: $color_primary66;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      margin-bottom: 0.7em;
     }
-    .cta-secondary {
-      background: #fff; border: 1px solid $color_primary25; color: $color_primary100; text-align:center;
-      &:hover { background: $color_primary5; }
+    .cta-note {
+      display: block;
+      margin-top: 0.6em;
+      color: $color_primary66;
+      font-size: 0.78rem;
+      opacity: 0.9;
+      a { color: inherit; text-decoration: underline; }
     }
-    .cta-note { color: $color_primary66; font-size: .82em; a { color: inherit; text-decoration: underline; } }
+  }
+
+  // Muted pill action — outline, never filled primary. Hover tints green lightly.
+  .cta-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45em;
+  }
+
+  .cta-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4em;
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1.5px solid $color_primary25;
+    background: $color_primary0;
+    color: $color_primary66;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+
+    &:hover {
+      border-color: $cta-green;
+      color: $cta-green;
+      background: $cta-green-soft;
+      text-decoration: none;
+    }
+  }
+
+  // Secondary cue is a text link like library's .library-card-cue — no box
+  .cta-cue {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3em;
+    padding: 4px 2px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: $color_primary66;
+    opacity: 0.85;
+    text-decoration: none;
+    transition: color 0.15s ease, opacity 0.15s ease;
+
+    &:hover {
+      color: $cta-green;
+      opacity: 1;
+      text-decoration: none;
+    }
   }
 }
 
+// Bar variant — used at bottom of main area (problem detail, submission)
+// Very light: no green fill, just a thin border and muted text. Sits below
+// the statement so it doesn't compete with the Submit button above.
 .cta-bar {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-  gap: .8em; padding: .9em 1em; margin: 1em 0;
-  background: $color_primary5; border: 1px solid $color_primary25; border-radius: 6px;
-  .cta-bar-copy { flex: 1 1 260px; line-height: 1.4; span { color: $color_primary66; margin-left:.3em; } }
-  .cta-bar-actions { display:flex; gap:.5em; flex-wrap:wrap; }
-  .cta-bar-btn { white-space: nowrap; }
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8em;
+  padding: 12px 16px;
+  margin: 1.1em 0;
+  background: $cta-green-soft;
+  border: 1px solid $cta-green-border;
+  border-radius: $cta-radius;
+
+  .cta-bar-copy {
+    flex: 1 1 260px;
+    line-height: 1.45;
+    font-size: 0.92rem;
+    strong { color: $cta-green; }
+    span { color: $color_primary66; margin-left: 0.3em; }
+  }
+
+  .cta-bar-actions {
+    display: flex;
+    gap: 0.5em;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .cta-bar-btn {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    padding: 6px 13px;
+    border-radius: 999px;
+    border: 1.5px solid $color_primary25;
+    background: $color_primary0;
+    color: $color_primary66;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+
+    &:hover {
+      border-color: $cta-green;
+      color: $cta-green;
+      background: $cta-green-soft;
+      text-decoration: none;
+    }
+  }
+
+  // Cue link inside bar — same style as box cue
+  .cta-bar-cue {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25em;
+    padding: 4px 6px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: $color_primary66;
+    opacity: 0.85;
+    text-decoration: none;
+    &:hover { color: $cta-green; opacity: 1; }
+  }
 }
 
 @media (max-width: 600px) {
   .cta-bar { flex-direction: column; align-items: stretch; }
-  .cta-box .cta-box-content .cta-actions { gap: .5em; }
+  .cta-bar .cta-bar-actions { justify-content: flex-start; }
 }

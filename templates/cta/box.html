@@ -1,18 +1,18 @@
-{# Reusable sidebox CTA — warm tone, matches cothilaptrinh.vn. Zalo is primary (choice 1). #}
+{# Subtle sidebox CTA — no filled primary button. Mirrors library's muted pills/cues. #}
 <div class="cta-box sidebox">
-    <h3><i class="fa fa-heart"></i> {{ _('Đồng hành cùng Cô Thi') }}</h3>
+    <h3><i class="fa fa-heart-o"></i> {{ _('Đồng hành cùng Cô Thi') }}</h3>
     <div class="sidebox-content cta-box-content">
         <p class="cta-text">{{ _('Bí bài? Cô Thi gỡ rối tư duy — kiên nhẫn tới khi bạn thực sự hiểu.') }}</p>
         <div class="cta-actions">
             <a href="https://zalo.me/0985188655" target="_blank" rel="noopener"
-               class="button cta-primary"
+               class="cta-action"
                onclick="if(window.gtag) gtag('event','cta_click',{event_category:'cta',event_label:'box_zalo',value:1});">
-                {{ _('Nhắn Zalo 0985 188 655') }}
+                <i class="fa fa-comments-o"></i> {{ _('Nhắn Zalo 0985 188 655') }}
             </a>
             <a href="https://cothilaptrinh.vn/khoa-hoc" target="_blank" rel="noopener"
-               class="button cta-secondary"
+               class="cta-cue"
                onclick="if(window.gtag) gtag('event','cta_click',{event_category:'cta',event_label:'box_khoa_hoc',value:1});">
-                {{ _('Khám phá khóa học') }}
+                {{ _('Khám phá khóa học') }} <i class="fa fa-angle-right"></i>
             </a>
         </div>
         <small class="cta-note">{{ _('Học online toàn quốc — 1 kèm 1') }} · <a href="https://cothilaptrinh.vn" target="_blank">cothilaptrinh.vn</a></small>
