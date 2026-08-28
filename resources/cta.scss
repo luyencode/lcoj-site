@@ -1,6 +1,6 @@
 @use "vars" as *;
 
-// Keep CTA subtle — learning experience first. No filled primary button.
+// Keep CTA subtle - learning experience first. No filled primary button.
 // Palette mirrors library/list.html muted tokens so CTA feels native, not ads.
 $cta-green: #1f8b3f;
 $cta-green-soft: rgba(31, 139, 63, 0.08);
@@ -8,7 +8,7 @@ $cta-green-border: rgba(31, 139, 63, 0.18);
 $cta-radius: 10px;
 
 .cta-box {
-  // sidebox already supplies border/background — keep inner subtle
+  // sidebox already supplies border/background - keep inner subtle
   .cta-box-content {
     .cta-text {
       color: $color_primary66;
@@ -26,7 +26,7 @@ $cta-radius: 10px;
     }
   }
 
-  // Muted pill action — outline, never filled primary. Hover tints green lightly.
+  // Muted pill action - outline, never filled primary. Hover tints green lightly.
   .cta-actions {
     display: flex;
     flex-direction: column;
@@ -56,7 +56,7 @@ $cta-radius: 10px;
     }
   }
 
-  // Secondary cue is a text link like library's .library-card-cue — no box
+  // Secondary cue is a text link like library's .library-card-cue - no box
   .cta-cue {
     display: inline-flex;
     align-items: center;
@@ -78,7 +78,7 @@ $cta-radius: 10px;
   }
 }
 
-// Bar variant — used at bottom of main area (problem detail, submission)
+// Bar variant - used at bottom of main area (problem detail, submission)
 // Very light: no green fill, just a thin border and muted text. Sits below
 // the statement so it doesn't compete with the Submit button above.
 .cta-bar {
@@ -131,7 +131,7 @@ $cta-radius: 10px;
     }
   }
 
-  // Cue link inside bar — same style as box cue
+  // Cue link inside bar - same style as box cue
   .cta-bar-cue {
     display: inline-flex;
     align-items: center;
