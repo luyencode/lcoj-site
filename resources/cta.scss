@@ -1,0 +1,34 @@
+@use "vars" as *;
+
+.cta-box {
+  border: 1px solid $color_primary25;
+  .cta-box-content {
+    .cta-text { color: $color_primary66; line-height: 1.5; margin-bottom: .8em; }
+    .cta-actions { display: flex; flex-direction: column; gap: .45em; margin-bottom: .6em; }
+    .cta-primary {
+      background: linear-gradient(to bottom, #6abf6e 0, #3a8a3e 100%);
+      color: #fff; text-align:center;
+      border: 1px solid #3a8a3e;
+      &:hover { background: linear-gradient(to bottom, #7ac87e 0, #4a9a4e 100%); color: #fff; }
+    }
+    .cta-secondary {
+      background: #fff; border: 1px solid $color_primary25; color: $color_primary100; text-align:center;
+      &:hover { background: $color_primary5; }
+    }
+    .cta-note { color: $color_primary66; font-size: .82em; a { color: inherit; text-decoration: underline; } }
+  }
+}
+
+.cta-bar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: .8em; padding: .9em 1em; margin: 1em 0;
+  background: $color_primary5; border: 1px solid $color_primary25; border-radius: 6px;
+  .cta-bar-copy { flex: 1 1 260px; line-height: 1.4; span { color: $color_primary66; margin-left:.3em; } }
+  .cta-bar-actions { display:flex; gap:.5em; flex-wrap:wrap; }
+  .cta-bar-btn { white-space: nowrap; }
+}
+
+@media (max-width: 600px) {
+  .cta-bar { flex-direction: column; align-items: stretch; }
+  .cta-box .cta-box-content .cta-actions { gap: .5em; }
+}
