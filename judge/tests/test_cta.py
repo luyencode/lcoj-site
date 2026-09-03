@@ -13,6 +13,11 @@ class CtaFragmentTest(TestCase):
         self.assertIn('cta-cue', html)
         self.assertNotIn('cta-primary', html)
         self.assertNotIn('button cta-primary', html)
+        # Group join uses onclick window.open to avoid bot scan
+        self.assertIn('zalo.me/g/bv7ry9tw8luzrh1bsqha', html)
+        self.assertIn("window.open('https://zalo.me/g/bv7ry9tw8luzrh1bsqha'", html)
+        self.assertIn('href="javascript:void(0)"', html)
+        self.assertNotIn('href="https://zalo.me/g/bv7ry9tw8luzrh1bsqha"', html)
 
     def test_bar_renders(self):
         from django.template.loader import render_to_string
@@ -22,6 +27,18 @@ class CtaFragmentTest(TestCase):
         self.assertIn('cta-bar-btn', html)
         self.assertIn('cta-bar-cue', html)
         self.assertNotIn('cta-primary', html)
+        self.assertIn('zalo.me/g/bv7ry9tw8luzrh1bsqha', html)
+        self.assertIn("window.open('https://zalo.me/g/bv7ry9tw8luzrh1bsqha'", html)
+        self.assertIn('href="javascript:void(0)"', html)
+
+    def test_group_box_renders(self):
+        from django.template.loader import render_to_string
+        html = render_to_string('cta/zalo-group-box.html', {})
+        self.assertIn('cta-group-box', html)
+        self.assertIn('zalo.me/g/bv7ry9tw8luzrh1bsqha', html)
+        self.assertIn("window.open('https://zalo.me/g/bv7ry9tw8luzrh1bsqha'", html)
+        self.assertIn('href="javascript:void(0)"', html)
+        self.assertNotIn('href="https://zalo.me/g/bv7ry9tw8luzrh1bsqha"', html)
 
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
@@ -30,6 +47,10 @@ class CtaHomeTest(TestCase):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'cta-box')
+        # Group box also visible on home for high conversion but still subtle
+        self.assertContains(response, 'cta-group-box')
+        self.assertContains(response, 'zalo.me/g/bv7ry9tw8luzrh1bsqha')
+        self.assertContains(response, "window.open('https://zalo.me/g/bv7ry9tw8luzrh1bsqha'")
 
     def test_home_cta_hidden_when_disabled(self):
         from django.core.cache import cache
@@ -50,6 +71,8 @@ class CtaProblemListTest(TestCase):
         response = self.client.get('/problems/')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'cta-box')
+        self.assertContains(response, 'cta-group-box')
+        self.assertContains(response, 'zalo.me/g/bv7ry9tw8luzrh1bsqha')
 
     def test_problem_list_cta_hidden_when_disabled(self):
         from django.core.cache import cache
@@ -78,7 +101,10 @@ class CtaProblemDetailTest(TestCase):
         self.assertEqual(response.status_code, 200)
         # Bottom bar at end of main area, not sidebar — sidebar is too narrow per feedback
         self.assertContains(response, 'cta-bar')
+        self.assertContains(response, 'zalo.me/g/bv7ry9tw8luzrh1bsqha')
+        self.assertContains(response, "window.open('https://zalo.me/g/bv7ry9tw8luzrh1bsqha'")
         self.assertNotContains(response, 'cta-box')
+        self.assertNotContains(response, 'cta-group-box')
 
     def test_problem_detail_cta_hidden_when_disabled(self):
         from django.core.cache import cache
@@ -129,6 +155,7 @@ class CtaSubmissionTest(TestCase):
         response = self.client.get(f'/submission/{sub.id}')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'cta-bar')
+        self.assertContains(response, 'zalo.me/g/bv7ry9tw8luzrh1bsqha')
 
     def test_ac_does_not_show_cta(self):
         sub = self._create_submission('AC')
