@@ -18,6 +18,8 @@ class CtaFragmentTest(TestCase):
         self.assertIn("window.open('https://zalo.me/g/bv7ry9tw8luzrh1bsqha'", html)
         self.assertIn('href="javascript:void(0)"', html)
         self.assertNotIn('href="https://zalo.me/g/bv7ry9tw8luzrh1bsqha"', html)
+        # i18n with correct diacritics
+        self.assertIn('Nhóm Zalo', html)
 
     def test_bar_renders(self):
         from django.template.loader import render_to_string
@@ -30,6 +32,7 @@ class CtaFragmentTest(TestCase):
         self.assertIn('zalo.me/g/bv7ry9tw8luzrh1bsqha', html)
         self.assertIn("window.open('https://zalo.me/g/bv7ry9tw8luzrh1bsqha'", html)
         self.assertIn('href="javascript:void(0)"', html)
+        self.assertIn('Nhóm Zalo', html)
 
     def test_group_box_renders(self):
         from django.template.loader import render_to_string
@@ -39,6 +42,8 @@ class CtaFragmentTest(TestCase):
         self.assertIn("window.open('https://zalo.me/g/bv7ry9tw8luzrh1bsqha'", html)
         self.assertIn('href="javascript:void(0)"', html)
         self.assertNotIn('href="https://zalo.me/g/bv7ry9tw8luzrh1bsqha"', html)
+        self.assertIn('Nhóm Zalo', html)
+        self.assertIn('học tập', html)
 
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
@@ -47,10 +52,11 @@ class CtaHomeTest(TestCase):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'cta-box')
-        # Group box also visible on home for high conversion but still subtle
-        self.assertContains(response, 'cta-group-box')
+        # One block only - main box contains group link via onclick, no second dedicated box
+        self.assertNotContains(response, 'cta-group-box')
         self.assertContains(response, 'zalo.me/g/bv7ry9tw8luzrh1bsqha')
         self.assertContains(response, "window.open('https://zalo.me/g/bv7ry9tw8luzrh1bsqha'")
+        self.assertContains(response, 'Nhóm Zalo')
 
     def test_home_cta_hidden_when_disabled(self):
         from django.core.cache import cache
@@ -71,8 +77,9 @@ class CtaProblemListTest(TestCase):
         response = self.client.get('/problems/')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'cta-box')
-        self.assertContains(response, 'cta-group-box')
+        self.assertNotContains(response, 'cta-group-box')
         self.assertContains(response, 'zalo.me/g/bv7ry9tw8luzrh1bsqha')
+        self.assertContains(response, 'Nhóm Zalo')
 
     def test_problem_list_cta_hidden_when_disabled(self):
         from django.core.cache import cache
