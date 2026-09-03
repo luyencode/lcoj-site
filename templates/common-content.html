@@ -67,6 +67,9 @@
                 {% block description_end %}
                     <hr>
                 {% endblock %}
+                {% if misc_config.cta_enabled != '0' and request.resolver_match.view_name == 'problem_detail' %}
+                    {% include "cta/bar.html" %}
+                {% endif %}
                 {% block post_description_end %}{% endblock %}
             </div>
             {% block comments %}{% endblock %}

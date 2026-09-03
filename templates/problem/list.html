@@ -161,6 +161,9 @@
                 </div>
             </div>
             {% endif %}
+            {% if misc_config.cta_enabled != '0' %}
+                {% include "cta/box.html" %}
+            {% endif %}
 
         </div>
     </div>

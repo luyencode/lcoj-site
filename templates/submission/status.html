@@ -104,6 +104,10 @@
     <hr class="half-hr">
     <br>
 
+    {% if misc_config.cta_enabled != '0' and submission.result and submission.result != 'AC' %}
+        {% include "cta/bar.html" %}
+    {% endif %}
+
     <div id="test-cases">{% include "submission/status-testcases.html" %}</div>
 
     {% if not submission.is_graded %}
