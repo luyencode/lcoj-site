@@ -73,7 +73,7 @@
             <div class="testcase-statuses">
             {% for case in statuses %}
                 {% if case.status in ("AC", "PAC") %}
-                    <span class="testcase-dot testcase-dot-{{ case.result_class }}" title="{{ case.status }}">
+                    <span class="testcase-dot testcase-dot-{{ '_AC' if case.status == 'PAC' else 'AC' }}" title="{{ case.status }}">
                         <i class="fa fa-check"></i>
                     </span>
                 {% elif case.status == "SC" %}
@@ -129,7 +129,7 @@
                             {{- submission.result or submission.status -}}
                         </span>
                     </th>
-                    <th class="case-time">{{ _('%(time)ss', time=max_execution_time|floatformat(3)) }}</th>
+                    <th class="case-time">{{ _('%(time)ss', time=(submission.time or 0)|floatformat(3)) }}</th>
                     <th class="case-memory">{{ submission.memory|kbdetailformat }}</th>
                     {% if not batch.id %}
                         <th class="case-points">{{ _('%(points)s/%(total)s', points=submission.case_points|floatformat(-3), total=submission.case_total|floatformat(0)) }}</th>
