@@ -887,8 +887,17 @@ ACE_DEFAULT_DARK_THEME = DMOJ_THEME_DEFAULT_ACE_THEME['dark']
 # Only allow OAuth login
 OAUTH_ONLY = False
 
+# Exam library (/library/). Tenants without it set this to False in local_settings.
+LCOJ_ENABLE_LIBRARY = True
+
 try:
     with open(os.path.join(os.path.dirname(__file__), 'local_settings.py')) as f:
         exec(f.read(), globals())
 except IOError:
     pass
+
+if not LCOJ_ENABLE_LIBRARY and 'WPADMIN' in globals():
+    WPADMIN['admin']['custom_menu'] = [
+        item for item in WPADMIN['admin']['custom_menu']
+        if not (isinstance(item, dict) and item.get('model') == 'judge.ExamStatement')
+    ]

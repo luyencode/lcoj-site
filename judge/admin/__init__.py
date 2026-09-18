@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry
 from django.contrib.auth.models import User
@@ -28,8 +29,9 @@ admin.site.register(CommentLock)
 admin.site.register(Contest, ContestAdmin)
 admin.site.register(ContestParticipation, ContestParticipationAdmin)
 admin.site.register(ContestTag, ContestTagAdmin)
-admin.site.register(ExamCategory, ExamCategoryAdmin)
-admin.site.register(ExamStatement, ExamStatementAdmin)
+if settings.LCOJ_ENABLE_LIBRARY:
+    admin.site.register(ExamCategory, ExamCategoryAdmin)
+    admin.site.register(ExamStatement, ExamStatementAdmin)
 admin.site.unregister(FlatPage)
 admin.site.register(FlatPage, FlatPageAdmin)
 admin.site.register(Judge, JudgeAdmin)

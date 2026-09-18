@@ -349,9 +349,6 @@ urlpatterns = [
     path('status/', status.status_all, name='status_all'),
     path('status/oj/', status.status_oj, name='status_oj'),
 
-    path('library/', paged_list_view(library.LibraryList, 'library_list')),
-    path('library/<slug:slug>', library.LibraryDetail.as_view(), name='library_detail'),
-
     path('blogs/', paged_list_view(blog.ModernBlogList, 'blog_modern_list')),
     path('posts/', paged_list_view(blog.PostList, 'blog_post_list')),
     path('posts/new', blog.BlogPostCreate.as_view(), name='blog_post_new'),
@@ -509,3 +506,9 @@ try:
         exec(f.read(), globals())
 except IOError:
     pass
+
+if settings.LCOJ_ENABLE_LIBRARY:
+    urlpatterns += [
+        path('library/', paged_list_view(library.LibraryList, 'library_list')),
+        path('library/<slug:slug>', library.LibraryDetail.as_view(), name='library_detail'),
+    ]
