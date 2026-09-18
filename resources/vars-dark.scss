@@ -1,4 +1,4 @@
-@import "vars-common";
+@forward "vars-common";
 
 $is_light_theme: false;
 
@@ -23,6 +23,8 @@ $color_pageBg: #222;    // #222 because some elements should be darker than page
 // custom one-off colours
 $color_contest_ranking_disqualified: #622;
 
+$color_martor_resize_dragger: #232323;
+
 $color_rating_none: #aaa;
 $color_rating_newbie: #988f81;
 $color_rating_pupil: #72ff72;
@@ -40,9 +42,55 @@ $color_user_submission_activity2: #006d32;
 $color_user_submission_activity3: #26a641;
 $color_user_submission_activity4: #39d353;
 
+$color_info25: #023;
+$color_info50: #068;
+$color_info100: #7df;
+$color_success25: #031;
+$color_success50: #172;
+$color_success100: #6f8;
+$color_warning25: #320;
+$color_warning50: #960;
+$color_warning100: #fd6;
+$color_danger25: #311;
+$color_danger50: #822;
+$color_danger100: #f99;
+
 $color_problem_submit_select2: #8a8a8a;
 
 $color_voted_mark: #ffd300;
+
+// Problem page inline-submit tab colors
+$color_problem_tab_bg: #2a2a2a;
+$color_problem_tab_border: #444;
+$color_problem_tab_text: #ccc;
+$color_problem_tab_hover_bg: #3a3a3a;
+$color_problem_tab_active_bg: #1e1e1e;
+$color_problem_tab_active_text: #4da3ff;
+$color_problem_submit_bg: #1e1e1e;
+
+// Blog-specific dark mode colors
+$color_blog_bg: #1a1a1a;
+$color_blog_card_bg: #2a2a2a;
+$color_blog_sidebar_bg: #1f1f1f;
+$color_blog_border: #3b3b3b;
+$color_blog_text_primary: #e8e8e8;
+$color_blog_text_secondary: #a0a0a0;
+$color_blog_text_muted: #707070;
+$color_blog_text_tertiary: #888888;
+$color_blog_hover_bg: #333333;
+$color_blog_active_bg: #404040;
+$color_blog_accent: #6bf;
+$color_blog_code_bg: #2d2d2d;
+$color_blog_blockquote_border: #505050;
+$color_blog_vote_active: #4ade80;
+$color_blog_tag_bg: #2d2d2d;
+$color_blog_tag_border: #404040;
+$color_blog_tag_text: #b0b0b0;
+$color_blog_tag_hover_bg: #353535;
+$color_blog_tag_hover_border: #4a4a4a;
+$color_blog_tag_hover_text: #d0d0d0;
+$color_blog_tag_active_bg: #3b82f6;
+$color_blog_hero_bg: #252525;
 
 $path_to_root: '..';    // relative path from style.css to STATIC_ROOT
 

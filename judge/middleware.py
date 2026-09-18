@@ -5,15 +5,18 @@ import struct
 from urllib.parse import quote
 
 from django.conf import settings
+from django.contrib import auth
 from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.cache import cache
 from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.urls import Resolver404, resolve, reverse
 from django.utils.encoding import force_bytes
 from requests.exceptions import HTTPError
 
-from judge.models import MiscConfig
+from judge.ip_auth import IPBasedAuthBackend
+from judge.models import MiscConfig, Organization
 
 try:
     import uwsgi
@@ -70,6 +73,49 @@ class DMOJLoginMiddleware(object):
         return self.get_response(request)
 
 
+class IPBasedAuthMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        self.process_request(request)
+        return self.get_response(request)
+
+    def process_request(self, request):
+        ip = request.META.get(settings.IP_BASED_AUTHENTICATION_HEADER, '')
+        if ip == '':
+            # Header doesn't exist, logging out
+            if request.user.is_authenticated:
+                self.logout(request)
+            return
+
+        if request.user.is_authenticated:
+            # Retain the session if the IP field matches
+            if ip == request.user.profile.ip_auth:
+                return
+
+            # The associated IP address doesn't match the header, logging out
+            self.logout(request)
+
+        # Switch to the user associated with the IP address
+        user = auth.authenticate(request, ip_auth=ip)
+        if user:
+            # User is valid, logging the user in
+            request.user = user
+            auth.login(request, user)
+
+    def logout(self, request):
+        # Logging the user out if the session used IP-based backend
+        try:
+            backend = auth.load_backend(request.session.get(auth.BACKEND_SESSION_KEY, ''))
+        except ImportError:
+            # Failed to load the backend, logout the user
+            auth.logout(request)
+        else:
+            if isinstance(backend, IPBasedAuthBackend):
+                auth.logout(request)
+
+
 class DMOJImpersonationMiddleware(object):
     def __init__(self, get_response):
         self.get_response = get_response
@@ -106,7 +152,7 @@ class APIMiddleware(object):
         self.get_response = get_response
 
     def __call__(self, request):
-        full_token = request.META.get('HTTP_AUTHORIZATION', '')
+        full_token = request.headers.get('authorization', '')
         if not full_token:
             return self.get_response(request)
 
@@ -181,3 +227,26 @@ class MiscConfigMiddleware:
         domain = get_current_site(request).domain
         request.misc_config = MiscConfigDict(language=request.LANGUAGE_CODE, domain=domain)
         return self.get_response(request)
+
+
+class OrganizationSubdomainMiddleware(object):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        subdomain: str = request.get_host().split('.')[0]
+        if subdomain.isnumeric() or subdomain in settings.VNOJ_IGNORED_ORGANIZATION_SUBDOMAINS:
+            return self.get_response(request)
+
+        request.organization = get_object_or_404(Organization, slug=subdomain)
+        # if the user is trying to access the home page, redirect to the organization's home page
+        if request.path == '/':
+            return HttpResponseRedirect(request.organization.get_absolute_url())
+
+        return self.get_response(request)
+
+    def process_template_response(self, request, response):
+        if hasattr(request, 'organization') and 'logo_override_image' not in response.context_data:
+            # inject the logo override image into the template context
+            response.context_data['logo_override_image'] = request.organization.logo_override_image
+        return response

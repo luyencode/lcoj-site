@@ -2,10 +2,10 @@
 Django settings for dmoj project.
 
 For more information on this file, see
-https://docs.djangoproject.com/en/3.2/topics/settings/
+https://docs.djangoproject.com/en/4.2/topics/settings/
 
 For the full list of settings and their values, see
-https://docs.djangoproject.com/en/3.2/ref/settings/
+https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -19,7 +19,7 @@ from jinja2 import select_autoescape
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
+# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '5*9f5q57mqmlz2#f$x1h76&jxy#yortjl1v+l*6hd18$d*yx#0'
@@ -35,6 +35,7 @@ SITE_ID = 1
 SITE_NAME = 'DMOJ'
 SITE_LONG_NAME = 'DMOJ: Modern Online Judge'
 SITE_ADMIN_EMAIL = ''
+SITE_ADMIN_FACEBOOK = ''
 
 DMOJ_REQUIRE_STAFF_2FA = True
 # Display warnings that admins will not perform 2FA recovery.
@@ -54,13 +55,42 @@ VNOJ_ORG_PP_STEP = 0.95
 VNOJ_ORG_PP_ENTRIES = 100
 VNOJ_ORG_PP_SCALE = 1
 
+VNOJ_ENABLE_SYNC_API = False
+GLOBAL_API_KEY = 'test-api-key-123'
+
 VNOJ_OFFICIAL_CONTEST_MODE = False
 
 # Contribution points function
 # Both should be int
 VNOJ_CP_COMMENT = 1   # Each comment vote equals 1 CP
 VNOJ_CP_TICKET = 10   # Each good ticket equals CP
-VNOJ_CP_PROBLEM = 20  # Each suggested problem equal 20 CP
+
+TICKET_AUTOFILL_REPLIES = [
+    {'en': 'No comments',
+     'vi': 'Không có nhận xét'},
+    {'en': 'Read the problem statement',
+     'vi': 'Đọc đề bài'},
+    {'en': 'Yes',
+     'vi': 'Có'},
+    {'en': 'No',
+     'vi': 'Không'},
+    {'en': 'Use English, please',
+     'vi': 'Vui lòng sử dụng tiếng Anh'},
+    {'en': 'Use Vietnamese, please',
+     'vi': 'Vui lòng sử dụng tiếng Việt'},
+    {'en': 'We could not understand your question',
+     'vi': 'Chúng tôi không hiểu câu hỏi của bạn'},
+    {'en': 'Read the global announcement',
+     'vi': 'Đọc thông báo chung'},
+    {'en': 'Unfortunately, we cannot answer this, as it will give you an unfair advantage',
+     'vi': 'Rất tiếc, chúng tôi không thể trả lời vì điều này sẽ tạo ra lợi thế không công bằng cho bạn'},
+    {'en': 'Your logic or calculations are incorrect, please check carefully',
+     'vi': 'Logic hoặc tính toán của bạn không chính xác, vui lòng kiểm tra lại'},
+    {'en': 'The examples and notes are correct',
+     'vi': 'Các ví dụ và ghi chú đều đúng'},
+    {'en': 'There is a queue of submissions being judged, please wait for your turn',
+     'vi': 'Đang có hàng đợi chấm bài, vui lòng chờ đến lượt của bạn'},
+]
 
 VNOJ_HOMEPAGE_TOP_USERS_COUNT = 5
 
@@ -94,9 +124,64 @@ VNOJ_INTERACT_MIN_PROBLEM_COUNT = 5
 # Minimum problem count required to create new blogs
 VNOJ_BLOG_MIN_PROBLEM_COUNT = 10
 
+# Comment validation settings
+VNOJ_COMMENT_MIN_CONTRIBUTION = -20
+VNOJ_COMMENT_MIN_LENGTH = 10
+VNOJ_COMMENT_MAX_LENGTH = 8196
+VNOJ_COMMENT_BLACKLIST_TERMS = []
+VNOJ_COMMENT_RATE_LIMIT_COUNT = None  # maximum number of comments allowed within the time window
+VNOJ_COMMENT_RATE_LIMIT_WINDOW = datetime.timedelta(seconds=600)
+
 VNOJ_TESTCASE_VISIBLE_LENGTH = 60
 
 VNOJ_TAG_PROBLEM_MIN_RATING = 1900  # Minimum rating to be able to tag a problem
+
+VNOJ_SHOULD_BAN_FOR_CHEATING_IN_CONTESTS = False
+VNOJ_CONTEST_CHEATING_BAN_MESSAGE = 'Banned for multiple cheating offenses during contests'
+VNOJ_MAX_DISQUALIFICATIONS_BEFORE_BANNING = 3
+# Only count disqualifications from contests starting on or after this date.
+# Set to None to count all disqualifications regardless of date.
+VNOJ_BAN_COUNT_FROM_DATE = datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc)
+
+# List of subdomain that will be ignored in organization subdomain middleware
+VNOJ_IGNORED_ORGANIZATION_SUBDOMAINS = ['oj', 'www', 'localhost']
+
+# Enable organization credit system, if true, org will not be able to submit submissions
+# if they run out of credit
+VNOJ_ENABLE_ORGANIZATION_CREDIT_LIMITATION = False
+# 3 hours free per month
+VNOJ_MONTHLY_FREE_CREDIT = 3 * 60 * 60
+VNOJ_PRICE_PER_HOUR = 50
+
+# Organization quota limits
+VNOJ_ORGANIZATION_DEFAULT_MAX_PROBLEMS = 1000
+VNOJ_ORGANIZATION_DEFAULT_MAX_STORAGE = 5 * 1024 * 1024 * 1024  # 5GB
+# Suffix appended to every inline quota-warning message. May contain HTML (e.g. a link to a guide).
+# Example: ' <a href="https://example.com/quota-guide">Read our guide</a>.'
+VNOJ_QUOTA_WARNING_SUFFIX = ''
+VNOJ_QUOTA_WARNING_THRESHOLD = 0.8
+# When False, quota warnings are shown but users are NOT blocked from creating problems
+# or uploading test data. Set to True to enforce hard limits.
+VNOJ_QUOTA_ENFORCEMENT_ENABLED = False
+VNOJ_QUOTA_PACKAGE_STORAGE = 5 * 1024 * 1024 * 1024  # 5 GB per package
+VNOJ_QUOTA_PACKAGE_PROBLEMS = 1000  # problems per package
+VNOJ_LONG_QUEUE_ALERT_THRESHOLD = 10
+
+# Low power mode: Optimize queries by limiting data scope for performance
+VNOJ_LOW_POWER_MODE = False
+VNOJ_LOW_POWER_MODE_CONFIG = {
+    # limit the number of submissions pages
+    'max_page': 5,
+    # avoid drawing heat map for users with too many submissions
+    'heat_map_limit': 20_000,
+}
+
+# maximum number of problems in a contest
+MAX_CONTEST_PROBLEMS_COUNT = None
+
+VNOJ_MAGAZINE_TAG_SLUG = None
+
+CELERY_TIMEZONE = 'UTC'
 
 # Some problems have a lot of testcases, and each testcase
 # has about 5~6 fields, so we need to raise this
@@ -155,18 +240,19 @@ DISCORD_WEBHOOK = {
     'on_new_ticket': None,
     'on_new_comment': None,
     'on_new_problem': None,
-    'on_new_suggested_problem': None,
     'on_new_tag_problem': None,
     'on_new_tag': None,
     'on_new_blogpost': None,
     'on_error': None,
+    'on_long_queue': None,
+    'queue_time_stats': None,
 }
 
 SITE_FULL_URL = None  # ie 'https://oj.vnoi.info', please remove the last / if needed
 
-ACE_URL = '//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3'
-SELECT2_JS_URL = '//cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js'
-SELECT2_CSS_URL = '//cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css'
+ACE_URL = '/static/vnoj/ace/1.4.14'
+SELECT2_JS_URL = '/static/vnoj/select2/4.0.3/js/select2.min.js'
+SELECT2_CSS_URL = '/static/vnoj/select2/4.0.3/css/select2.min.css'
 
 DMOJ_CAMO_URL = None
 DMOJ_CAMO_KEY = None
@@ -175,12 +261,18 @@ DMOJ_CAMO_EXCLUDE = ()
 
 DMOJ_PROBLEM_DATA_ROOT = None
 
-DMOJ_PROBLEM_MIN_TIME_LIMIT = 0  # seconds
+DMOJ_PROBLEM_MIN_TIME_LIMIT = 0.01  # seconds
 DMOJ_PROBLEM_MAX_TIME_LIMIT = 60  # seconds
 DMOJ_PROBLEM_MIN_MEMORY_LIMIT = 0  # kilobytes
 DMOJ_PROBLEM_MAX_MEMORY_LIMIT = 1048576  # kilobytes
 DMOJ_PROBLEM_MIN_PROBLEM_POINTS = 0
 DMOJ_PROBLEM_HOT_PROBLEM_COUNT = 7
+
+# Grace period before a soft-deleted problem is permanently removed
+VNOJ_PROBLEM_DELETION_GRACE_PERIOD = datetime.timedelta(days=7)
+# Maximum time the garbage collection task is allowed to run per invocation
+VNOJ_PROBLEM_GARBAGE_COLLECTOR_TIME_LIMIT = datetime.timedelta(hours=1)
+VNOJ_PROBLEM_GARBAGE_COLLECTOR_CRONTAB_KWARGS = {'minute': 0, 'hour': 0}
 
 DMOJ_PROBLEM_STATEMENT_DISALLOWED_CHARACTERS = {'“', '”', '‘', '’', '−', 'ﬀ', 'ﬁ', 'ﬂ', 'ﬃ', 'ﬄ'}
 DMOJ_RATING_COLORS = True
@@ -210,6 +302,11 @@ DMOJ_CONTEST_DATA_CACHE = ''
 DMOJ_CONTEST_DATA_INTERNAL = ''
 DMOJ_CONTEST_DATA_DOWNLOAD_RATELIMIT = datetime.timedelta(days=1)
 
+# directory to store replay JSON files;
+CONTEST_REPLAY_MEDIA_DIR = 'contest_replay'
+# Internal path to serve replay JSON files with X-Accel-Redirect
+DMOJ_CONTEST_REPLAY_INTERNAL = None
+
 DMOJ_COMMENT_VOTE_HIDE_THRESHOLD = -5
 DMOJ_COMMENT_REPLY_TIMEFRAME = datetime.timedelta(days=365)
 
@@ -223,6 +320,7 @@ DMOJ_STATS_LANGUAGE_THRESHOLD = 10
 DMOJ_STATS_SUBMISSION_RESULT_COLORS = {
     'TLE': '#a3bcbd',
     'AC': '#00a92a',
+    'PAC': '#c0e000',
     'WA': '#ed4420',
     'CE': '#42586d',
     'ERR': '#ffa71c',
@@ -243,6 +341,10 @@ DMOJ_THEME_DEFAULT_ACE_THEME = {
     'dark': 'twilight',
 }
 DMOJ_SELECT2_THEME = 'dmoj'
+
+# Cookie used to remember the site theme of anonymous (logged-out) users.
+SITE_THEME_COOKIE_NAME = 'site_theme'
+SITE_THEME_COOKIE_AGE = 60 * 60 * 24 * 365  # 1 year
 
 MARKDOWN_STYLES = {}
 MARKDOWN_DEFAULT_STYLE = {}
@@ -268,13 +370,13 @@ NOFOLLOW_EXCLUDED = set()
 TIMEZONE_MAP = 'https://static.dmoj.ca/assets/earth.jpg'
 
 TERMS_OF_SERVICE_URL = None
-DEFAULT_USER_LANGUAGE = 'CPP17'
+DEFAULT_USER_LANGUAGE = 'CPP20'
 
 INLINE_JQUERY = True
 INLINE_FONTAWESOME = True
 JQUERY_JS = '//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js'
 FONTAWESOME_CSS = '//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css'
-DMOJ_CANONICAL = 'oj.vnoi.info'
+DMOJ_CANONICAL = 'oj.luyencode.net'
 
 # Application definition
 
@@ -296,6 +398,15 @@ else:
                 'left': 'wpadmin.menu.custom.CustomModelLeftMenuWithDashboard',
             },
             'custom_menu': [
+                {
+                    'model': 'quiz.Quiz',
+                    'icon': 'fa-graduation-cap',
+                    'children': [
+                        'quiz.QuizQuestion',
+                        'quiz.QuizCategory',
+                        'quiz.QuizAttempt',
+                    ],
+                },
                 {
                     'model': 'judge.Problem',
                     'icon': 'fa-question-circle',
@@ -355,7 +466,20 @@ else:
                         'redirects.Redirect',
                     ],
                 },
-                ('judge.BlogPost', 'fa-rss-square'),
+                {
+                    'model': 'judge.BlogPost',
+                    'icon': 'fa-rss-square',
+                    'children': [
+                        'judge.BlogPostTag',
+                    ],
+                },
+                {
+                    'model': 'judge.ExamStatement',
+                    'icon': 'fa-book',
+                    'children': [
+                        'judge.ExamCategory',
+                    ],
+                },
                 {
                     'model': 'judge.Comment',
                     'icon': 'fa-comment-o',
@@ -375,6 +499,7 @@ else:
 INSTALLED_APPS += (
     'django.contrib.admin',
     'judge',
+    'urlshortener',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.flatpages',
@@ -391,7 +516,6 @@ INSTALLED_APPS += (
     'social_django',
     'compressor',
     'django_ace',
-    'pagedown',
     'sortedm2m',
     'statici18n',
     'impersonate',
@@ -399,6 +523,7 @@ INSTALLED_APPS += (
     'martor',
     'adminsortable2',
     'django_cleanup.apps.CleanupConfig',
+    'quiz',
 )
 
 MIDDLEWARE = (
@@ -528,11 +653,11 @@ BLEACH_USER_SAFE_TAGS = [
     'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col', 'tfoot',
     'img', 'audio', 'video', 'source',
     'a', 'strike',
-    'style', 'noscript', 'center', 'object', 'iframe',
+    'noscript', 'center', 'object', 'iframe',
 ]
 
 BLEACH_USER_SAFE_ATTRS = {
-    '*': ['id', 'class', 'style', 'data', 'height'],
+    '*': ['id', 'class', 'data', 'height'],
     'img': ['src', 'alt', 'title', 'width', 'height', 'data-src', 'align'],
     'a': ['href', 'alt', 'title'],
     'iframe': ['src', 'height', 'width', 'allow'],
@@ -573,6 +698,12 @@ MARKDOWN_DEFAULT_STYLE = {
     'nofollow': True,
     'use_camo': True,
     'math': True,
+    'bleach': {
+        'tags': BLEACH_USER_SAFE_TAGS,
+        'attributes': BLEACH_USER_SAFE_ATTRS,
+        'styles': False,
+        'mathml': True,
+    },
 }
 
 MARKDOWN_USER_LARGE_STYLE = {
@@ -580,6 +711,12 @@ MARKDOWN_USER_LARGE_STYLE = {
     'nofollow': True,
     'use_camo': True,
     'math': True,
+    'bleach': {
+        'tags': BLEACH_USER_SAFE_TAGS,
+        'attributes': BLEACH_USER_SAFE_ATTRS,
+        'styles': False,
+        'mathml': True,
+    },
 }
 
 MARKDOWN_STYLES = {
@@ -603,9 +740,7 @@ MARKDOWN_STYLES = {
 MARTOR_ENABLE_CONFIGS = {
     'imgur': 'true',
     'mention': 'true',
-    'jquery': 'false',
     'living': 'false',
-    'spellcheck': 'false',
     'hljs': 'false',
 }
 MARTOR_MARKDOWNIFY_URL = '/widgets/preview/default'
@@ -626,8 +761,11 @@ PDF_STATEMENT_MAX_FILE_SIZE = 5242880
 SUBMISSION_FILE_UPLOAD_URL_PREFIX = '/submission_file'
 SUBMISSION_FILE_UPLOAD_MEDIA_DIR = 'submission_file'
 
+STATIC_UPLOAD_URL_PREFIX = '/static-upload'
+STATIC_UPLOAD_MEDIA_DIR = 'static-upload'
+
 # Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
@@ -637,6 +775,9 @@ DATABASES = {
 }
 
 ENABLE_FTS = False
+
+# Balancer configuration
+BALANCER_JUDGE_ADDRESS = [('localhost', 8888)]
 
 # Bridged configuration
 BRIDGED_JUDGE_ADDRESS = [('localhost', 9999)]
@@ -653,23 +794,24 @@ EVENT_DAEMON_KEY = None
 EVENT_DAEMON_AMQP_EXCHANGE = 'dmoj-events'
 EVENT_DAEMON_SUBMISSION_KEY = '6Sdmkx^%pk@GsifDfXcwX*Y7LRF%RGT8vmFpSxFBT$fwS7trc8raWfN#CSfQuKApx&$B#Gh2L7p%W!Ww'
 EVENT_DAEMON_CONTEST_KEY = '&w7hB-.9WnY2Jj^Qm+|?o6a<!}_2Wiw+?(_Yccqq{uR;:kWQP+3R<r(ICc|4^dDeEuJE{*D;Gg@K(4K>'
+EVENT_DAEMON_TICKET_KEY = '@R3DjH&egtm0HNhok6ERIMK!zlTzq2hrSGG2Se8SujCoO(2NX!DkbzcgQtm90FHDvpFM3gJ&D7acS$ta'
+EVENT_DAEMON_NOTIFICATION_KEY = 'm4l6v_%7j_%#abf&2#esiq@f_#2!cu54+gg%7y+g(fg--0=(hz'
 
 # Internationalization
-# https://docs.djangoproject.com/en/3.2/topics/i18n/
+# https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 # Whatever you do, this better be one of the entries in `LANGUAGES`.
 LANGUAGE_CODE = 'en'
 TIME_ZONE = 'UTC'
 DEFAULT_USER_TIME_ZONE = 'America/Toronto'
 USE_I18N = True
-USE_L10N = True
 USE_TZ = True
 
 # Cookies
 SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
+# https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 DMOJ_RESOURCES = os.path.join(BASE_DIR, 'resources')
 STATICFILES_FINDERS = (
@@ -690,7 +832,10 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.facebook.FacebookOAuth2',
     'judge.social_auth.GitHubSecureEmailOAuth2',
     'django.contrib.auth.backends.ModelBackend',
+    'judge.ip_auth.IPBasedAuthBackend',
 )
+
+REGISTRATION_OPEN = True
 
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
@@ -700,8 +845,9 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_user',
     'social_core.pipeline.user.get_username',
     'social_core.pipeline.social_auth.associate_by_email',
-    'judge.social_auth.choose_username',
+    'judge.social_auth.get_username_password',
     'social_core.pipeline.user.create_user',
+    'judge.social_auth.add_password',
     'judge.social_auth.make_profile',
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
@@ -712,22 +858,23 @@ SOCIAL_AUTH_GITHUB_SECURE_SCOPE = ['user:email']
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_SLUGIFY_USERNAMES = True
 SOCIAL_AUTH_SLUGIFY_FUNCTION = 'judge.social_auth.slugify_username'
+SOCIAL_AUTH_PROTECTED_USER_FIELDS = ['first_name', 'last_name']
+
+IP_BASED_AUTHENTICATION_HEADER = 'REMOTE_ADDR'
 
 MOSS_API_KEY = None
+MOSS_HOST = 'moss.stanford.edu'
+MOSS_PORT = 7690
 
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
 
 WEBAUTHN_RP_ID = None
 
+GOOGLE_SEARCH_ENGINE_URL = None
+
 DESCRIPTION_MAX_LENGTH = 200
 
 GROUP_PERMISSION_FOR_ORG_ADMIN = 'Org Admin'
-
-try:
-    with open(os.path.join(os.path.dirname(__file__), 'local_settings.py')) as f:
-        exec(f.read(), globals())
-except IOError:
-    pass
 
 if DMOJ_PDF_PDFOID_URL:
     # If a cache is configured, it must already exist and be a directory
@@ -737,3 +884,20 @@ if DMOJ_PDF_PDFOID_URL:
 
 ACE_DEFAULT_LIGHT_THEME = DMOJ_THEME_DEFAULT_ACE_THEME['light']
 ACE_DEFAULT_DARK_THEME = DMOJ_THEME_DEFAULT_ACE_THEME['dark']
+# Only allow OAuth login
+OAUTH_ONLY = False
+
+# Exam library (/library/). Tenants without it set this to False in local_settings.
+LCOJ_ENABLE_LIBRARY = True
+
+try:
+    with open(os.path.join(os.path.dirname(__file__), 'local_settings.py')) as f:
+        exec(f.read(), globals())
+except IOError:
+    pass
+
+if not LCOJ_ENABLE_LIBRARY and 'WPADMIN' in globals():
+    WPADMIN['admin']['custom_menu'] = [
+        item for item in WPADMIN['admin']['custom_menu']
+        if not (isinstance(item, dict) and item.get('model') == 'judge.ExamStatement')
+    ]

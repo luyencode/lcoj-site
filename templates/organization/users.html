@@ -13,6 +13,10 @@
         tr:hover td > form.kick-form a.button {
             visibility: visible;
         }
+
+        td.organization-user-actions {
+            white-space: nowrap;
+        }
     </style>
 
     {% if is_admin %}
@@ -24,15 +28,19 @@
     {% endif %}
 {% endblock %}
 
+{% block user_search_select2_ajax %}{{ url('org_user_search_select2_ajax', organization.slug) }}{% endblock %}
+
 {% block users_js_media %}
     <script type="text/javascript">
         $(function () {
             $('form.kick-form').find('a.button').click(function () {
-                if (confirm("{{ _('Are you sure you want to kick this user?') }}")) {
+                if (confirm({{ _('Are you sure you want to kick this user?')|htmltojs }})) {
                     $(this).parent().submit();
                 }
                 return false;
             })
+
+            document.getElementById('search-form').action = "{{ url('org_user_ranking_redirect', organization.slug) }}"
         });
     </script>
 {% endblock %}

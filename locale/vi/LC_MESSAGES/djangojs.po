@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: dmoj\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-01 23:12+0000\n"
+"POT-Creation-Date: 2026-08-17 16:06+0000\n"
 "PO-Revision-Date: 2020-08-23 18:59\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
@@ -17,14 +17,101 @@ msgstr ""
 "X-Crowdin-File: djangojs.po\n"
 "X-Crowdin-File-ID: 12\n"
 
-#: resources/common.js:207
+#: resources/common.js:194
 msgctxt "time format with day"
 msgid "%d day %h:%m:%s"
 msgid_plural "%d days %h:%m:%s"
 msgstr[0] "%d ngày %h:%m:%s"
 
-#: resources/common.js:210
+#: resources/common.js:197
 msgctxt "time format without day"
 msgid "%h:%m:%s"
 msgstr "%h:%m:%s"
 
+#: resources/flipbook.js:37
+msgid "Loading document…"
+msgstr "Đang tải tài liệu…"
+
+#: resources/flipbook.js:76
+msgid "Download PDF"
+msgstr "Tải PDF"
+
+#: resources/flipbook.js:163
+msgid "Could not load preview — download PDF"
+msgstr "Không thể tải xem trước — tải PDF"
+
+#: resources/user_profile.js:47
+msgid "past year"
+msgstr ""
+
+#: resources/user_profile.js:64
+msgid "%(cnt)d total submission"
+msgid_plural "%(cnt)d total submissions"
+msgstr[0] ""
+
+#: resources/user_profile.js:69
+msgid "%(cnt)d submission in the last year"
+msgid_plural "%(cnt)d submissions in the last year"
+msgstr[0] ""
+
+#: resources/user_profile.js:74
+msgid "%(cnt)d submission in %(year)d"
+msgid_plural "%(cnt)d submissions in %(year)d"
+msgstr[0] ""
+
+#: resources/user_profile.js:88
+msgid "%(cnt)d submission on %(date)s"
+msgid_plural "%(cnt)d submissions on %(date)s"
+msgstr[0] ""
+
+#: resources/vnoj/ace/1.4.14/worker-coffee.js:1
+msgid "arguments"
+msgstr ""
+
+#: resources/vnoj/ace/1.4.14/worker-coffee.js:1
+msgid "RegExp"
+msgstr ""
+
+#: resources/vnoj/ace/1.4.14/worker-coffee.js:1
+msgid "Math"
+msgstr ""
+
+#: resources/vnoj/ace/1.4.14/worker-lua.js:1
+msgid "<name>"
+msgstr ""
+
+#: resources/vnoj/ace/1.4.14/worker-lua.js:1
+msgid "<name> or '...'"
+msgstr ""
+
+#: resources/vnoj/ace/1.4.14/worker-lua.js:1
+msgid "<expression>"
+msgstr ""
+
+#: resources/vnoj/ace/1.4.14/worker-lua.js:1
+msgid "function arguments"
+msgstr ""
+
+#: resources/vnoj/diff2html/diff2html-ui.min.js:1
+msgid "mint"
+msgstr ""
+
+#: resources/vnoj/diff2html/diff2html-ui.min.js:1
+msgid "mintinline"
+msgstr ""
+
+#: resources/vnoj/diff2html/diff2html-ui.min.js:1
+msgid "url"
+msgstr ""
+
+#: resources/vnoj/diff2html/diff2html-ui.min.js:1
+msgid "hyperref"
+msgstr ""
+
+#: resources/vnoj/diff2html/diff2html-ui.min.js:1
+msgid "href"
+msgstr ""
+
+#: resources/vnoj/diff2html/diff2html-ui.min.js:1
+msgid "s|tr|y"
+msgstr ""

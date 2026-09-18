@@ -1,8 +1,7 @@
+import datetime
 import itertools
 import json
 import os
-from datetime import datetime
-from datetime import timedelta
 from operator import attrgetter, itemgetter
 
 import pytz
@@ -18,7 +17,7 @@ from django.core.exceptions import ImproperlyConfigured, PermissionDenied, Valid
 from django.db.models import Count, F, FilteredRelation, Max, Min, Prefetch, Q
 from django.db.models.expressions import Value
 from django.db.models.fields import DateField
-from django.db.models.functions import Cast, Coalesce, ExtractYear
+from django.db.models.functions import Cast, Coalesce
 from django.forms import Form
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -103,7 +102,7 @@ class UserPage(TitleMixin, UserMixin, DetailView):
             return super(UserPage, self).dispatch(request, *args, **kwargs)
         except Http404:
             return generic_message(request, _('No such user'), _('No user handle "%s".') %
-                                   self.kwargs.get(self.slug_url_kwarg, None))
+                                   self.kwargs.get(self.slug_url_kwarg, None), status=404)
 
     def get_title(self):
         return (_('My account') if self.request.user == self.object.user else
@@ -158,6 +157,12 @@ class CustomLoginView(LoginView):
     authentication_form = CustomAuthenticationForm
     redirect_authenticated_user = True
 
+    def get_context_data(self, **kwargs):
+        context = super(CustomLoginView, self).get_context_data(**kwargs)
+        context['oauth'] = context['form']
+        context['oauth_only'] = settings.OAUTH_ONLY
+        return context
+
     def form_valid(self, form):
         password = form.cleaned_data['password']
         validator = PwnedPasswordsValidator()
@@ -178,7 +183,7 @@ class CustomPasswordChangeView(PasswordChangeView):
         return super().form_valid(form)
 
 
-EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
+EPOCH = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
 
 
 class UserAboutPage(UserPage):
@@ -203,23 +208,20 @@ class UserAboutPage(UserPage):
         user_timezone = settings.DEFAULT_USER_TIME_ZONE
         if self.request is not None and self.request.profile is not None:
             user_timezone = user_timezone or self.request.profile.timezone
-        timezone_offset = pytz.timezone(user_timezone).utcoffset(datetime.utcnow()).seconds
+        timezone_offset = pytz.timezone(user_timezone).utcoffset(datetime.datetime.utcnow()).seconds
 
-        submissions = (
-            self.object.submission_set
-            .annotate(date_only=Cast(F('date') + timedelta(seconds=timezone_offset), DateField()))
-            .values('date_only').annotate(cnt=Count('id'))
-        )
+        submissions_count = self.object.submission_set.count()
+        if settings.VNOJ_LOW_POWER_MODE and submissions_count > settings.VNOJ_LOW_POWER_MODE_CONFIG['heat_map_limit']:
+            submissions = []
+        else:
+            submissions = (
+                self.object.submission_set
+                .annotate(date_only=Cast(F('date') + datetime.timedelta(seconds=timezone_offset), DateField()))
+                .values('date_only').annotate(cnt=Count('id'))
+            )
 
         context['submission_data'] = mark_safe(json.dumps({
             date_counts['date_only'].isoformat(): date_counts['cnt'] for date_counts in submissions
-        }))
-        context['submission_metadata'] = mark_safe(json.dumps({
-            'min_year': (
-                self.object.submission_set
-                .annotate(year_only=ExtractYear('date'))
-                .aggregate(min_year=Min('year_only'))['min_year']
-            ),
         }))
         return context
 
@@ -541,6 +543,20 @@ def generate_api_token(request):
 
 
 @require_POST
+def set_theme(request):
+    theme = request.POST.get('theme', 'light')
+    if theme not in ('light', 'dark', 'auto'):
+        theme = 'light'
+    response = HttpResponseRedirect(request.POST.get('next', '/'))
+    if request.user.is_authenticated:
+        request.profile.site_theme = theme
+        request.profile.save(update_fields=['site_theme'])
+    else:
+        response.set_cookie(settings.SITE_THEME_COOKIE_NAME, theme, max_age=settings.SITE_THEME_COOKIE_AGE)
+    return response
+
+
+@require_POST
 @login_required
 def remove_api_token(request):
     profile = request.profile
@@ -597,7 +613,7 @@ class UserList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin
 user_list_view = UserList.as_view()
 
 
-class ContribList(QueryStringSortMixin, DiggPaginatorMixin, TitleMixin, ListView):
+class ContribList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin, TitleMixin, ListView):
     model = Profile
     title = gettext_lazy('Contributors')
     context_object_name = 'users'

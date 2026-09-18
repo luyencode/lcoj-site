@@ -1,5 +1,5 @@
 @use 'sass:color';
-@import "vars-common";
+@forward "vars-common";
 
 $is_light_theme: true;
 
@@ -24,6 +24,8 @@ $color_pageBg: color.adjust($color_primary5, $lightness: 10%);
 // custom one-off colours
 $color_contest_ranking_disqualified: #ffa8a8;
 
+$color_martor_resize_dragger: #e8e8e8;
+
 $color_rating_none: #999;
 $color_rating_newbie: #808080;
 $color_rating_pupil: #008000;
@@ -41,9 +43,55 @@ $color_user_submission_activity2: #40c463;
 $color_user_submission_activity3: #2f9c4c;
 $color_user_submission_activity4: #216e39;
 
+$color_info25: #def;
+$color_info50: #bdf;
+$color_info100: #368;
+$color_success25: #ded;
+$color_success50: #adb;
+$color_success100: #173;
+$color_warning25: #ffd;
+$color_warning50: #feb;
+$color_warning100: #863;
+$color_danger25: #edd;
+$color_danger50: #dbb;
+$color_danger100: #944;
+
 $color_problem_submit_select2: #757575;
 
 $color_voted_mark: #0000ff;
+
+// Problem page inline-submit tab colors
+$color_problem_tab_bg: #f5f5f5;
+$color_problem_tab_border: #ddd;
+$color_problem_tab_text: #333;
+$color_problem_tab_hover_bg: #e8e8e8;
+$color_problem_tab_active_bg: #fff;
+$color_problem_tab_active_text: #007bff;
+$color_problem_submit_bg: #f9f9f9;
+
+// Blog-specific light mode colors
+$color_blog_bg: #ffffff;
+$color_blog_card_bg: #ffffff;
+$color_blog_sidebar_bg: #f7f7f8;
+$color_blog_border: #dee2e6;
+$color_blog_text_primary: #202123;
+$color_blog_text_secondary: #565869;
+$color_blog_text_muted: #8e8ea0;
+$color_blog_text_tertiary: #6b7280;
+$color_blog_hover_bg: #ececf1;
+$color_blog_active_bg: #202123;
+$color_blog_accent: #1958c1;
+$color_blog_code_bg: #f7f7f7;
+$color_blog_blockquote_border: #292929;
+$color_blog_vote_active: #1a8917;
+$color_blog_tag_bg: #f3f4f6;
+$color_blog_tag_border: #e5e7eb;
+$color_blog_tag_text: #374151;
+$color_blog_tag_hover_bg: #e5e7eb;
+$color_blog_tag_hover_border: #d1d5db;
+$color_blog_tag_hover_text: #1f2937;
+$color_blog_tag_active_bg: #3b82f6;
+$color_blog_hero_bg: #eff6ff;
 
 $path_to_root: '.';     // relative path from style.css to STATIC_ROOT
 

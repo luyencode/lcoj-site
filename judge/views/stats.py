@@ -9,7 +9,7 @@ from django.http.response import HttpResponseBadRequest
 from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext_lazy as _
 
-from judge.models import Problem, Submission
+from judge.models import Language, Problem, Submission
 from judge.utils.stats import get_bar_chart, get_pie_chart, get_stacked_bar_chart
 
 
@@ -29,10 +29,12 @@ def submission_data(start_date, end_date, utc_offset):
         .values('date_only', 'result').annotate(count=Count('result')).values_list('date_only', 'result', 'count')
     )
 
+    language_id_to_name = {id: name for id, name in Language.objects.values_list('id', 'name')}
     languages = (
-        queryset.values('language__name').annotate(count=Count('language__name'))
-        .filter(count__gt=0).order_by('-count').values_list('language__name', 'count')
+        queryset.values('language_id').annotate(count=Count('language_id'))
+        .filter(count__gt=0).order_by('-count').values_list('language_id', 'count')
     )
+    languages = [(language_id_to_name[id], count) for id, count in languages]
 
     results = (
         queryset.values('result').annotate(count=Count('result'))
@@ -49,7 +51,7 @@ def submission_data(start_date, end_date, utc_offset):
 
     days_labels = generate_day_labels(start_date, end_date, utc_offset)
     num_days = len(days_labels)
-    result_order = ['AC', 'WA', 'TLE', 'CE', 'ERR']
+    result_order = ['AC', 'PAC', 'WA', 'TLE', 'CE', 'ERR']
     result_data = {result: [0] * num_days for result in result_order}
 
     for date, result, count in submissions:
@@ -97,7 +99,7 @@ def organization_data(start_date, end_date, utc_offset):
 
     days_labels = generate_day_labels(start_date, end_date, utc_offset)
     num_days = len(days_labels)
-    result_order = ['AC', 'WA', 'TLE', 'CE', 'ERR']
+    result_order = ['AC', 'PAC', 'WA', 'TLE', 'CE', 'ERR']
     result_data = {result: [0] * num_days for result in result_order}
 
     for date, result, count in submissions:

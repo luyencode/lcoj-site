@@ -9,14 +9,17 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import path, reverse
+from django.utils.decorators import method_decorator
 from django.utils.html import format_html
 from django.utils.translation import gettext, gettext_lazy as _, ngettext, pgettext
+from django.views.decorators.http import require_POST
 from reversion.admin import VersionAdmin
 
-from django_ace import AceWidget
+from judge.admin.utils import AdminFastPaginationMixin
 from judge.models import ContestParticipation, ContestProblem, ContestSubmission, Profile, Submission, \
     SubmissionSource, SubmissionTestCase
 from judge.utils.raw_sql import use_straight_join
+from judge.widgets import AdminAceWidget
 
 
 class SubmissionStatusFilter(admin.SimpleListFilter):
@@ -109,13 +112,13 @@ class SubmissionSourceInline(admin.StackedInline):
     extra = 0
 
     def get_formset(self, request, obj=None, **kwargs):
-        kwargs.setdefault('widgets', {})['source'] = AceWidget(
+        kwargs.setdefault('widgets', {})['source'] = AdminAceWidget(
             mode=obj and obj.language.ace, theme=request.profile.resolved_ace_theme,
         )
         return super().get_formset(request, obj, **kwargs)
 
 
-class SubmissionAdmin(VersionAdmin):
+class SubmissionAdmin(AdminFastPaginationMixin, VersionAdmin):
     readonly_fields = ('user', 'problem', 'date', 'judged_date')
     fields = ('user', 'problem', 'date', 'judged_date', 'locked_after', 'time', 'memory', 'points', 'language',
               'status', 'result', 'case_points', 'case_total', 'judged_on', 'error')
@@ -137,7 +140,7 @@ class SubmissionAdmin(VersionAdmin):
     def get_queryset(self, request):
         queryset = Submission.objects.select_related('problem', 'user__user', 'language').only(
             'problem__code', 'problem__name', 'user__user__username', 'language__name',
-            'time', 'memory', 'points', 'status', 'result',
+            'time', 'memory', 'points', 'status', 'result', 'locked_after',
         )
         use_straight_join(queryset)
         if not request.user.has_perm('judge.edit_all_problem'):
@@ -158,6 +161,7 @@ class SubmissionAdmin(VersionAdmin):
     def lookup_allowed(self, key, value):
         return super(SubmissionAdmin, self).lookup_allowed(key, value) or key in ('problem__code',)
 
+    @admin.display(description=_('Rejudge the selected submissions'))
     def judge(self, request, queryset):
         if not request.user.has_perm('judge.rejudge_submission') or not request.user.has_perm('judge.edit_own_problem'):
             self.message_user(request, gettext('You do not have the permission to rejudge submissions.'),
@@ -178,8 +182,8 @@ class SubmissionAdmin(VersionAdmin):
         self.message_user(request, ngettext('%d submission was successfully scheduled for rejudging.',
                                             '%d submissions were successfully scheduled for rejudging.',
                                             judged) % judged)
-    judge.short_description = _('Rejudge the selected submissions')
 
+    @admin.display(description=_('Rescore the selected submissions'))
     def recalculate_score(self, request, queryset):
         if not request.user.has_perm('judge.rejudge_submission'):
             self.message_user(request, gettext('You do not have the permission to rejudge submissions.'),
@@ -207,28 +211,24 @@ class SubmissionAdmin(VersionAdmin):
         self.message_user(request, ngettext('%d submission was successfully rescored.',
                                             '%d submissions were successfully rescored.',
                                             len(submissions)) % len(submissions))
-    recalculate_score.short_description = _('Rescore the selected submissions')
 
+    @admin.display(description=_('problem code'), ordering='problem__code')
     def problem_code(self, obj):
         return obj.problem.code
-    problem_code.short_description = _('Problem code')
-    problem_code.admin_order_field = 'problem__code'
 
+    @admin.display(description=_('problem name'), ordering='problem__name')
     def problem_name(self, obj):
         return obj.problem.name
-    problem_name.short_description = _('Problem name')
-    problem_name.admin_order_field = 'problem__name'
 
+    @admin.display(description=_('user'), ordering='user__user__username')
     def user_column(self, obj):
         return obj.user.user.username
-    user_column.admin_order_field = 'user__user__username'
-    user_column.short_description = _('User')
 
+    @admin.display(description=_('time'), ordering='time')
     def execution_time(self, obj):
         return round(obj.time, 2) if obj.time is not None else 'None'
-    execution_time.short_description = _('Time')
-    execution_time.admin_order_field = 'time'
 
+    @admin.display(description=_('memory'), ordering='memory')
     def pretty_memory(self, obj):
         memory = obj.memory
         if memory is None:
@@ -237,27 +237,25 @@ class SubmissionAdmin(VersionAdmin):
             return gettext('%d KB') % memory
         else:
             return gettext('%.2f MB') % (memory / 1024)
-    pretty_memory.admin_order_field = 'memory'
-    pretty_memory.short_description = _('Memory')
 
+    @admin.display(description=_('language'), ordering='language__name')
     def language_column(self, obj):
         return obj.language.name
-    language_column.admin_order_field = 'language__name'
-    language_column.short_description = _('Language')
 
+    @admin.display(description='')
     def judge_column(self, obj):
         if obj.is_locked:
             return format_html('<input type="button" disabled value="{0}"/>', _('Locked'))
         else:
-            return format_html('<input type="button" value="{0}" onclick="location.href=\'{1}\'"/>', _('Rejudge'),
+            return format_html('<a class="button action-link" href="{1}">{0}</a>', _('Rejudge'),
                                reverse('admin:judge_submission_rejudge', args=(obj.id,)))
-    judge_column.short_description = ''
 
     def get_urls(self):
         return [
             path('<int:id>/judge/', self.judge_view, name='judge_submission_rejudge'),
         ] + super(SubmissionAdmin, self).get_urls()
 
+    @method_decorator(require_POST)
     def judge_view(self, request, id):
         if not request.user.has_perm('judge.rejudge_submission') or not request.user.has_perm('judge.edit_own_problem'):
             raise PermissionDenied()
@@ -266,4 +264,4 @@ class SubmissionAdmin(VersionAdmin):
                 not submission.problem.is_editor(request.profile):
             raise PermissionDenied()
         submission.judge(rejudge=True, rejudge_user=request.user)
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        return HttpResponseRedirect(request.headers.get('referer', '/'))

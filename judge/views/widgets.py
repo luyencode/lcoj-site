@@ -8,8 +8,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.storage import default_storage
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, \
     HttpResponseRedirect
+from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
-from martor.api import imgur_uploader
 
 from judge.models import Submission
 
@@ -77,15 +77,26 @@ def submission_uploader(submission_file, problem_code, user_id):
 
 @login_required
 def martor_image_uploader(request):
-    if request.method != 'POST' or not request.is_ajax() or 'markdown-image-upload' not in request.FILES:
+    if request.method != 'POST' or 'markdown-image-upload' not in request.FILES:
         return HttpResponseBadRequest('Invalid request')
 
     image = request.FILES['markdown-image-upload']
     if request.user.is_staff or request.user.has_perm('judge.can_upload_image'):
         data = django_uploader(image)
     else:
-        data = imgur_uploader(image)
+        return HttpResponseForbidden(_('You do not have permission to upload images'))
     return HttpResponse(data, content_type='application/json')
+
+
+def static_uploader(static_file):
+    ext = os.path.splitext(static_file.name)[1]
+    name = str(uuid.uuid4()) + ext
+    default_storage.save(os.path.join(settings.STATIC_UPLOAD_MEDIA_DIR, name), static_file)
+    url_base = getattr(settings, 'STATIC_UPLOAD_URL_PREFIX',
+                       urljoin(settings.MEDIA_URL, settings.STATIC_UPLOAD_MEDIA_DIR))
+    if not url_base.endswith('/'):
+        url_base += '/'
+    return urljoin(url_base, name)
 
 
 def csrf_failure(request: HttpRequest, reason=''):

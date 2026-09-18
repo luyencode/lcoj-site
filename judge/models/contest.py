@@ -3,10 +3,11 @@ import hmac
 from datetime import date, timedelta
 
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models, transaction
-from django.db.models import CASCADE, Q
+from django.db.models import CASCADE, Exists, OuterRef, Q
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
@@ -15,7 +16,7 @@ from jsonfield import JSONField
 from lupa import LuaRuntime
 from moss import MOSS_LANG_C, MOSS_LANG_CC, MOSS_LANG_JAVA, MOSS_LANG_PASCAL, MOSS_LANG_PYTHON
 
-from judge import contest_format, event_poster as event
+from judge import contest_format
 from judge.models.problem import Problem
 from judge.models.profile import Organization, Profile
 from judge.models.submission import Submission
@@ -71,6 +72,9 @@ class Contest(models.Model):
         (SCOREBOARD_AFTER_CONTEST, _('Hidden for duration of contest')),
         (SCOREBOARD_AFTER_PARTICIPATION, _('Hidden for duration of participation')),
     )
+    # Sentinel stored in csv_ranking to flag that the replay data has ghost participations
+    # merged in (set by the merge_replay_data command), rather than real CSV ranking data.
+    HAS_GHOST_PARTICIPATION = 'ghost'
     key = models.CharField(max_length=32, verbose_name=_('contest id'), unique=True,
                            validators=[RegexValidator('^[a-z0-9_]+$', _('Contest id must be ^[a-z0-9_]+$'))])
     name = models.CharField(max_length=100, verbose_name=_('contest name'), db_index=True)
@@ -83,6 +87,7 @@ class Contest(models.Model):
                                                           'but not edit it.'),
                                      blank=True, related_name='testers+')
     description = models.TextField(verbose_name=_('description'), blank=True)
+    terms = models.TextField(verbose_name=_('terms'), blank=True)
     problems = models.ManyToManyField(Problem, verbose_name=_('problems'), through='ContestProblem')
     start_time = models.DateTimeField(verbose_name=_('start time'), db_index=True)
     end_time = models.DateTimeField(verbose_name=_('end time'), db_index=True)
@@ -109,7 +114,7 @@ class Contest(models.Model):
     scoreboard_cache_timeout = models.PositiveIntegerField(verbose_name=('scoreboard cache timeout'), default=0,
                                                            help_text=_('How long should the scoreboard be cached. '
                                                                        'Set to 0 to disable caching.'))
-    show_submission_list = models.BooleanField(default=True,
+    show_submission_list = models.BooleanField(default=False,
                                                help_text=_('Allow contestants to view submission list '
                                                            'of others in contest time'))
     use_clarifications = models.BooleanField(verbose_name=_('no comments'),
@@ -122,9 +127,14 @@ class Contest(models.Model):
                                        help_text=_('Do not rate users who have a lower rating.'))
     rating_ceiling = models.IntegerField(verbose_name=_('rating ceiling'), null=True, blank=True,
                                          help_text=_('Do not rate users who have a higher rating.'))
-    rate_all = models.BooleanField(verbose_name=_('rate all'), help_text=_('Rate all users who joined.'), default=False)
+    rate_all = models.BooleanField(verbose_name=_('rate all'),
+                                   help_text=_('Rate users even if they make no submissions.'),
+                                   default=False)
     rate_exclude = models.ManyToManyField(Profile, verbose_name=_('exclude from ratings'), blank=True,
                                           related_name='rate_exclude+')
+    rate_disqualified = models.BooleanField(verbose_name=_('rate disqualified'),
+                                            help_text=_('Rate users even if they are disqualified.'),
+                                            default=True)
     is_private = models.BooleanField(verbose_name=_('private to specific users'), default=False)
     private_contestants = models.ManyToManyField(Profile, blank=True, verbose_name=_('private contestants'),
                                                  help_text=_('If private, only these users may see the contest.'),
@@ -145,8 +155,9 @@ class Contest(models.Model):
                                                          'on the contest page or not.'),
                                              default=False)
     is_organization_private = models.BooleanField(verbose_name=_('private to organizations'), default=False)
-    organizations = models.ManyToManyField(Organization, blank=True, verbose_name=_('organizations'),
-                                           help_text=_('If private, only these organizations may see the contest'))
+    organization = models.ForeignKey(Organization, blank=True, null=True, verbose_name=_('organization'),
+                                     on_delete=models.SET_NULL,
+                                     help_text=_('If private, only this organization may see the contest'))
     og_image = models.CharField(verbose_name=_('OpenGraph image'), default='', max_length=150, blank=True)
     logo_override_image = models.CharField(verbose_name=_('logo override image'), default='', max_length=150,
                                            blank=True,
@@ -191,6 +202,29 @@ class Contest(models.Model):
                                            help_text=_('An optional code to view the contest ranking. '
                                                        'Leave it blank to disable.'),
                                            blank=True, default='', max_length=255)
+    replay_version = models.PositiveIntegerField(default=0)
+
+    @property
+    def can_replay(self):
+        """
+        Determine if the contest can be replayed.
+
+        If a contest is replayable, **the ranking will be leaked**, regardless of whether the contest is private or not.
+
+        `can_replay` is independent of users, so we need to be very strict about **what contests can be replayed**,
+        otherwise, the ranking information will be leaked to all users.
+
+        1. The contest must be visible to all users.
+        2. The contest must be ended and not frozen.
+        3. Ranking must be visible.
+        4. The contest format must support replay.
+        """
+        try:
+            self.access_check(AnonymousUser())
+        except Exception:
+            return False
+        return self.ended and self.frozen_last_minutes == 0 and self.show_scoreboard and \
+            self.format.name != contest_format.IOIContestFormat.name  # new IOI format is not replayable
 
     @cached_property
     def format_class(self):
@@ -240,7 +274,7 @@ class Contest(models.Model):
         if user.is_authenticated:
             profile = user.profile
             return profile and profile.current_contest is not None and profile.current_contest.contest == self \
-                and profile.current_contest.contest.can_join
+                and (profile.current_contest.contest.can_join or profile.current_contest.spectate)
         return False
 
     def can_see_own_scoreboard(self, user):
@@ -453,7 +487,7 @@ class Contest(models.Model):
         if self.view_contest_scoreboard.filter(id=user.profile.id).exists():
             return
 
-        in_org = self.organizations.filter(id__in=user.profile.organizations.all()).exists()
+        in_org = self.organization and user.profile.organizations.filter(id=self.organization.id).exists()
         in_users = self.private_contestants.filter(id=user.profile.id).exists()
 
         if not self.is_private and self.is_organization_private:
@@ -503,20 +537,54 @@ class Contest(models.Model):
         queryset = cls.objects.defer('description')
         if not (user.has_perm('judge.see_private_contest') or user.has_perm('judge.edit_all_contest')):
             q = Q(is_visible=True)
+            private_exists = Contest.private_contestants.through.objects.filter(
+                contest_id=OuterRef('pk'),
+                profile_id=user.profile.id,
+            )
+            queryset = queryset.annotate(
+                has_private=Exists(private_exists),
+            )
             q &= (
                 Q(view_contest_scoreboard=user.profile) |
                 Q(is_organization_private=False, is_private=False) |
-                Q(is_organization_private=False, is_private=True, private_contestants=user.profile) |
-                Q(is_organization_private=True, is_private=False, organizations__in=user.profile.organizations.all()) |
-                Q(is_organization_private=True, is_private=True, organizations__in=user.profile.organizations.all(),
-                  private_contestants=user.profile)
+                (Q(is_organization_private=False, is_private=True) & Q(has_private=True)) |
+                Q(is_organization_private=True, is_private=False, organization__in=user.profile.organizations.all()) |
+                (
+                    Q(
+                        is_organization_private=True,
+                        is_private=True,
+                        organization__in=user.profile.organizations.all(),
+                    ) & Q(has_private=True)
+                )
             )
 
-            q |= Q(authors=user.profile)
-            q |= Q(curators=user.profile)
-            q |= Q(testers=user.profile)
-            queryset = queryset.filter(q)
-        return queryset.distinct()
+            authors_exists = Contest.authors.through.objects.filter(
+                contest_id=OuterRef('pk'),
+                profile_id=user.profile.id,
+            )
+            curators_exists = Contest.curators.through.objects.filter(
+                contest_id=OuterRef('pk'),
+                profile_id=user.profile.id,
+            )
+            testers_exists = Contest.testers.through.objects.filter(
+                contest_id=OuterRef('pk'),
+                profile_id=user.profile.id,
+            )
+
+            queryset = queryset.annotate(
+                has_author=Exists(authors_exists),
+                has_curator=Exists(curators_exists),
+                has_tester=Exists(testers_exists),
+            )
+
+            queryset = queryset.filter(
+                q |
+                Q(has_author=True) |
+                Q(has_curator=True) |
+                Q(has_tester=True),
+            )
+
+        return queryset
 
     def rate(self):
         with transaction.atomic():
@@ -542,6 +610,9 @@ class Contest(models.Model):
         )
         verbose_name = _('contest')
         verbose_name_plural = _('contests')
+        indexes = [
+            models.Index(fields=['-end_time', 'key']),
+        ]
 
 
 class ContestAnnouncement(models.Model):
@@ -551,11 +622,10 @@ class ContestAnnouncement(models.Model):
     date = models.DateTimeField(verbose_name=_('announcement timestamp'), auto_now_add=True)
 
     def send(self):
-        if self.contest.push_announcements:
-            event.post(f'contest_{self.contest.id_secret}', {
-                'title': self.title,
-                'message': self.description,
-            })
+        if not self.contest.push_announcements:
+            return
+        from judge.tasks import send_contest_announcement
+        send_contest_announcement.delay(self.id)
 
 
 class ContestParticipation(models.Model):
@@ -589,6 +659,28 @@ class ContestParticipation(models.Model):
                 self.save(update_fields=['score', 'cumtime', 'tiebreaker'])
     recompute_results.alters_data = True
 
+    def check_ban(self):
+        if not settings.VNOJ_SHOULD_BAN_FOR_CHEATING_IN_CONTESTS or self.contest.is_organization_private:
+            return
+
+        qs = ContestParticipation.objects.filter(
+            user=self.user,
+            contest__is_organization_private=False,
+            is_disqualified=True,
+        )
+        ban_count_from = settings.VNOJ_BAN_COUNT_FROM_DATE
+        if ban_count_from is not None:
+            qs = qs.filter(contest__start_time__gte=ban_count_from)
+
+        disqualifications_count = qs.count()
+        if disqualifications_count >= settings.VNOJ_MAX_DISQUALIFICATIONS_BEFORE_BANNING and \
+                not self.user.is_banned:
+            self.user.ban_user(settings.VNOJ_CONTEST_CHEATING_BAN_MESSAGE)
+        elif disqualifications_count < settings.VNOJ_MAX_DISQUALIFICATIONS_BEFORE_BANNING and \
+                self.user.is_banned and self.user.ban_reason == settings.VNOJ_CONTEST_CHEATING_BAN_MESSAGE:
+            self.user.unban_user()
+    check_ban.alters_data = True
+
     def set_disqualified(self, disqualified):
         self.is_disqualified = disqualified
         self.recompute_results()
@@ -600,6 +692,7 @@ class ContestParticipation(models.Model):
             self.contest.banned_users.add(self.user)
         else:
             self.contest.banned_users.remove(self.user)
+        self.check_ban()
     set_disqualified.alters_data = True
 
     @property

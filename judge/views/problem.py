@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import re
@@ -11,8 +12,14 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db import transaction
 from django.db.models import BooleanField, Case, F, Prefetch, Q, When
 from django.db.utils import ProgrammingError
-from django.http import Http404, HttpResponse, HttpResponseForbidden, HttpResponseRedirect
-from django.shortcuts import get_object_or_404
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseForbidden,
+    HttpResponseRedirect,
+    JsonResponse,
+)
+from django.shortcuts import get_object_or_404, render
 from django.template.loader import get_template
 from django.urls import reverse
 from django.utils import timezone, translation
@@ -20,30 +27,58 @@ from django.utils.functional import cached_property
 from django.utils.html import escape, format_html
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _, gettext_lazy
-from django.views.generic import CreateView, ListView, UpdateView, View
+from django.views.generic import CreateView, DetailView, FormView, ListView, UpdateView, View
 from django.views.generic.base import TemplateResponseMixin
 from django.views.generic.detail import SingleObjectMixin
 from reversion import revisions
 
 from judge.comments import CommentedDetailView
-from judge.forms import LanguageLimitFormSet, ProblemCloneForm, ProblemEditForm, ProblemSubmitForm, \
-    ProposeProblemSolutionFormSet
-from judge.models import ContestSubmission, Judge, Language, Problem, ProblemGroup, \
-    ProblemTranslation, ProblemType, RuntimeVersion, Solution, Submission, SubmissionSource
-from judge.tasks import on_new_problem
+from judge.forms import (
+    LanguageLimitFormSet,
+    ProblemCloneForm,
+    ProblemEditForm,
+    ProblemEditTypeGroupForm,
+    ProblemImportPolygonForm,
+    ProblemImportPolygonStatementFormSet,
+    ProblemSubmitForm,
+    ProposeProblemSolutionFormSet,
+)
+from judge.models import (
+    Contest,
+    ContestSubmission,
+    Judge,
+    Language,
+    Problem,
+    ProblemEditorialReveal,
+    ProblemGroup,
+    ProblemTranslation,
+    ProblemType,
+    RuntimeVersion,
+    Solution,
+    Submission,
+    SubmissionSource,
+)
 from judge.template_context import misc_config
-from judge.utils.diggpaginator import DiggPaginator
+from judge.utils.codeforces_polygon import ImportPolygonError, PolygonImporter
+from judge.utils.infinite_paginator import InfinitePaginationMixin
 from judge.utils.opengraph import generate_opengraph
 from judge.utils.pdfoid import PDF_RENDERING_ENABLED, render_pdf
-from judge.utils.problems import hot_problems, user_attempted_ids, \
-    user_completed_ids
+from judge.utils.problems import hot_problems, user_attempted_ids, user_completed_ids
 from judge.utils.strings import safe_float_or_none, safe_int_or_none
 from judge.utils.tickets import own_ticket_filter
-from judge.utils.views import QueryStringSortMixin, SingleObjectFormView, TitleMixin, add_file_response, generic_message
+from judge.utils.views import (
+    QueryStringSortMixin,
+    SingleObjectFormView,
+    TitleMixin,
+    add_file_response,
+    generic_message,
+)
 from judge.views.widgets import pdf_statement_uploader, submission_uploader
 
-recjk = re.compile(r'[\u2E80-\u2E99\u2E9B-\u2EF3\u2F00-\u2FD5\u3005\u3007\u3021-\u3029\u3038-\u303A\u303B\u3400-\u4DB5'
-                   r'\u4E00-\u9FC3\uF900-\uFA2D\uFA30-\uFA6A\uFA70-\uFAD9\U00020000-\U0002A6D6\U0002F800-\U0002FA1D]')
+recjk = re.compile(
+    r'[\u2E80-\u2E99\u2E9B-\u2EF3\u2F00-\u2FD5\u3005\u3007\u3021-\u3029\u3038-\u303A\u303B\u3400-\u4DB5'
+    r'\u4E00-\u9FC3\uF900-\uFA2D\uFA30-\uFA6A\uFA70-\uFAD9\U00020000-\U0002A6D6\U0002F800-\U0002FA1D]',
+)
 
 
 def get_contest_problem(problem, profile):
@@ -54,8 +89,28 @@ def get_contest_problem(problem, profile):
 
 
 def get_contest_submission_count(problem, profile, virtual):
-    return profile.current_contest.submissions.exclude(submission__status__in=['IE']) \
-                  .filter(problem__problem=problem, participation__virtual=virtual).count()
+    return (
+        profile.current_contest.submissions.exclude(submission__status__in=['IE'])
+        .filter(problem__problem=problem, participation__virtual=virtual)
+        .count()
+    )
+
+
+def get_accessible_solution(problem, request):
+    """Fetch the editorial for `problem`, or 404 if the requesting user can't see it.
+
+    Shared by ProblemSolution and ProblemSolutionComments so the comments AJAX
+    endpoint can't leak editorial comments to someone who can't see the editorial.
+    """
+    solution = get_object_or_404(Solution, problem=problem)
+    if not solution.is_accessible_by(request.user) or request.in_contest:
+        raise Http404()
+    return solution
+
+
+class ProblemDeleted(Exception):
+    def __init__(self, problem_name):
+        self.problem_name = problem_name
 
 
 class ProblemMixin(object):
@@ -67,18 +122,30 @@ class ProblemMixin(object):
         problem = super(ProblemMixin, self).get_object(queryset)
         if not problem.is_accessible_by(self.request.user):
             raise Http404()
+        if problem.is_deleted:
+            raise ProblemDeleted(problem_name=problem.name)
         return problem
 
     def no_such_problem(self):
         code = self.kwargs.get(self.slug_url_kwarg, None)
-        return generic_message(self.request, _('No such problem'),
-                               _('Could not find a problem with the code "%s".') % code, status=404)
+        return generic_message(
+            self.request,
+            _('No such problem'),
+            _('Could not find a problem with the code "%s".') % code,
+            status=404,
+        )
 
     def get(self, request, *args, **kwargs):
         try:
             return super(ProblemMixin, self).get(request, *args, **kwargs)
         except Http404:
             return self.no_such_problem()
+
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            return super().dispatch(request, *args, **kwargs)
+        except ProblemDeleted as e:
+            return render(request, 'problem/deleted.html', {'title': e.problem_name})
 
 
 class SolvedProblemMixin(object):
@@ -103,36 +170,187 @@ class SolvedProblemMixin(object):
         return self.request.profile
 
 
-class ProblemSolution(SolvedProblemMixin, ProblemMixin, TitleMixin, CommentedDetailView):
+class ProblemSolution(
+    SolvedProblemMixin, ProblemMixin, TitleMixin, CommentedDetailView,
+):
     context_object_name = 'problem'
     template_name = 'problem/editorial.html'
+
+    @staticmethod
+    def get_editorial_reveal_penalty():
+        return getattr(settings, 'VNOJ_CP_EDITORIAL_REVEAL', 1)
+
+    def is_editorial_revealed(self, has_solved_problem):
+        if has_solved_problem:
+            return True
+        if self.profile is None:
+            return False
+        return ProblemEditorialReveal.objects.filter(profile=self.profile, problem=self.object).exists()
+
+    def get_editorial_reveal_block_reason(self, has_solved_problem, has_revealed_editorial):
+        if has_solved_problem or has_revealed_editorial:
+            return None
+        if self.profile is None:
+            return 'login_required'
+        if self.profile.contribution_points < 0:
+            return 'negative_contribution_points'
+        return None
 
     def get_title(self):
         return _('Editorial for {0}').format(self.object.name)
 
     def get_content_title(self):
-        return mark_safe(escape(_('Editorial for {0}')).format(
-            format_html('<a href="{1}">{0}</a>', self.object.name, reverse('problem_detail', args=[self.object.code])),
-        ))
+        return mark_safe(
+            escape(_('Editorial for {0}')).format(
+                format_html(
+                    '<a href="{1}">{0}</a>',
+                    self.object.name,
+                    reverse('problem_detail', args=[self.object.code]),
+                ),
+            ),
+        )
 
     def get_context_data(self, **kwargs):
         context = super(ProblemSolution, self).get_context_data(**kwargs)
 
+        context['solution'] = get_accessible_solution(self.object, self.request)
+        context['has_solved_problem'] = self.object.id in self.get_completed_problems()
+        context['has_revealed_editorial'] = self.is_editorial_revealed(context['has_solved_problem'])
+        context['should_gate_editorial'] = not context['has_revealed_editorial']
+        context['editorial_reveal_block_reason'] = self.get_editorial_reveal_block_reason(
+            context['has_solved_problem'],
+            context['has_revealed_editorial'],
+        )
+        context['can_reveal_editorial'] = context['should_gate_editorial'] and \
+            context['editorial_reveal_block_reason'] is None
+        context['editorial_reveal_penalty'] = self.get_editorial_reveal_penalty()
+        context['should_track_editorial_reveal'] = context['can_reveal_editorial'] and self.profile is not None
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
         solution = get_object_or_404(Solution, problem=self.object)
 
-        if not solution.is_accessible_by(self.request.user) or self.request.in_contest:
+        if not solution.is_accessible_by(request.user) or request.in_contest:
             raise Http404()
-        context['solution'] = solution
-        context['has_solved_problem'] = self.object.id in self.get_completed_problems()
-        return context
+
+        if self.profile is None:
+            return JsonResponse({
+                'revealed': False,
+                'tracked': False,
+                'already_revealed': False,
+                'error': 'login_required',
+            }, status=403)
+
+        has_solved_problem = self.object.id in self.get_completed_problems()
+        if has_solved_problem:
+            return JsonResponse({'revealed': True, 'tracked': False, 'already_revealed': True})
+
+        already_revealed = ProblemEditorialReveal.objects.filter(
+            profile=self.profile, problem=self.object,
+        ).exists()
+        if already_revealed:
+            return JsonResponse({
+                'revealed': True,
+                'tracked': True,
+                'already_revealed': True,
+                'contribution_points': self.profile.contribution_points,
+                'penalty': self.get_editorial_reveal_penalty(),
+            })
+
+        if self.profile.contribution_points < 0:
+            return JsonResponse({
+                'revealed': False,
+                'tracked': False,
+                'already_revealed': False,
+                'error': 'negative_contribution_points',
+            }, status=403)
+
+        with transaction.atomic():
+            _, created = ProblemEditorialReveal.objects.get_or_create(
+                profile=self.profile,
+                problem=self.object,
+            )
+            if created:
+                self.profile.calculate_contribution_points()
+
+        return JsonResponse({
+            'revealed': True,
+            'tracked': True,
+            'already_revealed': not created,
+            'contribution_points': self.profile.contribution_points,
+            'penalty': self.get_editorial_reveal_penalty(),
+        })
 
     def get_comment_page(self):
         return 's:' + self.object.code
 
     def no_such_problem(self):
         code = self.kwargs.get(self.slug_url_kwarg, None)
-        return generic_message(self.request, _('No such editorial'),
-                               _('Could not find an editorial with the code "%s".') % code, status=404)
+        return generic_message(
+            self.request,
+            _('No such editorial'),
+            _('Could not find an editorial with the code "%s".') % code,
+            status=404,
+        )
+
+
+class ProblemSolutionComments(ProblemMixin, CommentedDetailView):
+    context_object_name = 'problem'
+    template_name = 'problem/editorial-comments-tab.html'
+    skip_comment_list = False
+
+    def get_comment_page(self):
+        return 's:' + self.object.code
+
+    def get_context_data(self, **kwargs):
+        # Enforce the same access rule as the editorial page itself, so this AJAX
+        # endpoint can't leak editorial comments to someone who can't see it.
+        get_accessible_solution(self.object, self.request)
+        return super(ProblemSolutionComments, self).get_context_data(**kwargs)
+
+
+class ProblemClarificationsMixin(object):
+    """Shared contest-problem/clarifications detection, used by both the main
+    problem page and its lazy-loaded comments fragment."""
+
+    contest_problem = None
+
+    def get_object(self, queryset=None):
+        problem = super(ProblemClarificationsMixin, self).get_object(queryset)
+        user = self.request.user
+        authed = user.is_authenticated
+        self.contest_problem = (None if not authed or user.profile.current_contest is None else
+                                get_contest_problem(problem, user.profile))
+        return problem
+
+    def is_comment_locked(self):
+        if self.contest_problem and self.contest_problem.contest.use_clarifications:
+            return True
+        return super(ProblemClarificationsMixin, self).is_comment_locked()
+
+    def get_comment_page(self):
+        return 'p:%s' % self.object.code
+
+    def get_clarifications_context(self):
+        if self.contest_problem and self.contest_problem.contest.use_clarifications:
+            clarifications = self.object.clarifications
+            return {
+                'has_clarifications': clarifications.count() > 0,
+                'clarifications': clarifications.order_by('-date'),
+            }
+        return {}
+
+
+class ProblemComments(ProblemMixin, ProblemClarificationsMixin, CommentedDetailView):
+    context_object_name = 'problem'
+    template_name = 'problem/comments-tab.html'
+    skip_comment_list = False
+
+    def get_context_data(self, **kwargs):
+        context = super(ProblemComments, self).get_context_data(**kwargs)
+        context.update(self.get_clarifications_context())
+        return context
 
 
 class ProblemRaw(ProblemMixin, TitleMixin, TemplateResponseMixin, SingleObjectMixin, View):
@@ -152,60 +370,260 @@ class ProblemRaw(ProblemMixin, TitleMixin, TemplateResponseMixin, SingleObjectMi
 
         context['problem_name'] = self.object.name if trans is None else trans.name
         context['url'] = self.request.build_absolute_uri()
-        context['description'] = self.object.description if trans is None else trans.description
+        context['description'] = (
+            self.object.description if trans is None else trans.description
+        )
         return context
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
         with translation.override(settings.LANGUAGE_CODE):
-            return self.render_to_response(self.get_context_data(
-                object=self.object,
-            ))
+            return self.render_to_response(
+                self.get_context_data(
+                    object=self.object,
+                ),
+            )
 
 
-class ProblemDetail(ProblemMixin, SolvedProblemMixin, CommentedDetailView):
+user_logger = logging.getLogger('judge.user')
+user_submit_ip_logger = logging.getLogger('judge.user_submit_ip_logger')
+
+
+class ProblemSubmitMixin:
+    @cached_property
+    def contest_problem(self):
+        if not self.request.user.is_authenticated or self.request.profile.current_contest is None:
+            return None
+        return get_contest_problem(self.object, self.request.profile)
+
+    @cached_property
+    def remaining_submission_count(self):
+        if not self.request.user.is_authenticated:
+            return None
+        max_subs = self.contest_problem and self.contest_problem.max_submissions
+        if max_subs is None:
+            return None
+        # When an IE submission is rejudged into a non-IE status, it will count towards the
+        # submission limit. We max with 0 to ensure that `remaining_submission_count` returns
+        # a non-negative integer, which is required for future checks in this view.
+        return max(
+            0,
+            max_subs - get_contest_submission_count(
+                self.object, self.request.profile, self.request.profile.current_contest.virtual,
+            ),
+        )
+
+    @cached_property
+    def default_language(self):
+        if not self.request.user.is_authenticated:
+            return None
+        # If old_submission exists (for resubmit), use its language
+        if hasattr(self, 'old_submission') and self.old_submission is not None:
+            return self.old_submission.language
+        return self.request.profile.language
+
+    def get_submit_form(self, **kwargs):
+        if not self.request.user.is_authenticated:
+            return None
+
+        if self.request.method == 'POST':
+            form = ProblemSubmitForm(
+                self.request.POST,
+                self.request.FILES,
+                instance=Submission(user=self.request.profile, problem=self.object),
+            )
+        else:
+            initial = kwargs.get('initial', {})
+            if 'language' not in initial:
+                initial['language'] = self.default_language
+            # For resubmit, include source code
+            if hasattr(self, 'old_submission') and self.old_submission is not None:
+                initial['source'] = self.old_submission.source.source
+
+            form = ProblemSubmitForm(
+                instance=Submission(user=self.request.profile, problem=self.object),
+                initial=initial,
+            )
+
+        # Set judge choices
+        if self.object.is_editable_by(self.request.user):
+            form.fields['judge'].choices = tuple(
+                Judge.objects.filter(online=True, problems=self.object).values_list('name', 'name'),
+            )
+        else:
+            form.fields['judge'].choices = ()
+
+        # Set language queryset
+        form.fields['language'].queryset = (
+            self.object.usable_languages.order_by('name', 'key')
+            .prefetch_related(Prefetch('runtimeversion_set', RuntimeVersion.objects.order_by('priority')))
+        )
+
+        # Set ACE editor settings
+        form_data = getattr(form, 'cleaned_data', form.initial)
+        if 'language' in form_data and form_data['language']:
+            form.fields['source'].widget.mode = form_data['language'].ace
+        if self.request.user.is_authenticated:
+            form.fields['source'].widget.theme = self.request.profile.resolved_ace_theme
+
+        return form
+
+    def get_submit_context(self):
+        return {
+            'form': self.get_submit_form(),
+            'langs': Language.objects.all(),
+            'submission_limit': self.contest_problem and self.contest_problem.max_submissions,
+            'submissions_left': self.remaining_submission_count,
+            'ACE_URL': settings.ACE_URL,
+            'default_lang': self.default_language,
+        }
+
+    def handle_submission_post(self, request):
+        form = self.get_submit_form()
+
+        if not form.is_valid():
+            return None, form  # Return None to indicate validation failure
+
+        # Validation checks
+        if (
+            not request.user.has_perm('judge.spam_submission') and
+            Submission.objects.filter(user=request.profile, rejudged_date__isnull=True)
+                              .exclude(status__in=['D', 'IE', 'CE', 'AB']).count() >= settings.DMOJ_SUBMISSION_LIMIT
+        ):
+            return HttpResponse(format_html('<h1>{0}</h1>', _('You submitted too many submissions.')), status=429), None
+
+        if not self.object.allowed_languages.filter(id=form.cleaned_data['language'].id).exists():
+            raise PermissionDenied()
+
+        if not request.user.is_superuser and self.object.banned_users.filter(id=request.profile.id).exists():
+            return generic_message(request, _('Banned from submitting'),
+                                   _('You have been declared persona non grata for this problem. '
+                                     'You are permanently barred from submitting to this problem.')), None
+
+        # Must check for zero and not None. None means infinite submissions remaining.
+        if self.remaining_submission_count == 0:
+            return generic_message(request, _('Too many submissions'),
+                                   _('You have exceeded the submission limit for this problem.')), None
+
+        # Organization credit check
+        if settings.VNOJ_ENABLE_ORGANIZATION_CREDIT_LIMITATION:
+            # check if the problem belongs to any organization
+            organization = None
+            if self.object.is_organization_private:
+                organization = self.object.organization
+
+            if organization is None:
+                # check if the contest belongs to any organization
+                if self.contest_problem is not None:
+                    contest_object = request.profile.current_contest.contest
+
+                    if contest_object.is_organization_private:
+                        organization = contest_object.organization
+
+            # check if org have credit to execute this submission
+            if organization is not None:
+                if not organization.has_credit_left():
+                    org_name = organization.name
+                    return generic_message(
+                        request,
+                        _('No credit'),
+                        _(
+                            'The organization %s has no credit left to execute this submission. '
+                            'Ask the organization to buy more credit.',
+                        )
+                        % org_name,
+                    ), None
+
+        # Create submission
+        with transaction.atomic():
+            new_submission = form.save(commit=False)
+
+            contest_problem = self.contest_problem
+            if contest_problem is not None:
+                # Use the contest object from current_contest.contest because we already use it
+                # in profile.update_contest().
+                new_submission.contest_object = request.profile.current_contest.contest
+                if request.profile.current_contest.live:
+                    new_submission.locked_after = new_submission.contest_object.locked_after
+                new_submission.save()
+                ContestSubmission(
+                    submission=new_submission,
+                    problem=contest_problem,
+                    participation=request.profile.current_contest,
+                ).save()
+            else:
+                new_submission.save()
+
+            submission_file = form.files.get('submission_file', None)
+            source_url = submission_uploader(
+                submission_file=submission_file,
+                problem_code=new_submission.problem.code,
+                user_id=new_submission.user.user.id,
+            ) if submission_file else ''
+
+            source = SubmissionSource(submission=new_submission, source=form.cleaned_data['source'] + source_url)
+            source.save()
+
+        # Save a query.
+        new_submission.source = source
+        new_submission.judge(force_judge=True, judge_id=form.cleaned_data['judge'])
+
+        # In contest mode, we should log the ip
+        if settings.VNOJ_OFFICIAL_CONTEST_MODE:
+            ip = request.META['REMOTE_ADDR']
+            # I didn't log the timestamp here because
+            # the logger can handle it.
+            user_submit_ip_logger.info(
+                '%s,%s,%s',
+                request.user.username,
+                ip,
+                new_submission.problem.code,
+            )
+
+        return HttpResponseRedirect(reverse('submission_status', args=(new_submission.id,))), None
+
+
+class ProblemDetail(ProblemMixin, ProblemClarificationsMixin, SolvedProblemMixin, ProblemSubmitMixin,
+                    CommentedDetailView):
     context_object_name = 'problem'
     template_name = 'problem/problem.html'
 
-    def get_object(self, queryset=None):
-        problem = super(ProblemDetail, self).get_object(queryset)
-
-        user = self.request.user
-        authed = user.is_authenticated
-        self.contest_problem = (None if not authed or user.profile.current_contest is None else
-                                get_contest_problem(problem, user.profile))
-
-        return problem
-
-    def is_comment_locked(self):
-        if self.contest_problem and self.contest_problem.contest.use_clarifications:
-            return True
-
-        return super(ProblemDetail, self).is_comment_locked()
-
-    def get_comment_page(self):
-        return 'p:%s' % self.object.code
-
     def get_context_data(self, **kwargs):
         context = super(ProblemDetail, self).get_context_data(**kwargs)
+
+        # Detect mobile user agent
+        ua = self.request.META.get('HTTP_USER_AGENT', '').lower()
+        # 'mobi' covers iPhone, Android mobile, etc. iPad and Android tablets usually exclude 'mobi'.
+        context['is_mobile'] = 'mobi' in ua
+
         user = self.request.user
         authed = user.is_authenticated
         contest_problem = self.contest_problem
-        context['has_submissions'] = authed and Submission.objects.filter(user=user.profile,
-                                                                          problem=self.object).exists()
+        context['has_submissions'] = (
+            authed and
+            Submission.objects.filter(
+                user=user.profile, problem=self.object,
+            ).exists()
+        )
         context['contest_problem'] = contest_problem
+        context.update(self.get_clarifications_context())
         if contest_problem:
-            clarifications = self.object.clarifications
-            context['has_clarifications'] = clarifications.count() > 0
-            context['clarifications'] = clarifications.order_by('-date')
             context['submission_limit'] = contest_problem.max_submissions
             if contest_problem.max_submissions:
-                context['submissions_left'] = max(contest_problem.max_submissions -
-                                                  get_contest_submission_count(self.object, user.profile,
-                                                                               user.profile.current_contest.virtual), 0)
+                context['submissions_left'] = max(
+                    contest_problem.max_submissions -
+                    get_contest_submission_count(
+                        self.object, user.profile, user.profile.current_contest.virtual,
+                    ),
+                    0,
+                )
 
-        context['available_judges'] = Judge.objects.filter(online=True, problems=self.object)
-        context['show_languages'] = self.object.allowed_languages.count() != Language.objects.count()
+        context['available_judges'] = Judge.objects.filter(
+            online=True, problems=self.object,
+        )
+        context['show_languages'] = (
+            self.object.allowed_languages.count() != Language.objects.count()
+        )
         context['has_pdf_render'] = PDF_RENDERING_ENABLED
         context['completed_problem_ids'] = self.get_completed_problems()
         context['attempted_problems'] = self.get_attempted_problems()
@@ -217,14 +635,18 @@ class ProblemDetail(ProblemMixin, SolvedProblemMixin, CommentedDetailView):
             if not can_edit:
                 tickets = tickets.filter(own_ticket_filter(user.profile.id))
             context['has_tickets'] = tickets.exists()
-            context['num_open_tickets'] = tickets.filter(is_open=True).values('id').distinct().count()
+            context['num_open_tickets'] = (
+                tickets.filter(is_open=True).values('id').distinct().count()
+            )
 
         try:
             context['editorial'] = Solution.objects.get(problem=self.object)
         except ObjectDoesNotExist:
             pass
         try:
-            translation = self.object.translations.get(language=self.request.LANGUAGE_CODE)
+            translation = self.object.translations.get(
+                language=self.request.LANGUAGE_CODE,
+            )
         except ProblemTranslation.DoesNotExist:
             context['title'] = self.object.name
             context['language'] = settings.LANGUAGE_CODE
@@ -241,7 +663,33 @@ class ProblemDetail(ProblemMixin, SolvedProblemMixin, CommentedDetailView):
                                           context['description'], 'problem')
         context['meta_description'] = self.object.summary or metadata[0]
         context['og_image'] = self.object.og_image or metadata[1]
+
+        if user.is_authenticated:
+            submit_context = self.get_submit_context()
+            context.update(submit_context)
+            context['no_judges'] = not context['form'].fields['language'].queryset if context.get('form') else True
+
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        # Check if this is a submission (not a comment)
+        if 'source' in request.POST or 'submission_file' in request.FILES:
+            if not request.user.is_authenticated:
+                return HttpResponseForbidden()
+
+            response, failed_form = self.handle_submission_post(request)
+            if failed_form:
+                # Re-render with form errors
+                return self.render_to_response(self.get_context_data(
+                    object=self.object,
+                    comment_form=self.get_comment_form(request),
+                ))
+            return response
+
+        # Otherwise, handle as comment
+        return super(ProblemDetail, self).post(request, *args, **kwargs)
 
 
 class LatexError(Exception):
@@ -274,12 +722,19 @@ class ProblemPdfView(ProblemMixin, SingleObjectMixin, View):
 
                 problem_name = trans.name if trans else problem.name
                 return render_pdf(
-                    html=get_template('problem/raw.html').render({
-                        'problem': problem,
-                        'problem_name': problem_name,
-                        'description': trans.description if trans else problem.description,
-                        'url': request.build_absolute_uri(),
-                    }).replace('"//', '"https://').replace("'//", "'https://"),
+                    html=get_template('problem/raw.html')
+                    .render(
+                        {
+                            'problem': problem,
+                            'problem_name': problem_name,
+                            'description': trans.description
+                            if trans
+                            else problem.description,
+                            'url': request.build_absolute_uri(),
+                        },
+                    )
+                    .replace('"//', '"https://')
+                    .replace("'//", "'https://"),
                     title=problem_name,
                 )
 
@@ -305,24 +760,22 @@ class ProblemPdfView(ProblemMixin, SingleObjectMixin, View):
         return response
 
 
-class ProblemList(QueryStringSortMixin, TitleMixin, SolvedProblemMixin, ListView):
+class ProblemList(QueryStringSortMixin, TitleMixin, SolvedProblemMixin, InfinitePaginationMixin, ListView):
     model = Problem
     title = gettext_lazy('Problem list')
     context_object_name = 'problems'
     template_name = 'problem/list.html'
     paginate_by = 50
-    sql_sort = frozenset(('points', 'ac_rate', 'user_count', 'code', 'date'))
+    sql_sort = frozenset(('points', 'ac_rate', 'user_count', 'code', 'date', 'id'))
     manual_sort = frozenset(('name', 'group', 'solved', 'type', 'editorial'))
     all_sorts = sql_sort | manual_sort
-    default_desc = frozenset(('points', 'ac_rate', 'user_count'))
-    # Default sort by date
+    default_desc = frozenset(('points', 'ac_rate', 'user_count', 'id'))
     default_sort = '-date'
 
-    def get_paginator(self, queryset, per_page, orphans=0,
-                      allow_empty_first_page=True, **kwargs):
-        paginator = DiggPaginator(queryset, per_page, body=6, padding=2, orphans=orphans,
-                                  count=queryset.values('pk').count(),
-                                  allow_empty_first_page=allow_empty_first_page, **kwargs)
+    def order_queryset(self, queryset):
+        """
+        Order the queryset based on the sort order.
+        """
         queryset = queryset.add_i18n_name(self.request.LANGUAGE_CODE)
         sort_key = self.order.lstrip('-')
         if sort_key in self.sql_sort:
@@ -332,7 +785,9 @@ class ProblemList(QueryStringSortMixin, TitleMixin, SolvedProblemMixin, ListView
         elif sort_key == 'group':
             queryset = queryset.order_by(self.order + '__name', 'name', 'id')
         elif sort_key == 'editorial':
-            queryset = queryset.order_by(self.order.replace('editorial', 'has_public_editorial'), 'id')
+            queryset = queryset.order_by(
+                self.order.replace('editorial', 'has_public_editorial'), 'id',
+            )
         elif sort_key == 'solved':
             if self.request.user.is_authenticated:
                 profile = self.request.profile
@@ -347,14 +802,19 @@ class ProblemList(QueryStringSortMixin, TitleMixin, SolvedProblemMixin, ListView
                     return -1
 
                 queryset = list(queryset)
-                queryset.sort(key=_solved_sort_order, reverse=self.order.startswith('-'))
+                queryset.sort(
+                    key=_solved_sort_order, reverse=self.order.startswith('-'),
+                )
         elif sort_key == 'type':
             if self.show_types:
                 queryset = list(queryset)
-                queryset.sort(key=lambda problem: problem.types_list[0] if problem.types_list else '',
-                              reverse=self.order.startswith('-'))
-        paginator.object_list = queryset
-        return paginator
+                queryset.sort(
+                    key=lambda problem: problem.types_list[0]
+                    if problem.types_list
+                    else '',
+                    reverse=self.order.startswith('-'),
+                )
+        return queryset
 
     @cached_property
     def profile(self):
@@ -367,8 +827,11 @@ class ProblemList(QueryStringSortMixin, TitleMixin, SolvedProblemMixin, ListView
         if recjk.search(query):
             # MariaDB can't tokenize CJK properly, fallback to LIKE '%term%' for each term.
             for term in query.split():
-                queryset = queryset.filter(Q(code__icontains=term) | Q(name__icontains=term) |
-                                           Q(description__icontains=term))
+                queryset = queryset.filter(
+                    Q(code__icontains=term) |
+                    Q(name__icontains=term) |
+                    Q(description__icontains=term),
+                )
             return queryset
         return queryset.search(query, queryset.BOOLEAN).extra(order_by=['-relevance'])
 
@@ -380,19 +843,31 @@ class ProblemList(QueryStringSortMixin, TitleMixin, SolvedProblemMixin, ListView
 
     def get_normal_queryset(self):
         _filter = self.get_filter()
-        queryset = Problem.objects.filter(_filter).select_related('group').defer('description', 'summary')
+        queryset = (
+            Problem.available.filter(_filter)
+            .select_related('group')
+            .defer('description', 'summary')
+        )
 
         if self.profile is not None and self.hide_solved:
-            queryset = queryset.exclude(id__in=Submission.objects
-                                        .filter(user=self.profile, result='AC', case_points__gte=F('case_total'))
-                                        .values_list('problem_id', flat=True))
+            queryset = queryset.exclude(
+                id__in=Submission.objects.filter(
+                    user=self.profile, result='AC', case_points__gte=F('case_total'),
+                ).values_list('problem_id', flat=True),
+            )
         if self.show_types:
             queryset = queryset.prefetch_related('types')
-        queryset = queryset.annotate(has_public_editorial=Case(
-            When(solution__is_public=True, solution__publish_on__lte=timezone.now(), then=True),
-            default=False,
-            output_field=BooleanField(),
-        ))
+        queryset = queryset.annotate(
+            has_public_editorial=Case(
+                When(
+                    solution__is_public=True,
+                    solution__publish_on__lte=timezone.now(),
+                    then=True,
+                ),
+                default=False,
+                output_field=BooleanField(),
+            ),
+        )
         if self.has_public_editorial:
             queryset = queryset.filter(has_public_editorial=True)
         if self.category is not None:
@@ -400,14 +875,22 @@ class ProblemList(QueryStringSortMixin, TitleMixin, SolvedProblemMixin, ListView
         if self.selected_types:
             queryset = queryset.filter(types__in=self.selected_types)
         if 'search' in self.request.GET:
-            self.search_query = query = ' '.join(self.request.GET.getlist('search')).strip()
+            self.search_query = query = ' '.join(
+                self.request.GET.getlist('search'),
+            ).strip()
             if query:
                 if settings.ENABLE_FTS and self.full_text:
                     queryset = self.apply_full_text(queryset, query)
                 else:
                     queryset = queryset.filter(
-                        Q(code__icontains=query) | Q(name__icontains=query) | Q(source__icontains=query) |
-                        Q(translations__name__icontains=query, translations__language=self.request.LANGUAGE_CODE))
+                        Q(code__icontains=query) |
+                        Q(name__icontains=query) |
+                        Q(source__icontains=query) |
+                        Q(
+                            translations__name__icontains=query,
+                            translations__language=self.request.LANGUAGE_CODE,
+                        ),
+                    )
         self.prepoint_queryset = queryset
         if self.point_start is not None:
             queryset = queryset.filter(points__gte=self.point_start)
@@ -416,7 +899,8 @@ class ProblemList(QueryStringSortMixin, TitleMixin, SolvedProblemMixin, ListView
         return queryset.distinct()
 
     def get_queryset(self):
-        return self.get_normal_queryset()
+        queryset = self.get_normal_queryset()
+        return self.order_queryset(queryset)
 
     def get_hot_problems(self):
         return hot_problems(timedelta(days=1), settings.DMOJ_PROBLEM_HOT_PROBLEM_COUNT)
@@ -436,21 +920,29 @@ class ProblemList(QueryStringSortMixin, TitleMixin, SolvedProblemMixin, ListView
         context['completed_problem_ids'] = self.get_completed_problems()
         context['attempted_problems'] = self.get_attempted_problems()
         context['hot_problems'] = self.get_hot_problems()
-        context['point_start'], context['point_end'], context['point_values'] = self.get_noui_slider_points()
+        context['point_start'], context['point_end'], context['point_values'] = (
+            self.get_noui_slider_points()
+        )
         context.update(self.get_sort_context())
         context.update(self.get_sort_paginate_context())
         return context
 
     def get_noui_slider_points(self):
-        points = sorted(self.prepoint_queryset.values_list('points', flat=True).distinct())
+        points = sorted(
+            self.prepoint_queryset.values_list('points', flat=True).distinct(),
+        )
         if not points:
             return 0, 0, {}
         if len(points) == 1:
-            return points[0] - 1, points[0] + 1, {
-                'min': points[0] - 1,
-                '50%': points[0],
-                'max': points[0] + 1,
-            }
+            return (
+                points[0] - 1,
+                points[0] + 1,
+                {
+                    'min': points[0] - 1,
+                    '50%': points[0],
+                    'max': points[0] + 1,
+                },
+            )
 
         start, end = points[0], points[-1]
         if self.point_start is not None:
@@ -459,7 +951,14 @@ class ProblemList(QueryStringSortMixin, TitleMixin, SolvedProblemMixin, ListView
             end = self.point_end
         points_map = {0.0: 'min', 1.0: 'max'}
         size = len(points) - 1
-        return start, end, {points_map.get(i / size, '%.2f%%' % (100 * i / size,)): j for i, j in enumerate(points)}
+        return (
+            start,
+            end,
+            {
+                points_map.get(i / size, '%.2f%%' % (100 * i / size,)): j
+                for i, j in enumerate(points)
+            },
+        )
 
     def GET_with_session(self, request, key):
         if not request.GET:
@@ -470,7 +969,9 @@ class ProblemList(QueryStringSortMixin, TitleMixin, SolvedProblemMixin, ListView
         self.hide_solved = self.GET_with_session(request, 'hide_solved')
         self.show_types = self.GET_with_session(request, 'show_types')
         self.full_text = self.GET_with_session(request, 'full_text')
-        self.has_public_editorial = self.GET_with_session(request, 'has_public_editorial')
+        self.has_public_editorial = self.GET_with_session(
+            request, 'has_public_editorial',
+        )
 
         self.search_query = None
         self.category = None
@@ -510,20 +1011,6 @@ class ProblemList(QueryStringSortMixin, TitleMixin, SolvedProblemMixin, ListView
         return HttpResponseRedirect(request.get_full_path())
 
 
-class SuggestList(ProblemList):
-    title = gettext_lazy('Suggested problem list')
-    template_name = 'problem/suggest-list.html'
-    permission_required = 'superuser'
-
-    def get_filter(self):
-        return Q(is_public=False) & ~Q(suggester=None)
-
-    def get(self, request, *args, **kwargs):
-        if not request.user.has_perm('judge.suggest_new_problem'):
-            raise Http404
-        return super(SuggestList, self).get(request, *args, **kwargs)
-
-
 class LanguageTemplateAjax(View):
     def get(self, request, *args, **kwargs):
         try:
@@ -542,50 +1029,25 @@ class RandomProblem(ProblemList):
         queryset = self.get_normal_queryset()
         count = queryset.count()
         if not count:
-            return HttpResponseRedirect('%s%s%s' % (reverse('problem_list'), request.META['QUERY_STRING'] and '?',
-                                                    request.META['QUERY_STRING']))
+            return HttpResponseRedirect(
+                '%s%s%s'
+                % (
+                    reverse('problem_list'),
+                    request.META['QUERY_STRING'] and '?',
+                    request.META['QUERY_STRING'],
+                ),
+            )
         return HttpResponseRedirect(queryset[randrange(count)].get_absolute_url())
 
 
-user_logger = logging.getLogger('judge.user')
-user_submit_ip_logger = logging.getLogger('judge.user_submit_ip_logger')
-
-
-class ProblemSubmit(LoginRequiredMixin, ProblemMixin, TitleMixin, SingleObjectFormView):
+class ProblemSubmit(LoginRequiredMixin, ProblemMixin, TitleMixin, ProblemSubmitMixin, SingleObjectFormView):
     template_name = 'problem/submit.html'
     form_class = ProblemSubmitForm
 
-    @cached_property
-    def contest_problem(self):
-        if self.request.profile.current_contest is None:
-            return None
-        return get_contest_problem(self.object, self.request.profile)
-
-    @cached_property
-    def remaining_submission_count(self):
-        max_subs = self.contest_problem and self.contest_problem.max_submissions
-        if max_subs is None:
-            return None
-        # When an IE submission is rejudged into a non-IE status, it will count towards the
-        # submission limit. We max with 0 to ensure that `remaining_submission_count` returns
-        # a non-negative integer, which is required for future checks in this view.
-        return max(
-            0,
-            max_subs - get_contest_submission_count(
-                self.object, self.request.profile, self.request.profile.current_contest.virtual,
-            ),
-        )
-
-    @cached_property
-    def default_language(self):
-        # If the old submission exists, use its language, otherwise use the user's default language.
-        if self.old_submission is not None:
-            return self.old_submission.language
-        return self.request.profile.language
-
     def get_content_title(self):
         return mark_safe(
-            escape(_('Submit to %s')) % format_html(
+            escape(_('Submit to %s'))
+            % format_html(
                 '<a href="{0}">{1}</a>',
                 reverse('problem_detail', args=[self.object.code]),
                 self.object.translated_name(self.request.LANGUAGE_CODE),
@@ -593,119 +1055,28 @@ class ProblemSubmit(LoginRequiredMixin, ProblemMixin, TitleMixin, SingleObjectFo
         )
 
     def get_title(self):
-        return _('Submit to %s') % self.object.translated_name(self.request.LANGUAGE_CODE)
-
-    def get_initial(self):
-        initial = {'language': self.default_language}
-        if self.old_submission is not None:
-            initial['source'] = self.old_submission.source.source
-        return initial
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['instance'] = Submission(user=self.request.profile, problem=self.object)
-
-        if self.object.is_editable_by(self.request.user):
-            kwargs['judge_choices'] = tuple(
-                Judge.objects.filter(online=True, problems=self.object).values_list('name', 'name'),
-            )
-        else:
-            kwargs['judge_choices'] = ()
-
-        return kwargs
-
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-
-        form.fields['language'].queryset = (
-            self.object.usable_languages.order_by('name', 'key')
-            .prefetch_related(Prefetch('runtimeversion_set', RuntimeVersion.objects.order_by('priority')))
+        return _('Submit to %s') % self.object.translated_name(
+            self.request.LANGUAGE_CODE,
         )
 
-        form_data = getattr(form, 'cleaned_data', form.initial)
-        if 'language' in form_data:
-            form.fields['source'].widget.mode = form_data['language'].ace
-        form.fields['source'].widget.theme = self.request.profile.resolved_ace_theme
-
-        return form
-
-    def get_success_url(self):
-        return reverse('submission_status', args=(self.new_submission.id,))
-
-    def form_valid(self, form):
-        if (
-            not self.request.user.has_perm('judge.spam_submission') and
-            Submission.objects.filter(user=self.request.profile, rejudged_date__isnull=True)
-                              .exclude(status__in=['D', 'IE', 'CE', 'AB']).count() >= settings.DMOJ_SUBMISSION_LIMIT
-        ):
-            return HttpResponse(format_html('<h1>{0}</h1>', _('You submitted too many submissions.')), status=429)
-        if not self.object.allowed_languages.filter(id=form.cleaned_data['language'].id).exists():
-            raise PermissionDenied()
-        if not self.request.user.is_superuser and self.object.banned_users.filter(id=self.request.profile.id).exists():
-            return generic_message(self.request, _('Banned from submitting'),
-                                   _('You have been declared persona non grata for this problem. '
-                                     'You are permanently barred from submitting to this problem.'))
-        # Must check for zero and not None. None means infinite submissions remaining.
-        if self.remaining_submission_count == 0:
-            return generic_message(self.request, _('Too many submissions'),
-                                   _('You have exceeded the submission limit for this problem.'))
-
-        with transaction.atomic():
-            self.new_submission = form.save(commit=False)
-
-            contest_problem = self.contest_problem
-            if contest_problem is not None:
-                # Use the contest object from current_contest.contest because we already use it
-                # in profile.update_contest().
-                self.new_submission.contest_object = self.request.profile.current_contest.contest
-                if self.request.profile.current_contest.live:
-                    self.new_submission.locked_after = self.new_submission.contest_object.locked_after
-                self.new_submission.save()
-                ContestSubmission(
-                    submission=self.new_submission,
-                    problem=contest_problem,
-                    participation=self.request.profile.current_contest,
-                ).save()
-            else:
-                self.new_submission.save()
-
-            submission_file = form.files.get('submission_file', None)
-            source_url = submission_uploader(
-                submission_file=submission_file,
-                problem_code=self.new_submission.problem.code,
-                user_id=self.new_submission.user.user.id,
-            ) if submission_file else ''
-
-            source = SubmissionSource(submission=self.new_submission, source=form.cleaned_data['source'] + source_url)
-            source.save()
-
-        # Save a query.
-        self.new_submission.source = source
-        self.new_submission.judge(force_judge=True, judge_id=form.cleaned_data['judge'])
-
-        # In contest mode, we should log the ip
-        if settings.VNOJ_OFFICIAL_CONTEST_MODE:
-            ip = self.request.META['REMOTE_ADDR']
-            # I didn't log the timestamp here because
-            # the logger can handle it.
-            user_submit_ip_logger.info(
-                '%s,%s,%s',
-                self.request.user.username,
-                ip,
-                self.new_submission.problem.code,
-            )
-
-        return super().form_valid(form)
+    def get_form(self, form_class=None):
+        return self.get_submit_form()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['langs'] = Language.objects.all()
-        context['no_judges'] = not context['form'].fields['language'].queryset
-        context['submission_limit'] = self.contest_problem and self.contest_problem.max_submissions
-        context['submissions_left'] = self.remaining_submission_count
-        context['ACE_URL'] = settings.ACE_URL
-        context['default_lang'] = self.default_language
+        context.update(self.get_submit_context())
+        context['no_judges'] = not context['form'].fields['language'].queryset if context.get('form') else True
         return context
+
+    def form_valid(self, form):
+        response, failed_form = self.handle_submission_post(self.request)
+        if failed_form:
+            return self.form_invalid(failed_form)
+        return response
+
+    def get_success_url(self):
+        # This is for compatibility with the parent class
+        return reverse('submission_status', args=(1,))
 
     def post(self, request, *args, **kwargs):
         try:
@@ -718,7 +1089,9 @@ class ProblemSubmit(LoginRequiredMixin, ProblemMixin, TitleMixin, SingleObjectFo
                 kwargs.get(self.slug_url_kwarg),
             )
             return HttpResponseForbidden(
-                format_html('<h1>{0}</h1>', _('You are not allowed to submit to this problem.')),
+                format_html(
+                    '<h1>{0}</h1>', _('You are not allowed to submit to this problem.'),
+                ),
             )
 
     def dispatch(self, request, *args, **kwargs):
@@ -730,7 +1103,10 @@ class ProblemSubmit(LoginRequiredMixin, ProblemMixin, TitleMixin, SingleObjectFo
             )
             if self.old_submission.language.file_only:
                 raise Http404()
-            if not request.user.has_perm('judge.resubmit_other') and self.old_submission.user != request.profile:
+            if (
+                not request.user.has_perm('judge.resubmit_other') and
+                self.old_submission.user != request.profile
+            ):
                 raise PermissionDenied()
         else:
             self.old_submission = None
@@ -738,7 +1114,9 @@ class ProblemSubmit(LoginRequiredMixin, ProblemMixin, TitleMixin, SingleObjectFo
         return super().dispatch(request, *args, **kwargs)
 
 
-class ProblemClone(ProblemMixin, PermissionRequiredMixin, TitleMixin, SingleObjectFormView):
+class ProblemClone(
+    ProblemMixin, PermissionRequiredMixin, TitleMixin, SingleObjectFormView,
+):
     title = gettext_lazy('Clone Problem')
     template_name = 'problem/clone.html'
     form_class = ProblemCloneForm
@@ -749,7 +1127,7 @@ class ProblemClone(ProblemMixin, PermissionRequiredMixin, TitleMixin, SingleObje
 
         languages = problem.allowed_languages.all()
         language_limits = problem.language_limits.all()
-        organizations = problem.organizations.all()
+        organization = problem.organization
         types = problem.types.all()
         old_code = problem.code
 
@@ -764,7 +1142,7 @@ class ProblemClone(ProblemMixin, PermissionRequiredMixin, TitleMixin, SingleObje
             problem.curators.add(self.request.profile)
             problem.allowed_languages.set(languages)
             problem.language_limits.set(language_limits)
-            problem.organizations.set(organizations)
+            problem.organization = organization
             problem.types.set(types)
             revisions.set_user(self.request.user)
             revisions.set_comment(_('Cloned problem from %s') % old_code)
@@ -779,7 +1157,7 @@ class ProblemClone(ProblemMixin, PermissionRequiredMixin, TitleMixin, SingleObje
 
 
 class ProblemCreate(PermissionRequiredMixin, TitleMixin, CreateView):
-    template_name = 'problem/suggest.html'
+    template_name = 'problem/create.html'
     model = Problem
     form_class = ProblemEditForm
     permission_required = 'judge.add_problem'
@@ -804,7 +1182,9 @@ class ProblemCreate(PermissionRequiredMixin, TitleMixin, CreateView):
         with revisions.create_revision(atomic=True):
             self.object = problem = form.save()
             problem.curators.add(self.request.user.profile)
-            problem.allowed_languages.set(Language.objects.filter(include_in_problem=True))
+            problem.allowed_languages.set(
+                Language.objects.filter(include_in_problem=True),
+            )
             problem.date = timezone.now()
             self.save_statement(form, problem)
             problem.save()
@@ -817,35 +1197,114 @@ class ProblemCreate(PermissionRequiredMixin, TitleMixin, CreateView):
     def get_initial(self):
         initial = super(ProblemCreate, self).get_initial()
         initial = initial.copy()
-        initial['description'] = misc_config(self.request)['misc_config']['description_example']
+        initial['description'] = misc_config(self.request)['misc_config'][
+            'description_example'
+        ]
         initial['memory_limit'] = 262144  # 256 MB
         initial['partial'] = True
+        try:
+            initial['group'] = ProblemGroup.objects.get(name='Uncategorized').pk
+        except ProblemGroup.DoesNotExist:
+            initial['group'] = ProblemGroup.objects.order_by('id').first().pk
+        try:
+            initial['types'] = ProblemType.objects.get(name='uncategorized').pk
+        except ProblemType.DoesNotExist:
+            initial['types'] = ProblemType.objects.order_by('id').first().pk
         return initial
 
 
-class ProblemSuggest(ProblemCreate):
-    permission_required = 'judge.suggest_new_problem'
+class ProblemImportPolygon(PermissionRequiredMixin, TitleMixin, FormView):
+    title = gettext_lazy('Import problem from Codeforces Polygon package')
+    template_name = 'problem/import-polygon.html'
+    model = Problem
+    form_class = ProblemImportPolygonForm
+    permission_required = 'judge.import_polygon_package'
 
-    def get_title(self):
-        return _('Suggesting new problem')
+    def get_formset(self):
+        return ProblemImportPolygonStatementFormSet(
+            data=self.request.POST if self.request.POST else None,
+            prefix='statements',
+        )
 
-    def get_content_title(self):
-        return _('Suggesting new problem')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['formset'] = self.get_formset()
+        context['site_languages_json'] = mark_safe(
+            json.dumps({code: str(name) for code, name in settings.LANGUAGES}),
+        )
+        return context
 
-    def form_valid(self, form):
-        with revisions.create_revision(atomic=True):
-            self.object = problem = form.save()
-            problem.suggester = self.request.user.profile
-            problem.allowed_languages.set(Language.objects.filter(include_in_problem=True))
-            problem.date = timezone.now()
-            self.save_statement(form, problem)
-            problem.save()
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        formset = self.get_formset()
+        if form.is_valid() and formset.is_valid():
+            package = form.cleaned_data['package'].file
+            code = form.cleaned_data['code']
+            do_update = form.cleaned_data['do_update']
+            config = {
+                'ignore_zero_point_batches': form.cleaned_data[
+                    'ignore_zero_point_batches'
+                ],
+                'ignore_zero_point_cases': form.cleaned_data['ignore_zero_point_cases'],
+                'append_main_solution_to_tutorial': form.cleaned_data[
+                    'append_main_solution_to_tutorial'
+                ],
+                'main_tutorial_language': form.cleaned_data.get(
+                    'main_tutorial_language', None,
+                ),
+                'main_statement_language': None,
+                'polygon_to_site_language_map': {},
+            }
+            if len(formset) > 1:
+                for statement in formset:
+                    polygon_language = statement.cleaned_data['polygon_language']
+                    site_language = statement.cleaned_data['site_language']
 
-            revisions.set_comment(_('Created on site'))
-            revisions.set_user(self.request.user)
+                    if site_language == settings.LANGUAGE_CODE:
+                        config['main_statement_language'] = polygon_language
+                    else:
+                        config['polygon_to_site_language_map'][polygon_language] = (
+                            site_language
+                        )
 
-        on_new_problem.delay(problem.code, is_suggested=True)
-        return HttpResponseRedirect(self.get_success_url())
+            try:
+                importer = PolygonImporter(
+                    package=package,
+                    code=code,
+                    authors=[self.request.profile],
+                    curators=[],
+                    do_update=do_update,
+                    interactive=False,
+                    config=config,
+                )
+                importer.run()
+            except ImportPolygonError as e:
+                return generic_message(
+                    request, _('Failed to import problem'), str(e), status=400,
+                )
+
+            return HttpResponseRedirect(reverse('problem_detail', args=[code]))
+
+        return self.render_to_response(self.get_context_data())
+
+
+class ProblemUpdatePolygon(ProblemImportPolygon, ProblemMixin, SingleObjectMixin):
+    title = gettext_lazy('Update problem from Codeforces Polygon package')
+
+    def get_object(self, queryset=None):
+        problem = super().get_object(queryset)
+        if not problem.is_editable_by(self.request.user):
+            raise PermissionDenied()
+        return problem
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['code'] = self.object.code
+        return kwargs
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
 
 
 class ProblemEdit(ProblemMixin, TitleMixin, UpdateView):
@@ -857,9 +1316,16 @@ class ProblemEdit(ProblemMixin, TitleMixin, UpdateView):
         return _('Editing problem {0}').format(self.object.name)
 
     def get_content_title(self):
-        return mark_safe(escape(_('Editing problem %s')) % (
-            format_html('<a href="{1}">{0}</a>', self.object.name,
-                        reverse('problem_detail', args=[self.object.code]))))
+        return mark_safe(
+            escape(_('Editing problem %s'))
+            % (
+                format_html(
+                    '<a href="{1}">{0}</a>',
+                    self.object.name,
+                    reverse('problem_detail', args=[self.object.code]),
+                )
+            ),
+        )
 
     def get_object(self, queryset=None):
         problem = super(ProblemEdit, self).get_object(queryset)
@@ -869,28 +1335,33 @@ class ProblemEdit(ProblemMixin, TitleMixin, UpdateView):
 
     def get_solution_formset(self):
         if self.request.POST:
-            return ProposeProblemSolutionFormSet(self.request.POST, instance=self.get_object())
+            return ProposeProblemSolutionFormSet(
+                self.request.POST, instance=self.get_object(),
+            )
         return ProposeProblemSolutionFormSet(instance=self.get_object())
 
     def get_language_limit_formset(self):
         if self.request.POST:
-            return LanguageLimitFormSet(self.request.POST, instance=self.get_object(),
-                                        form_kwargs={'user': self.request.user})
-        return LanguageLimitFormSet(instance=self.get_object(), form_kwargs={'user': self.request.user})
+            return LanguageLimitFormSet(
+                self.request.POST,
+                instance=self.get_object(),
+                form_kwargs={'user': self.request.user},
+            )
+        return LanguageLimitFormSet(
+            instance=self.get_object(), form_kwargs={'user': self.request.user},
+        )
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         data['lang_limit_formset'] = self.get_language_limit_formset()
         data['solution_formset'] = self.get_solution_formset()
+        data['organization'] = self.object.organization
         return data
 
     def get_form_kwargs(self):
         kwargs = super(ProblemEdit, self).get_form_kwargs()
-        # Due to some limitation with query set in select2
-        # We only support this if the problem is private for only
-        # 1 organization
-        if self.object.organizations.count() == 1:
-            kwargs['org_pk'] = self.object.organizations.values_list('pk', flat=True)[0]
+        if self.object.organization is not None:
+            kwargs['org_pk'] = self.object.organization.id
 
         kwargs['user'] = self.request.user
         return kwargs
@@ -916,7 +1387,9 @@ class ProblemEdit(ProblemMixin, TitleMixin, UpdateView):
                 revisions.set_comment(_('Edited from site'))
                 revisions.set_user(self.request.user)
 
-            return HttpResponseRedirect(reverse('problem_detail', args=[self.object.code]))
+            return HttpResponseRedirect(
+                reverse('problem_detail', args=[self.object.code]),
+            )
 
         return self.render_to_response(self.get_context_data(object=self.object))
 
@@ -924,5 +1397,75 @@ class ProblemEdit(ProblemMixin, TitleMixin, UpdateView):
         try:
             return super(ProblemEdit, self).dispatch(request, *args, **kwargs)
         except PermissionDenied:
-            return generic_message(request, _("Can't edit problem"),
-                                   _('You are not allowed to edit this problem.'), status=403)
+            return generic_message(
+                request,
+                _("Can't edit problem"),
+                _('You are not allowed to edit this problem.'),
+                status=403,
+            )
+
+
+class ProblemEditTypeGroup(
+    PermissionRequiredMixin, ProblemMixin, TitleMixin, UpdateView,
+):
+    template_name = 'problem/type-group-editor.html'
+    model = Problem
+    form_class = ProblemEditTypeGroupForm
+    permission_required = 'judge.edit_type_group_all_problem'
+
+    def get_title(self):
+        return _('Editing problem {0}').format(self.object.name)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            with revisions.create_revision(atomic=True):
+                problem = form.save()
+                problem.save()
+
+                revisions.set_comment(_('Edited types/group from site'))
+                revisions.set_user(self.request.user)
+
+            return HttpResponseRedirect(
+                reverse('problem_detail', args=[self.object.code]),
+            )
+
+        return self.render_to_response(self.get_context_data(object=self.object))
+
+
+class ProblemDelete(ProblemMixin, TitleMixin, DetailView):
+    template_name = 'problem/confirm_delete.html'
+
+    def get_object(self, queryset=None):
+        problem = super().get_object(queryset)
+        if not problem.is_editable_by(self.request.user):
+            raise PermissionDenied()
+        return problem
+
+    def get_title(self):
+        return _('Delete problem %s') % self.object.name
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['affected_contests'] = Contest.objects.filter(
+            contest_problems__problem=self.object,
+        ).distinct()
+        context['next'] = self.request.GET.get('next', reverse('problem_list'))
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        with revisions.create_revision(atomic=True):
+            self.object.mark_as_deleted()
+            revisions.set_user(self.request.user)
+            revisions.set_comment(_('Marked as deleted'))
+            next_url = request.POST.get('next', reverse('problem_list'))
+            return HttpResponseRedirect(next_url)
+
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            return super().dispatch(request, *args, **kwargs)
+        except PermissionDenied:
+            return generic_message(request, _("Can't delete problem"),
+                                   _('You are not allowed to delete this problem.'), status=403)

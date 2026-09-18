@@ -145,6 +145,8 @@ class ProblemDataCompiler(object):
 
                 if checker_ext not in ['cpp', 'pas', 'java']:
                     raise ProblemDataError(_('Only C++, Pascal, or Java checkers are supported.'))
+                if not case.checker_args:
+                    raise ProblemDataError(_('How did you corrupt the checker arguments?'))
 
             if case.checker_args:
                 return {
@@ -195,7 +197,7 @@ class ProblemDataCompiler(object):
                 init['interactive'] = {
                     'files': file_name,
                     'type': 'testlib',  # Assume that we only use testlib interactor
-                    'lang': 'CPP17',
+                    'lang': 'CPP20',
                 }
                 return
 
@@ -218,6 +220,7 @@ class ProblemDataCompiler(object):
                     init['signature_grader']['allow_main'] = True
                 return
 
+        total_points = 0
         for i, case in enumerate(self.cases, 1):
             if case.type == 'C':
                 data = {}
@@ -243,6 +246,7 @@ class ProblemDataCompiler(object):
                     data['out'] = case.output_file
                 if case.points is not None:
                     data['points'] = case.points
+                    total_points += case.points
                 if case.generator_args:
                     data['generator_args'] = case.generator_args.splitlines()
                 if case.output_limit is not None:
@@ -260,6 +264,7 @@ class ProblemDataCompiler(object):
                     end_batch()
                 if case.points is None:
                     raise ProblemDataError(_('Batch start case #%d requires points.') % i)
+                total_points += case.points
                 batch = {
                     'points': case.points,
                     'batched': [],
@@ -290,6 +295,8 @@ class ProblemDataCompiler(object):
                 case.save()
                 end_batch()
                 batch = None
+        if total_points <= 0:
+            raise ProblemDataError(_('Total points must be greater than 0.'))
         if batch:
             end_batch()
 
