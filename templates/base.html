@@ -38,16 +38,11 @@
     {% block og_title %}{% endblock %}
     <meta property="og:site_name" content="{{ SITE_LONG_NAME }}">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Luyện Code Online - Học lập trình tương tác trực tuyến">
-    <meta property='fb:app_id' content='168993876192748'>
-    <meta property='og:image:alt' content='Luyện Code Online - Học lập trình tương tác trực tuyến'>
+    <meta property="og:title" content="{{ SITE_LONG_NAME }}">
+    <meta property='og:image:alt' content='{{ SITE_LONG_NAME }}'>
     <meta property='og:image:type' content='image/png'>
     <meta name='twitter:card' content='summary_large_image'>
-    <meta name='twitter:title' content='Luyện Code Online - Học lập trình tương tác trực tuyến'>
-    <meta name='twitter:description' content='Luyện code & Học lập trình tương tác trực tuyến cực kỳ hấp dẫn qua việc chấm code tự động'>
-    <meta name='twitter:site' content='@nguyenvanhieuvn'>
-    <meta name='twitter:creator' content='@nguyenvanhieuvn'>
-    <meta property='og:description' content='Luyện code & Học lập trình tương tác trực tuyến cực kỳ hấp dẫn qua việc chấm code tự động'>
+    <meta name='twitter:title' content='{{ SITE_LONG_NAME }}'>
     <meta property="og:url"
           content="{{ DMOJ_SCHEME }}://{{ DMOJ_CANONICAL|default(site.domain) }}{{ request.get_full_path() }}">
 
@@ -448,8 +443,7 @@
     <footer>
         <span id="footer-content">
             <br>
-            {{ _('proudly powered by') }} <strong><a style="color: #808080" href="https://oj.vnoi.info">VNOJ</a></strong> |
-            {{ _('%(github)s', github=safe('<a style="color: #808080" href="https://github.com/luyencode"><b>Github</b></a>')) }}
+            {{ _('proudly powered by') }} <strong><a style="color: #808080" href="https://oj.vnoi.info">VNOJ</a></strong>
             {% if misc_config.footer %}
                 | {{ misc_config.footer|safe }}
             {% endif %}
