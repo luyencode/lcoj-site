@@ -91,20 +91,27 @@ class ProblemData(models.Model):
 
     grader_args = models.TextField(verbose_name=_('grader arguments'), blank=True,
                                    help_text=_('grader arguments as a JSON object'))
-
-    __original_zipfile = None
-
-    def __init__(self, *args, **kwargs):
-        super(ProblemData, self).__init__(*args, **kwargs)
-        self.__original_zipfile = self.zipfile
-
-    def save(self, *args, **kwargs):
-        if self.zipfile != self.__original_zipfile:
-            self.__original_zipfile.delete(save=False)
-        return super(ProblemData, self).save(*args, **kwargs)
+    zipfile_size = models.BigIntegerField(verbose_name=_('test data storage size'), default=0,
+                                          help_text=_('Size of the test data zip file in bytes.'))
 
     def has_yml(self):
         return problem_data_storage.exists('%s/init.yml' % self.problem.code)
+
+    def update_zipfile_size(self):
+        """Update the zipfile_size field based on the actual size of all attached files."""
+        total_size = 0
+        for field in [self.zipfile, self.generator, self.custom_checker, self.custom_grader, self.custom_header]:
+            if field:
+                try:
+                    total_size += field.size
+                except (OSError, IOError, ValueError):
+                    pass
+        self.zipfile_size = total_size
+
+    def save(self, *args, **kwargs):
+        # Update zipfile size before saving
+        self.update_zipfile_size()
+        super(ProblemData, self).save(*args, **kwargs)
 
     def _update_code(self, original, new):
         try:

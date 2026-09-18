@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
-from django.contrib.flatpages.admin import FlatPageAdmin as OldFlatPageAdmin, FlatpageForm as OldFlatpageForm
+from django.contrib.flatpages.admin import FlatPageAdmin as OldFlatPageAdmin
+from django.contrib.flatpages.forms import FlatpageForm as OldFlatpageForm
 from django.forms import ModelForm
 from django.urls import NoReverseMatch, reverse, reverse_lazy
 from django.utils.html import format_html
@@ -24,9 +25,9 @@ class NavigationBarAdmin(DraggableMPTTAdmin):
         super(NavigationBarAdmin, self).__init__(*args, **kwargs)
         self.__save_model_calls = 0
 
+    @admin.display(description=_('link path'))
     def linked_path(self, obj):
         return format_html('<a href="{0}" target="_blank">{0}</a>', obj.path)
-    linked_path.short_description = _('link path')
 
     def save_model(self, request, obj, form, change):
         self.__save_model_calls += 1
@@ -51,6 +52,12 @@ class FlatPageAdmin(VersionAdmin, OldFlatPageAdmin):
     form = FlatpageForm
 
 
+class BlogPostTagAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug')
+    prepopulated_fields = {'slug': ('name',)}
+    search_fields = ('name', 'slug')
+
+
 class BlogPostForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(BlogPostForm, self).__init__(*args, **kwargs)
@@ -62,31 +69,39 @@ class BlogPostForm(ModelForm):
 
     class Meta:
         widgets = {
-            'authors': AdminHeavySelect2MultipleWidget(data_view='profile_select2', attrs={'style': 'width: 100%'}),
+            'authors': AdminHeavySelect2MultipleWidget(data_view='profile_select2'),
             'content': AdminMartorWidget(attrs={'data-markdownfy-url': reverse_lazy('blog_preview')}),
             'summary': AdminMartorWidget(attrs={'data-markdownfy-url': reverse_lazy('blog_preview')}),
-            'organization': AdminHeavySelect2Widget(data_view='organization_select2', attr={'style': 'width: 100%'}),
+            'organization': AdminHeavySelect2Widget(data_view='organization_select2'),
         }
 
 
 class BlogPostAdmin(VersionAdmin):
     fieldsets = (
-        (None, {'fields': ('title', 'slug', 'authors', 'organization', 'global_post',
+        (None, {'fields': ('title', 'slug', 'authors', 'organization', 'global_post', 'tags',
                            'visible', 'sticky', 'publish_on')}),
         (_('Content'), {'fields': ('content', 'og_image')}),
         (_('Summary'), {'classes': ('collapse',), 'fields': ('summary',)}),
     )
     prepopulated_fields = {'slug': ('title',)}
-    list_display = ('id', 'title', 'visible', 'global_post', 'sticky', 'publish_on')
+    list_display = ('id', 'title', 'show_authors', 'visible', 'global_post', 'sticky', 'publish_on')
     list_display_links = ('id', 'title')
+    filter_horizontal = ('tags',)
     ordering = ('-publish_on',)
     form = BlogPostForm
     date_hierarchy = 'publish_on'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('authors__user')
 
     def has_change_permission(self, request, obj=None):
         if obj is None:
             return request.user.has_perm('judge.change_blogpost')
         return obj.is_editable_by(request.user)
+
+    @admin.display(description=_('authors'))
+    def show_authors(self, obj):
+        return ', '.join(map(str, obj.authors.all()))
 
 
 class SolutionForm(ModelForm):
@@ -96,8 +111,8 @@ class SolutionForm(ModelForm):
 
     class Meta:
         widgets = {
-            'authors': AdminHeavySelect2MultipleWidget(data_view='profile_select2', attrs={'style': 'width: 100%'}),
-            'problem': AdminHeavySelect2Widget(data_view='problem_select2', attrs={'style': 'width: 250px'}),
+            'authors': AdminHeavySelect2MultipleWidget(data_view='profile_select2'),
+            'problem': AdminHeavySelect2Widget(data_view='problem_select2'),
             'content': AdminMartorWidget(attrs={'data-markdownfy-url': reverse_lazy('solution_preview')}),
         }
 
@@ -143,6 +158,7 @@ class LogEntryAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    @admin.display(description=_('object'), ordering='object_repr')
     def object_link(self, obj):
         if obj.is_deletion():
             link = obj.object_repr
@@ -154,8 +170,6 @@ class LogEntryAdmin(admin.ModelAdmin):
             except NoReverseMatch:
                 link = obj.object_repr
         return link
-    object_link.admin_order_field = 'object_repr'
-    object_link.short_description = _('object')
 
     def queryset(self, request):
         return super().queryset(request).prefetch_related('content_type')

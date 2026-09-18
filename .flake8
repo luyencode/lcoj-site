@@ -1,8 +1,7 @@
 [flake8]
 max-line-length = 120
-application-import-names = dmoj,judge,django_ace
+application-import-names = dmoj,judge,urlshortener,django_ace,martor,quiz
 import-order-style = pycharm
-enable-extensions = G
 ignore =
     # line break occurred after a binary operator
     W504,
@@ -18,9 +17,9 @@ per-file-ignores =
     ./judge/management/commands/runmoss.py:F403,F405
     # E501: line too long, ignore in migrations
     ./judge/migrations/*.py:E501
-    # E303: too many blank lines
-    # PyCharm likes to have double lines between class/def in an if statement.
-    ./judge/widgets/pagedown.py:E303
+    ./quiz/migrations/*.py:E501,I100,I101
+    # E241/E501: alignment spacing and long data strings in xlsx template
+    ./quiz/importers/xlsx_fmt.py:E241,E501
 exclude =
     # belongs to the user
     ./dmoj/local_settings.py,
@@ -29,3 +28,4 @@ exclude =
     # is actually a fragment to be included by settings.py
     ./.ci.settings.py,
     fc_*
+    _mytempfile/

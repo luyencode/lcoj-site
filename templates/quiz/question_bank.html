@@ -1,0 +1,43 @@
+{% extends "common-content.html" %}
+
+{% block body %}
+<p>
+    <a href="{{ url('quiz_question_create') }}">{{ _('New question') }}</a> &middot;
+    <a href="{{ url('quiz_import') }}">{{ _('Import') }}</a> &middot;
+    <a href="{{ url('quiz_import_template') }}">{{ _('Download XLSX template') }}</a>
+</p>
+<form method="get" style="margin-bottom: 1em">
+    <input type="text" name="search" value="{{ request.GET.get('search', '') }}" placeholder="{{ _('Search...') }}">
+    <select name="type"><option value="">{{ _('All types') }}</option>
+        {% for value, label in types %}<option value="{{ value }}" {% if value == request.GET.get('type') %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <select name="category"><option value="">{{ _('All categories') }}</option>
+        {% for cat in categories %}<option value="{{ cat.slug }}" {% if cat.slug == request.GET.get('category') %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}
+    </select>
+    <select name="level"><option value="">{{ _('All levels') }}</option>
+        {% for value, label in levels %}<option value="{{ value }}" {% if value == request.GET.get('level') %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <button type="submit">{{ _('Filter') }}</button>
+</form>
+<form method="get" action="{{ url('quiz_export') }}">
+<table class="table">
+    <thead><tr><th></th><th>{{ _('Code') }}</th><th>{{ _('Title') }}</th><th>{{ _('Type') }}</th><th>{{ _('Category') }}</th><th>{{ _('Level') }}</th><th>{{ _('Public') }}</th></tr></thead>
+    <tbody>
+        {% for question in questions %}
+        <tr>
+            <td><input type="checkbox" name="ids" value="{{ question.id }}"></td>
+            <td><code>{{ question.code }}</code></td>
+            <td><a href="{{ url('quiz_question_edit', question.id) }}">{{ question.title }}</a></td>
+            <td>{{ question.get_type_display() }}</td>
+            <td>{{ question.category.name if question.category else '' }}</td>
+            <td>{{ question.get_level_display() }}</td>
+            <td>{{ _('Yes') if question.is_public else '' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7">{{ _('No questions yet.') }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+<button type="submit">{{ _('Export selected to XLSX') }}</button>
+</form>
+{% endblock %}

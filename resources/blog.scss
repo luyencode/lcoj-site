@@ -1,4 +1,4 @@
-@import "vars";
+@use "vars" as *;
 
 .blog-content {
     padding-right: 0em;
@@ -136,6 +136,13 @@
             text-align: center;
             display: block;
         }
+    }
+}
+
+.open-tickets, .own-open-tickets {
+    .title {
+        word-break: break-word;
+        overflow-wrap: anywhere;
     }
 }
 

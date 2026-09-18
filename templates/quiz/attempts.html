@@ -1,0 +1,197 @@
+{% extends "common-content.html" %}
+
+{% block media %}
+<style>
+    .violation-badge {
+        display: inline-block;
+        background: #fef3c7;
+        border: 1px solid #d97706;
+        color: #92400e;
+        border-radius: 99px;
+        padding: 0.15em 0.6em;
+        font-size: 0.82em;
+        font-weight: bold;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    .violation-badge:hover {
+        background: #fde68a;
+    }
+    /* Violation log modal */
+    .vlog-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+    }
+    .vlog-overlay.active { display: flex; }
+    .vlog-modal {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+        max-width: 480px;
+        width: 90%;
+        padding: 1.5em 1.5em 1em;
+    }
+    .vlog-modal h3 {
+        margin: 0 0 1em;
+        font-size: 1.05em;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 0.5em;
+    }
+    .vlog-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9em;
+    }
+    .vlog-table td {
+        padding: 0.35em 0.5em;
+        vertical-align: top;
+    }
+    .vlog-table td:first-child {
+        color: #555;
+        white-space: nowrap;
+        width: 110px;
+    }
+    .vlog-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1em;
+        padding-top: 0.75em;
+        border-top: 1px solid #eee;
+        font-size: 0.88em;
+        color: #666;
+    }
+    .btn-vlog-close {
+        padding: 0.4em 1.2em;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: #fff;
+        cursor: pointer;
+        color: #333 !important;
+    }
+    .btn-vlog-close:hover { background: #f4f4f4; }
+    .vlog-loading { color: #888; font-size: 0.9em; }
+    .vlog-error { color: #c00; font-size: 0.9em; }
+</style>
+{% endblock %}
+
+{% block body %}
+<form method="post" onsubmit="return confirm('{{ _('Regrade all submitted attempts?') }}')">
+    {% csrf_token %}
+    <button type="submit">{{ _('Regrade all attempts') }}</button>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>{{ _('User') }}</th>
+            <th>{{ _('Started') }}</th>
+            <th>{{ _('Status') }}</th>
+            <th>{{ _('Score') }}</th>
+            <th>{{ _('Violations') }}</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for attempt in attempts %}
+        <tr>
+            <td>{{ attempt.user.user.username }}</td>
+            <td>{{ attempt.started_at|date('DATETIME_FORMAT') }}</td>
+            <td>{{ _('submitted') if attempt.is_submitted else _('in progress') }}</td>
+            <td>{% if attempt.is_submitted %}{{ attempt.score }} / {{ total_points }}{% endif %}</td>
+            <td>
+                {% if attempt.violation_count %}
+                <span class="violation-badge"
+                      data-url="{{ url('quiz_violation_log', quiz.code, attempt.id) }}"
+                      role="button"
+                      tabindex="0"
+                      title="{{ _('View violation log') }}">
+                    &#x26A0; {{ attempt.violation_count }}
+                </span>
+                {% else %}
+                &mdash;
+                {% endif %}
+            </td>
+            <td>
+                {% if attempt.is_submitted %}
+                <a href="{{ url('quiz_result', quiz.code, attempt.id) }}">{{ _('view') }}</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6">{{ _('No attempts yet.') }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Violation log modal -->
+<div class="vlog-overlay" id="vlog-overlay" role="dialog" aria-modal="true">
+    <div class="vlog-modal">
+        <h3 id="vlog-title">{{ _('Violations') }}</h3>
+        <div id="vlog-body"><span class="vlog-loading">{{ _('Loading…') }}</span></div>
+        <div class="vlog-footer">
+            <span id="vlog-count"></span>
+            <button class="btn-vlog-close" id="vlog-close">{{ _('Close') }}</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var overlay = document.getElementById('vlog-overlay');
+    var titleEl = document.getElementById('vlog-title');
+    var bodyEl  = document.getElementById('vlog-body');
+    var countEl = document.getElementById('vlog-count');
+    var closeBtn = document.getElementById('vlog-close');
+
+    function openLog(url) {
+        bodyEl.innerHTML = '<span class="vlog-loading">{{ _('Loading…') }}</span>';
+        countEl.textContent = '';
+        titleEl.textContent = '{{ _('Violations') }}';
+        overlay.classList.add('active');
+
+        fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                titleEl.textContent = '{{ _('Violations') }} — ' + data.student;
+                if (!data.violations.length) {
+                    bodyEl.innerHTML = '<em>{{ _('No violations recorded.') }}</em>';
+                    countEl.textContent = '';
+                    return;
+                }
+                var rows = data.violations.map(function (v) {
+                    var t = new Date(v.occurred_at);
+                    var time = t.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+                    return '<tr><td>' + time + '</td><td>' + v.label + '</td></tr>';
+                }).join('');
+                bodyEl.innerHTML = '<table class="vlog-table"><tbody>' + rows + '</tbody></table>';
+                countEl.textContent = data.violations.length + ' {{ _('violation(s) total') }}';
+            })
+            .catch(function () {
+                bodyEl.innerHTML = '<span class="vlog-error">{{ _('Failed to load.') }}</span>';
+            });
+    }
+
+    document.querySelectorAll('.violation-badge').forEach(function (badge) {
+        badge.addEventListener('click', function () {
+            openLog(this.dataset.url);
+        });
+        badge.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') openLog(this.dataset.url);
+        });
+    });
+
+    closeBtn.addEventListener('click', function () {
+        overlay.classList.remove('active');
+    });
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) overlay.classList.remove('active');
+    });
+}());
+</script>
+{% endblock %}

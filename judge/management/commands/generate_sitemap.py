@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 from urllib.parse import urljoin
 
+from django.contrib.sitemaps.views import SitemapIndexItem
 from django.contrib.sites.models import Site
 from django.core.management import BaseCommand
 from django.template.loader import get_template
@@ -10,7 +11,7 @@ from judge.sitemap import sitemaps
 
 
 class Command(BaseCommand):
-    requires_system_checks = False
+    requires_system_checks = []
 
     def add_arguments(self, parser):
         parser.add_argument('directory', help='directory to generate the sitemap in')
@@ -66,4 +67,4 @@ class Command(BaseCommand):
             self.stdout.write('Rendering sitemap index file...')
 
         with open(directory / 'sitemap.xml', 'w', encoding='utf-8') as f:
-            f.write(index_template.render({'sitemaps': [urljoin(prefix, file) for file in maps]}))
+            f.write(index_template.render({'sitemaps': [SitemapIndexItem(urljoin(prefix, file)) for file in maps]}))

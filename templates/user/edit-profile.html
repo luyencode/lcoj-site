@@ -42,7 +42,8 @@
         #edit-form {
             border: unset;
             background: unset;
-            max-width: 700px;
+            display: block;
+            padding-bottom: 30px;
         }
 
         .settings {
@@ -99,16 +100,16 @@
             });
 
             $('#disable-2fa-button').click(function () {
-                alert("{{ _('The administrators for this site require all the staff to have Two-factor Authentication enabled, so it may not be disabled at this time.') }}");
+                alert({{ _('The administrators for this site require all the staff to have Two-factor Authentication enabled, so it may not be disabled at this time.')|htmltojs }});
             });
 
             $('#generate-api-token-button').click(function (event) {
                 event.preventDefault();
-                if (confirm("{{ _('Are you sure you want to generate or regenerate your API token?') }}\n"
-                          + "{{ _('This will invalidate any previous API tokens.') }} "
-                          + "{{ _('It also allows access to your account without Two-factor Authentication.') }}\n\n"
-                          + "{{ _('You will not be able to view your API token after you leave this page!') }}")) {
-                    $('#api-token').text("{{ _('Generating...') }}");
+                if (confirm({{ _('Are you sure you want to generate or regenerate your API token?')|htmltojs }} + '\n'
+                          + {{ _('This will invalidate any previous API tokens.')|htmltojs }} + ' '
+                          + {{ _('It also allows access to your account without Two-factor Authentication.')|htmltojs }} + '\n\n'
+                          + {{ _('You will not be able to view your API token after you leave this page!')|htmltojs }})) {
+                    $('#api-token').text({{ _('Generating...')|htmltojs }});
 
                     $.ajax({
                         type: 'POST',
@@ -116,7 +117,7 @@
                         dataType: 'json',
                         success: function(data) {
                             $('#api-token').text(data.data.token);
-                            $('#generate-api-token-button').text("{{ _('Regenerate') }}");
+                            $('#generate-api-token-button').text({{ _('Regenerate')|htmltojs }});
 
                             // Add remove button on-the-fly
                             if ($('#remove-api-token-button').length == 0) {
@@ -132,17 +133,26 @@
             // Delegated event handler because the remove button may have been added on-the-fly
             $('#api-token-td').on('click', '#remove-api-token-button', function (event) {
                 event.preventDefault();
-                if (confirm("{{ _('Are you sure you want to remove your API token?') }}")) {
+                if (confirm({{ _('Are you sure you want to remove your API token?')|htmltojs }})) {
                     $.ajax({
                         type: 'POST',
                         url: $(this).attr('href'),
                         dataType: 'json',
                         success: function(data) {
                             $('#api-token').text('');
-                            $('#generate-api-token-button').text("{{ _('Generate') }}");
+                            $('#generate-api-token-button').text({{ _('Generate')|htmltojs }});
                             $('#remove-api-token-button').remove();
                         },
                     });
+                }
+            });
+
+            // Alert when leaving an org
+            $('.sortedm2m input').click(function () {
+                if (!$(this).is(':checked')) {
+                    return confirm({{ _('Are you sure you want to leave this organization?')|htmltojs }} + '\n' +
+                                   {{ _('You will have to rejoin to show up on the organization leaderboard.')|htmltojs }}
+                            );
                 }
             });
         });
@@ -156,7 +166,7 @@
                 event.preventDefault();
 
                 if (typeof window.PublicKeyCredential === 'undefined') {
-                    alert('{{ _('WebAuthn is not supported by your browser.') }}');
+                    alert({{ _('WebAuthn is not supported by your browser.')|htmltojs }});
                     return;
                 }
 
@@ -180,12 +190,12 @@
                                     .fail((jqXHR) => alert(jqXHR.responseText));
                             });
                     })
-                    .fail(() => alert('{{ _('Failed to contact server.') }}'));
+                    .fail(() => alert({{ _('Failed to contact server.')|htmltojs }}));
             });
 
             $('.webauthn-delete').click(function (event) {
                 event.preventDefault();
-                if (confirm("{{ _('Are you sure you want to delete this security key?') }}")) {
+                if (confirm({{ _('Are you sure you want to delete this security key?')|htmltojs }})) {
                     $.post($(this).attr('data-delete-url'))
                         .then(() => window.location.reload())
                         .fail((jqXHR) => alert(jqXHR.responseText));
@@ -199,10 +209,10 @@
         $(function () {
             $('#generate-scratch-codes-button').click(function(event) {
                 event.preventDefault();
-                if (confirm("{{ _('Are you sure you want to generate or regenerate a new set of scratch codes?') }}\n"
-                          + "{{ _('This will invalidate any previous scratch codes you have.') }}\n\n"
-                          + "{{ _('You will not be able to view your scratch codes after you leave this page!') }}")) {
-                    $('#scratch-codes').text("{{ _('Generating...') }}");
+                if (confirm({{ _('Are you sure you want to generate or regenerate a new set of scratch codes?')|htmltojs }} + '\n'
+                          + {{ _('This will invalidate any previous scratch codes you have.')|htmltojs }} + '\n\n'
+                          + {{ _('You will not be able to view your scratch codes after you leave this page!')|htmltojs }})) {
+                    $('#scratch-codes').text({{ _('Generating...')|htmltojs }});
 
                     $('pre code').each(function () {
                         var copyButton;
@@ -211,8 +221,8 @@
                                 'class': 'btn-clipboard',
                                 'id': 'scratch-codes-copy-button',
                                 'data-clipboard-text': '',
-                                'title': '{{ _('Click to copy') }}'
-                            }).text('{{ _('Copy') }}')));
+                                'title': {{ _('Click to copy')|htmltojs }}
+                            }).text({{ _('Copy')|htmltojs }})));
 
                         $(copyButton.get(0)).mouseleave(function () {
                             $(this).attr('class', 'btn-clipboard');
@@ -223,7 +233,7 @@
 
                         curClipboard.on('success', function(e) {
                             e.clearSelection();
-                            showTooltip(e.trigger, '{{ _('Copied!') }}');
+                            showTooltip(e.trigger, {{ _('Copied!')|htmltojs }});
                         });
 
                         curClipboard.on('error', function(e) {
@@ -238,7 +248,7 @@
                         success: function(data) {
                             $('#scratch-codes').text(data.data.codes.join('\n'));
                             $('#scratch-codes-copy-button').attr('data-clipboard-text', data.data.codes.join('\n'));
-                            $('#generate-scratch-codes-button').text("{{ _('Regenerate') }}");
+                            $('#generate-scratch-codes-button').text({{ _('Regenerate')|htmltojs }});
                             $('#hidden-word').hide();
                             $('#scratch-codes-regen').show();
                         },
@@ -260,14 +270,18 @@
 {% block body %}
     <div class="centered-form">
         <form id="edit-form" action="" method="post" class="form-area">
-            {% if form.errors %}
+            {% if form.errors or form_user.errors %}
                 <div class="alert alert-danger alert-dismissable">
                     <a href="#" class="close">x</a>
-                    {{ form.non_field_errors() }}
-                    {{ form.about.errors }}
+                    {% if form.errors %}
+                        {{ form.non_field_errors() }}
+                        {{ form.about.errors }}
+                    {% endif %}
+                    {% if form_user.errors %}
+                        {{ form_user.first_name.errors }}
+                    {% endif %}
                 </div>
             {% endif %}
-
             {% csrf_token %}
             {% if form_user.first_name %}
                 <table>
@@ -304,7 +318,7 @@
                             <td><label class="inline-header grayed">{{ _('Language:') }}</label></td>
                             <td><span class="fullwidth">{{ form.language }}</span></td>
                         </tr>
-                        <tr{% if not perms.judge.test_site %} style="display: none"{% endif %}>
+                        <tr>
                             <td><label class="inline-header grayed">{{ _('Site theme:') }}</label></td>
                             <td><span class="fullwidth">{{ form.site_theme }}</span></td>
                         </tr>

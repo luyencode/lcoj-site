@@ -1,4 +1,4 @@
-@import "vars";
+@use "vars" as *;
 
 #contest-calendar {
     border-collapse: collapse;
@@ -239,6 +239,15 @@ form.contest-join-pseudotab {
 
     .disqualified {
         background-color: $color_contest_ranking_disqualified !important;
+    }
+
+    tr.ghost {
+        opacity: 0.5;
+    }
+
+    .ghost-user::before {
+        content: "👻";
+        margin-right: 0.25em;
     }
 
     .point-denominator {

@@ -1,0 +1,28 @@
+{% extends "common-content.html" %}
+
+{% block media %}
+<style>
+    .quiz-ranking tr.me { background: #fdf2cc; }
+</style>
+{% endblock %}
+
+{% block body %}
+<table class="table quiz-ranking">
+    <thead>
+        <tr><th>#</th><th>{{ _('User') }}</th><th>{{ _('Score') }}</th><th>{{ _('Time') }}</th></tr>
+    </thead>
+    <tbody>
+        {% for attempt in ranking %}
+        <tr {% if attempt.user_id == my_profile_id %}class="me"{% endif %}>
+            <td>{{ loop.index }}</td>
+            <td>{{ link_user(attempt.user) }}</td>
+            <td>{{ attempt.score }} / {{ total_points }}</td>
+            <td>{{ attempt.duration }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">{{ _('No submitted attempts yet.') }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+<p><a href="{{ url('quiz_detail', quiz.code) }}">{{ _('Back to quiz') }}</a></p>
+{% endblock %}

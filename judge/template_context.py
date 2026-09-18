@@ -59,13 +59,18 @@ def __nav_tab(path):
 
 def general_info(request):
     path = request.get_full_path()
-    return {
+    info = {
         'nav_tab': FixedSimpleLazyObject(partial(__nav_tab, request.path)),
         'nav_bar': NavigationBar.objects.all(),
         'LOGIN_RETURN_PATH': '' if path.startswith('/accounts/') else path,
+        'REGISTRATION_OPEN': settings.REGISTRATION_OPEN,
         'perms': PermWrapper(request.user),
         'HAS_WEBAUTHN': bool(settings.WEBAUTHN_RP_ID),
     }
+    if hasattr(request.user, 'profile'):
+        info['NOTIFICATION_SECRET'] = request.profile.notification_secret
+        info['UNREAD_NOTIFICATION_COUNT'] = request.profile.unread_notification_count
+    return info
 
 
 def site(request):
@@ -85,18 +90,22 @@ def site_name(request):
 def site_theme(request):
     # Middleware populating `profile` may not have loaded at this point if we're called from an error context.
     if hasattr(request.user, 'profile'):
-        preferred_css = settings.DMOJ_THEME_CSS.get(request.profile.site_theme)
+        site_theme = request.profile.site_theme
     else:
-        preferred_css = None
+        site_theme = request.COOKIES.get(settings.SITE_THEME_COOKIE_NAME, 'auto')
+        if site_theme not in settings.DMOJ_THEME_CSS and site_theme != 'auto':
+            site_theme = 'auto'
+    preferred_css = settings.DMOJ_THEME_CSS.get(site_theme)
     return {
         'DARK_STYLE_CSS': settings.DMOJ_THEME_CSS['dark'],
         'LIGHT_STYLE_CSS': settings.DMOJ_THEME_CSS['light'],
         'PREFERRED_STYLE_CSS': preferred_css,
+        'SITE_THEME_NAME': site_theme,
     }
 
 
 def math_setting(request):
-    caniuse = CanIUse(request.META.get('HTTP_USER_AGENT', ''))
+    caniuse = CanIUse(request.headers.get('user-agent', ''))
 
     # Middleware populating `profile` may not have loaded at this point if we're called from an error context.
     if hasattr(request.user, 'profile'):

@@ -20,6 +20,7 @@ __all__ = ['SUBMISSION_RESULT', 'Submission', 'SubmissionSource', 'SubmissionTes
 
 SUBMISSION_RESULT = (
     ('AC', _('Accepted')),
+    ('PAC', _('Partially Accepted')),
     ('WA', _('Wrong Answer')),
     ('TLE', _('Time Limit Exceeded')),
     ('MLE', _('Memory Limit Exceeded')),
@@ -54,6 +55,7 @@ class Submission(models.Model):
     IN_PROGRESS_GRADING_STATUS = ('QU', 'P', 'G')
     USER_DISPLAY_CODES = {
         'AC': _('Accepted'),
+        'PAC': _('Partially Accepted'),
         'WA': _('Wrong Answer'),
         'SC': _('Short Circuited'),
         'TLE': _('Time Limit Exceeded'),
@@ -96,10 +98,8 @@ class Submission(models.Model):
     locked_after = models.DateTimeField(verbose_name=_('submission lock'), null=True, blank=True)
 
     @classmethod
-    def result_class_from_code(cls, result, case_points, case_total):
-        if result == 'AC':
-            if case_points == case_total:
-                return 'AC'
+    def result_class_from_code(cls, result):
+        if result == 'PAC':
             return '_AC'
         return result
 
@@ -108,7 +108,7 @@ class Submission(models.Model):
         # This exists to save all these conditionals from being executed (slowly) in each row.html template
         if self.status in ('IE', 'CE'):
             return self.status
-        return Submission.result_class_from_code(self.result, self.case_points, self.case_total)
+        return Submission.result_class_from_code(self.result)
 
     @property
     def memory_bytes(self):
@@ -152,8 +152,6 @@ class Submission(models.Model):
             return True
         elif user.has_perm('judge.view_all_submission'):
             return True
-        elif not self.problem.is_public and user.has_perm('judge.suggest_new_problem') and self.problem.is_suggesting:
-            return True
         elif self.user_id == profile.id:
             return timezone.now() - self.date <= timezone.timedelta(hours=24)
         elif source_visibility == SubmissionSourceAccess.ALWAYS:
@@ -191,6 +189,28 @@ class Submission(models.Model):
         contest.participation.recompute_results()
 
     update_contest.alters_data = True
+
+    def update_credit(self, consumed_credit):
+        problem = self.problem
+
+        organization = None
+        if problem.is_organization_private and problem.organization:
+            organization = problem.organization
+
+        if organization is None:
+            contest_object = None
+            try:
+                contest_object = self.contest_object
+            except AttributeError:
+                pass
+
+            if contest_object is not None and contest_object.is_organization_private and contest_object.organization:
+                organization = contest_object.organization
+
+        if organization:
+            organization.consume_credit(consumed_credit)
+
+    update_credit.alters_data = True
 
     @property
     def is_graded(self):
@@ -262,6 +282,15 @@ class Submission(models.Model):
 
             # For user_completed_ids
             models.Index(fields=['user', 'result']),
+
+            # For user submissions page
+            models.Index(fields=['user', '-id']),
+
+            # For submission heat map
+            models.Index(fields=['user', 'date']),
+
+            # For organization problem list: last submission time filter
+            models.Index(fields=['problem', '-date']),
         ]
 
 
@@ -299,7 +328,7 @@ class SubmissionTestCase(models.Model):
     def result_class(self):
         if self.status in ('IE', 'CE'):
             return self.status
-        return Submission.result_class_from_code(self.status, self.points, self.total)
+        return Submission.result_class_from_code(self.status)
 
     class Meta:
         unique_together = ('submission', 'case')

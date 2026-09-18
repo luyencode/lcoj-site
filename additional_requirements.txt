@@ -1,2 +1,7 @@
 uwsgi
 websocket-client
+watchdog
+matplotlib
+# For editorial generator using openai
+openai
+pydantic

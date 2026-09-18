@@ -1,4 +1,4 @@
-@import "vars";
+@use "vars" as *;
 
 .comment-score {
     font-weight: bold;
@@ -6,7 +6,9 @@
 }
 
 a {
-    &.upvote-link, &.downvote-link {
+
+    &.upvote-link,
+    &.downvote-link {
         color: $color_primary100;
     }
 
@@ -48,7 +50,7 @@ a {
         color: $color_primary75;
     }
 
-    a + a {
+    a+a {
         padding-left: 2px;
     }
 }
@@ -60,10 +62,15 @@ a {
     box-sizing: border-box;
 }
 
+.comment-edit-form {
+    min-width: 60em;
+}
+
 .comment-post-wrapper {
     padding-bottom: 5px;
 
-    input, textarea {
+    input,
+    textarea {
         min-width: 100%;
         max-width: 100%;
 
@@ -93,9 +100,23 @@ a {
 .comment-body {
     word-wrap: break-word;
     word-break: break-word;
+
+    &.collapsed {
+        max-height: 100px;
+        overflow: hidden;
+    }
 }
 
-.previous-revision, .next-revision {
+.comment-toggle {
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.previous-revision,
+.next-revision {
     color: $color_primary75;
 }
 
@@ -125,7 +146,7 @@ a {
         }
     }
 
-    .comment:target > .comment-display {
+    .comment:target>.comment-display {
         border: 1px solid $highlight_blue;
         border-left: 10px solid $highlight_blue;
         padding-left: 5px;
@@ -186,4 +207,10 @@ a {
         /* This is necessary to prevent random flickering */
         transform: translatez(0);
     }
+}
+
+.comments-loading {
+    padding: 1em 0;
+    text-align: center;
+    color: #888;
 }

@@ -14,10 +14,11 @@ DATABASES = {
         'NAME': 'dmoj',
         'USER': 'root',
         'PASSWORD': 'root',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'HOST': '127.0.0.1',
+        'PORT': 13306,
         'OPTIONS': {
             'charset': 'utf8mb4',
         },
     },
 }
+VNOJ_ENABLE_SYNC_API = True

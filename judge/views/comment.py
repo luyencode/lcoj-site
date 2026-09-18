@@ -8,6 +8,7 @@ from django.forms.models import ModelForm
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, \
     HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, UpdateView
@@ -17,7 +18,7 @@ from reversion.models import Version
 from judge.dblock import LockModel
 from judge.models import Comment, CommentVote
 from judge.utils.views import TitleMixin
-from judge.widgets import MathJaxPagedownWidget
+from judge.widgets import MartorWidget
 
 __all__ = ['upvote_comment', 'downvote_comment', 'CommentEditAjax', 'CommentContent',
            'CommentEdit']
@@ -73,7 +74,16 @@ def vote_comment(request, delta):
                     continue
                 return HttpResponseBadRequest(_('You cannot vote twice.'), content_type='text/plain')
         else:
-            Comment.objects.get(id=comment_id).vote(delta)
+            # Update vote counts and ranking score
+            comment = Comment.objects.get(id=comment_id)
+            comment.vote(delta)
+
+            # Update upvote/downvote counts
+            if delta == 1:
+                comment.upvotes = F('upvotes') + 1
+            else:
+                comment.downvotes = F('downvotes') + 1
+            comment.save(update_fields=['upvotes' if delta == 1 else 'downvotes'])
         break
     return HttpResponse('success', content_type='text/plain')
 
@@ -122,8 +132,14 @@ class CommentEditForm(ModelForm):
     class Meta:
         model = Comment
         fields = ['body']
-        if MathJaxPagedownWidget is not None:
-            widgets = {'body': MathJaxPagedownWidget(attrs={'id': 'id-edit-comment-body'})}
+        widgets = {
+            'body': MartorWidget(
+                attrs={
+                    'id': 'id_edit',
+                    'data-markdownfy-url': reverse_lazy('comment_preview'),
+                },
+            ),
+        }
 
 
 class CommentEditAjax(LoginRequiredMixin, CommentMixin, UpdateView):
