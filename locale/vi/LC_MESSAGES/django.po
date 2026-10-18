@@ -8682,8 +8682,8 @@ msgid "(no answer)"
 msgstr "(không có câu trả lời)"
 
 #: templates/quiz/result.html:94
-msgid "Why?"
-msgstr "Tại sao?"
+msgid "Additional explanation"
+msgstr "Giải thích thêm"
 
 #: templates/quiz/result.html:104
 msgid "Missed"
