@@ -35,10 +35,10 @@
         color: #666; background: #eee; border-radius: 3px;
         padding: 0.1em 0.5em; margin-left: 0.5em; vertical-align: middle;
     }
-    details.why-toggle { display: block; margin-top: 0.2em; }
-    details.why-toggle summary { cursor: pointer; color: #666; font-size: 0.88em; }
-    details.why-toggle .why-body { margin: 0.2em 0 0 1em; font-size: 0.9em; color: #444; }
-    details.why-toggle .why-body p { margin: 0 !important; }
+    .why-toggle { display: block; margin-top: 0.2em; }
+    .why-toggle .why-label { color: #666; font-size: 0.88em; font-weight: bold; }
+    .why-toggle .why-body { margin: 0.2em 0 0 1em; font-size: 0.9em; color: #444; }
+    .why-toggle .why-body p { margin: 0 !important; }
 </style>
 {% endblock %}
 
@@ -71,7 +71,7 @@
         </p>
     {% endif %}
 
-    {# full mode: list all choices with highlighting and Why? toggles #}
+    {# full mode: list all choices with highlighting and always-visible explanations #}
     {% if reveal_answer %}
         {% if row.question.type in ('MC', 'MA') %}
             <ul class="quiz-choices-result">
@@ -90,10 +90,10 @@
                         <div class="choice-body">
                             {{ ch['text']|markdown('default') }}
                             {% if ch['explanation'] %}
-                                <details class="why-toggle">
-                                    <summary>{{ _('Why?') }}</summary>
+                                <div class="why-toggle">
+                                    <div class="why-label">{{ _('Additional explanation') }}</div>
                                     <div class="why-body content-description">{{ ch['explanation']|markdown('default') }}</div>
-                                </details>
+                                </div>
                             {% endif %}
                         </div>
                         {% if was_selected and is_correct %}

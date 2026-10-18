@@ -8159,8 +8159,8 @@ msgstr ""
 msgid "(no answer)"
 msgstr ""
 
-#: templates/quiz/result.html:64
-msgid "Why?"
+#: templates/quiz/result.html:94
+msgid "Additional explanation"
 msgstr ""
 
 #: templates/quiz/result.html:86
