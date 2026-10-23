@@ -1,6 +1,7 @@
 {% extends "common-content.html" %}
 
 {% block media %}
+{% include "quiz/_theme.html" %}
     {{ form.media.css }}
     {{ formset.media.css }}
     <link rel="stylesheet" href="{{ static('vnoj/jquery-ui/jquery-ui.min.css') }}">

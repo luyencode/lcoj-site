@@ -1,6 +1,7 @@
 {% extends "common-content.html" %}
 
 {% block media %}
+{% include "quiz/_theme.html" %}
 <style>
     .quiz-answer-row { border: 1px solid #ddd; border-radius: 4px; padding: 1em; margin-bottom: 1em; }
     .quiz-answer-row.correct   { border-left: 5px solid #4a4; }
@@ -129,7 +130,7 @@
         {% endif %}
 
         {% if row.question.explanation %}
-            <div class="quiz-explanation">{{ row.question.explanation|markdown('default') }}</div>
+            <div class="quiz-explanation content-description">{{ row.question.explanation|markdown('default') }}</div>
         {% endif %}
     {% endif %}
 
