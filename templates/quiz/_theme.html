@@ -1,0 +1,103 @@
+{# Shared quiz styles: code-block formatting plus dark-theme overrides.
+   The per-page <style> blocks hardcode light colours, so the dark rules below
+   re-colour them. Dark applies when the user picked "dark", or picked "auto"
+   and the OS prefers dark (mirrors select_css_theme). #}
+{% macro dark_rules(p) %}
+    {{ p|safe }} .quiz-progress-bar-wrap { background: #3b3b3b; }
+    {{ p|safe }} .quiz-question-body,
+    {{ p|safe }} .qf-section,
+    {{ p|safe }} .md-pane-preview,
+    {{ p|safe }} .ui-sortable-helper,
+    {{ p|safe }} .integrity-modal,
+    {{ p|safe }} .vlog-modal,
+    {{ p|safe }} .md-tab.active,
+    {{ p|safe }} .quiz-tab.active { background: #1f1f1f; border-color: #3b3b3b; color: #eee; }
+    {{ p|safe }} .quiz-choice-label,
+    {{ p|safe }} .quiz-map a,
+    {{ p|safe }} .ch-expl,
+    {{ p|safe }} .type-card { background: #262626; border-color: #3b3b3b; color: #ddd; }
+    {{ p|safe }} .quiz-choice-label:hover,
+    {{ p|safe }} .quiz-map a:hover,
+    {{ p|safe }} .type-card:hover { background: #2c3340; border-color: #5b80b9; }
+    {{ p|safe }} .quiz-choice-label.selected,
+    {{ p|safe }} .quiz-map a.current { background: #1b2a4a; border-color: #4a7de0; color: #cfe0ff; }
+    {{ p|safe }} .quiz-map a.answered { background: #17381f; border-color: #2a7a2a; color: #bfe8c6; }
+    {{ p|safe }} .quiz-sa-input { background: #262626; border-color: #3b3b3b; color: #eee; }
+    {{ p|safe }} .quiz-shortcuts,
+    {{ p|safe }} .qf-section h3,
+    {{ p|safe }} .tc-name,
+    {{ p|safe }} .field-row label,
+    {{ p|safe }} .md-pane-preview,
+    {{ p|safe }} .integrity-modal h3,
+    {{ p|safe }} .integrity-modal p,
+    {{ p|safe }} .integrity-modal ul,
+    {{ p|safe }} .quiz-schedule-dates,
+    {{ p|safe }} .quiz-login-notice,
+    {{ p|safe }} .why-toggle .why-body,
+    {{ p|safe }} .quiz-tab { color: #ccc; }
+    {{ p|safe }} .quiz-question-counter,
+    {{ p|safe }} #quiz-save-status,
+    {{ p|safe }} .quiz-meta-item .meta-label,
+    {{ p|safe }} .tc-desc,
+    {{ p|safe }} .field-hint,
+    {{ p|safe }} .quiz-time-info,
+    {{ p|safe }} .why-toggle .why-label,
+    {{ p|safe }} .vlog-table td:first-child,
+    {{ p|safe }} .integrity-modal .notice-footer { color: #9a9a9a; }
+    {{ p|safe }} .quiz-shortcuts kbd { background: #2a2a2a; border-color: #555; color: #ddd; }
+    {{ p|safe }} .quiz-meta-item,
+    {{ p|safe }} .quiz-login-notice,
+    {{ p|safe }} .quiz-description,
+    {{ p|safe }} .quiz-explanation,
+    {{ p|safe }} .md-tabs,
+    {{ p|safe }} .add-btn,
+    {{ p|safe }} .btn-cancel,
+    {{ p|safe }} .btn-vlog-close,
+    {{ p|safe }} .question-type-tag { background: #262626; border-color: #3b3b3b; color: #ccc; }
+    {{ p|safe }} .quiz-meta-item .meta-value { color: #eee; }
+    {{ p|safe }} .quiz-tab:hover,
+    {{ p|safe }} .md-tab:hover:not(.active),
+    {{ p|safe }} .quiz-tab-count { background: #333; color: #eee; }
+    {{ p|safe }} .quiz-choices-result li.choice-correct { background: #17381f; border-color: #2a6a35; }
+    {{ p|safe }} .quiz-choices-result li.choice-wrong-selected { background: #3d1c1c; border-color: #7a2f2f; }
+    {{ p|safe }} .quiz-schedule-upcoming,
+    {{ p|safe }} .quiz-section-upcoming { background: #3a3114; border-color: #7a6320; color: #f1d98a; }
+    {{ p|safe }} .quiz-schedule-open,
+    {{ p|safe }} .quiz-section-ongoing { background: #17381f; border-color: #2a6a35; color: #a8e0b0; }
+    {{ p|safe }} .quiz-schedule-ended,
+    {{ p|safe }} .quiz-section-past { background: #2a2a2a; border-color: #4a4a4a; color: #bbb; }
+    {{ p|safe }} .violation-badge { background: #3a3114; border-color: #b8860b; color: #f1d98a; }
+    {{ p|safe }} .vlog-table td { border-color: #3b3b3b; }
+    {{ p|safe }} .sa-hint { background: #1b2433; border-color: #2f4468; color: #ccc; }
+    {{ p|safe }} .sa-hint code { background: #26324a; color: #dde; }
+    {{ p|safe }} .err-banner { background: #3d1c1c; border-color: #7a2f2f; color: #f2a0a0; }
+    {{ p|safe }} .quiz-ranking tr.me { background: #3a3114; }
+    {{ p|safe }} .delete-question-btn:hover { background: #3d1c1c; }
+    {{ p|safe }} .quiz-watermark span { color: #fff; }
+{% endmacro %}
+<style>
+    /* ── Code in quiz content / choices ─────────────────────── */
+    .quiz-question-content pre,
+    .quiz-choice-text pre,
+    .quiz-choices-result pre,
+    .quiz-explanation pre,
+    .quiz-description pre,
+    .md-pane-preview pre,
+    .why-body pre {
+        white-space: pre;
+        overflow-x: auto;
+        margin: 0.6em 0;
+        tab-size: 4;
+        -moz-tab-size: 4;
+    }
+    .quiz-choice-text .codehilite,
+    .quiz-choices-result .codehilite,
+    .quiz-question-content .codehilite { margin: 0.4em 0; max-width: 100%; }
+    .quiz-choice-text pre { font-size: 0.92em; }
+    .quiz-choice-text,
+    .choice-body { min-width: 0; }
+    {{ dark_rules("body[data-theme='dark']") }}
+    @media (prefers-color-scheme: dark) {
+        {{ dark_rules("body[data-theme='auto']") }}
+    }
+</style>

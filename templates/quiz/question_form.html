@@ -1,6 +1,7 @@
 {% extends "common-content.html" %}
 
 {% block media %}
+{% include "quiz/_theme.html" %}
 <style>
 .qform { max-width: 820px; margin: 0 auto; }
 
@@ -252,7 +253,7 @@
                 <button type="button" class="md-tab" data-pane="preview">{{ _('Preview') }}</button>
             </div>
             <div class="md-pane-write">{{ form.content }}</div>
-            <div class="md-pane-preview" style="display:none;"></div>
+            <div class="md-pane-preview content-description" style="display:none;"></div>
         </div>
         {% for e in form.content.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
         <div class="field-hint">{{ _('Supports Markdown — **bold**, *italic*, `code`, ~inline math~, $$display math$$') }}</div>
@@ -266,7 +267,7 @@
                 <button type="button" class="md-tab" data-pane="preview">{{ _('Preview') }}</button>
             </div>
             <div class="md-pane-write">{{ form.explanation }}</div>
-            <div class="md-pane-preview" style="display:none;"></div>
+            <div class="md-pane-preview content-description" style="display:none;"></div>
         </div>
         <div class="field-hint">{{ _('Shown to all students after submitting, regardless of their answer. Supports Markdown.') }}</div>
     </div>

@@ -1,5 +1,9 @@
 {% extends "common-content.html" %}
 
+{% block media %}
+{% include "quiz/_theme.html" %}
+{% endblock %}
+
 {% block body %}
 {% if preview is defined %}
     <h3>{{ _('Preview') }}</h3>
@@ -12,7 +16,7 @@
             {% if question.errors %}
                 <ul style="color:#c00">{% for error in question.errors %}<li>{{ error }}</li>{% endfor %}</ul>
             {% else %}
-                <div>{{ question.content|markdown('default') }}</div>
+                <div class="content-description">{{ question.content|markdown('default') }}</div>
                 {% if question.choices %}<ol>{% for choice in question.choices %}<li>{{ choice['text']|markdown('default') }}</li>{% endfor %}</ol>{% endif %}
             {% endif %}
         </div>
