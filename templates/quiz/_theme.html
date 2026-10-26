@@ -74,6 +74,18 @@
     {{ p|safe }} .quiz-ranking tr.me { background: #3a3114; }
     {{ p|safe }} .delete-question-btn:hover { background: #3d1c1c; }
     {{ p|safe }} .quiz-watermark span { color: #fff; }
+    {{ p|safe }} .quiz-choices-result li,
+    {{ p|safe }} .quiz-answer-row,
+    {{ p|safe }} .answer-box { background: #1f1f1f; border-color: #4a4f5c; }
+    {{ p|safe }} .quiz-choices-result li.choice-correct,
+    {{ p|safe }} .answer-box.ok { background: #17381f; border-color: #2a7a35; }
+    {{ p|safe }} .quiz-choices-result li.choice-wrong-selected,
+    {{ p|safe }} .answer-box.bad { background: #3d1c1c; border-color: #a04040; }
+    {{ p|safe }} .choice-letter { background: #2a2a2a; border-color: #6a7285; color: #ccc; }
+    {{ p|safe }} .choice-correct .choice-letter { background: #2f8f2f; border-color: #2f8f2f; color: #fff; }
+    {{ p|safe }} .choice-wrong-selected .choice-letter { background: #c44; border-color: #c44; color: #fff; }
+    {{ p|safe }} .answer-box-label { color: #aaa; }
+    {{ p|safe }} .quiz-choice-label { border-color: #4a4f5c; }
 {% endmacro %}
 <style>
     /* ── Code in quiz content / choices ─────────────────────── */
@@ -96,6 +108,15 @@
     .quiz-choice-text pre { font-size: 0.92em; }
     .quiz-choice-text,
     .choice-body { min-width: 0; }
+    /* ── Choice boundaries (take page) ──────────────────────── */
+    .quiz-choice-label { border: 1px solid #c3cce0; border-left-width: 4px; }
+    .quiz-choice-label:hover { border-left-color: #5b80b9; }
+    .quiz-choice-label.selected { border-left-color: #1958c1; }
+    .quiz-choices { gap: 0.6em; }
+    /* ── Question bank filter bar ───────────────────────────── */
+    .qbank-filter { display: flex; flex-wrap: wrap; gap: 0.5em; align-items: center; margin-bottom: 1em; }
+    .qbank-filter input[type=text] { flex: 1 1 14em; min-width: 10em; }
+    .qbank-filter input, .qbank-filter select, .qbank-filter button { margin: 0; height: 2.4em; }
     {{ dark_rules("body[data-theme='dark']") }}
     @media (prefers-color-scheme: dark) {
         {{ dark_rules("body[data-theme='auto']") }}
