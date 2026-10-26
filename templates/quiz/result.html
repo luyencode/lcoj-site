@@ -3,34 +3,48 @@
 {% block media %}
 {% include "quiz/_theme.html" %}
 <style>
-    .quiz-answer-row { border: 1px solid #ddd; border-radius: 4px; padding: 1em; margin-bottom: 1em; }
-    .quiz-answer-row.correct   { border-left: 5px solid #4a4; }
-    .quiz-answer-row.incorrect { border-left: 5px solid #c44; }
+    .quiz-answer-row { border: 1px solid #ddd; border-radius: 6px; padding: 1em 1.2em; margin-bottom: 1.4em; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .quiz-answer-row.correct   { border-left: 6px solid #4a4; }
+    .quiz-answer-row.incorrect { border-left: 6px solid #c44; }
     .quiz-explanation { background: #f6f6f6; padding: 0.6em; margin-top: 0.6em; border-radius: 4px; }
-    .quiz-choices-result { list-style: none; padding: 0; margin: 0.5em 0; }
+    .quiz-choices-result { list-style: none; padding: 0; margin: 0.8em 0; }
     .quiz-choices-result li {
-        padding: 0.4em 0.6em; margin: 0.3em 0; border-radius: 3px;
-        border: 1px solid transparent;
+        padding: 0.65em 0.9em; margin: 0.55em 0; border-radius: 6px;
+        border: 1px solid #c9d1e0; border-left-width: 4px; background: #fff;
     }
     .quiz-choices-result li.choice-correct {
-        background: #e6f4e6; border-color: #bfe3bf;
+        background: #e6f4e6; border-color: #7cc47c;
     }
     .quiz-choices-result li.choice-wrong-selected {
-        background: #fbe6e6; border-color: #e3bfbf;
+        background: #fbe6e6; border-color: #e08a8a;
     }
     .quiz-choices-result li p { margin: 0 !important; }
-    .choice-row { display: flex; align-items: flex-start; gap: 0.5em; }
-    .choice-icon { flex: 0 0 1.2em; font-weight: bold; text-align: center; }
+    .choice-row { display: flex; align-items: flex-start; gap: 0.7em; }
+    .choice-letter {
+        flex: 0 0 1.7em; height: 1.7em; line-height: 1.7em; text-align: center;
+        border-radius: 50%; border: 1px solid #9aa6bd; color: #4a5670;
+        font-size: 0.85em; font-weight: bold; background: #f3f5fa;
+    }
+    .choice-correct .choice-letter { background: #2f8f2f; border-color: #2f8f2f; color: #fff; }
+    .choice-wrong-selected .choice-letter { background: #c44; border-color: #c44; color: #fff; }
     .choice-body { flex: 1; min-width: 0; }
-    .choice-correct .choice-icon { color: #2f8f2f; }
-    .choice-wrong-selected .choice-icon { color: #c44; }
     .choice-tag {
         flex: 0 0 auto; font-size: 0.78em; font-weight: bold;
-        padding: 0.1em 0.5em; border-radius: 3px; color: #fff;
+        padding: 0.1em 0.5em; border-radius: 3px; color: #fff; white-space: nowrap;
     }
     .choice-tag.correct { background: #2f8f2f; }
     .choice-tag.wrong { background: #c44; }
     .choice-tag.missed { background: #cc7a00; }
+    .answer-compare { display: flex; flex-wrap: wrap; gap: 0.6em; margin: 0.8em 0; }
+    .answer-box {
+        flex: 1 1 14em; border: 1px solid #c9d1e0; border-left-width: 4px;
+        border-radius: 6px; padding: 0.5em 0.9em; background: #fff;
+    }
+    .answer-box.ok  { border-color: #7cc47c; background: #e6f4e6; }
+    .answer-box.bad { border-color: #e08a8a; background: #fbe6e6; }
+    .answer-box-label { display: block; font-size: 0.78em; font-weight: bold; color: #666; text-transform: uppercase; letter-spacing: 0.03em; }
+    .answer-box-value { font-size: 1.05em; word-break: break-word; }
+    .answer-box-value code { white-space: pre-wrap; }
     .question-type-tag {
         display: inline-block; font-size: 0.7em; font-weight: normal;
         color: #666; background: #eee; border-radius: 3px;
@@ -87,7 +101,7 @@
                     {%- if is_correct %} choice-correct{% endif %}
                     {%- if was_selected and not is_correct %} choice-wrong-selected{% endif %}">
                     <div class="choice-row">
-                        <span class="choice-icon">{% if is_correct %}&#10003;{% elif was_selected %}&#10007;{% endif %}</span>
+                        <span class="choice-letter">{{ 'ABCDEFGHIJKL'[idx] }}</span>
                         <div class="choice-body">
                             {{ ch['text']|markdown('default') }}
                             {% if ch['explanation'] %}
@@ -109,24 +123,37 @@
             {% endfor %}
             </ul>
         {% elif row.question.type == 'TF' %}
-            <p>{{ _('Your answer') }}:
-                {% if row.answer is none or row.answer.answer is none %}<i>{{ _('(no answer)') }}</i>
-                {% else %}{{ _('True') if row.answer.answer == 0 else _('False') }}{% endif %}
-            </p>
-            <p>{{ _('Correct answer') }}: {{ _('True') if row.question.correct_answers == 0 else _('False') }}</p>
+            {% set ans_ok = row.answer and row.answer.is_correct %}
+            <div class="answer-compare">
+                <div class="answer-box {{ 'ok' if ans_ok else 'bad' }}">
+                    <span class="answer-box-label">{{ _('Your answer') }}</span>
+                    <span class="answer-box-value">{% if row.answer is none or row.answer.answer is none %}<i>{{ _('(no answer)') }}</i>{% else %}{{ _('True') if row.answer.answer == 0 else _('False') }}{% endif %}</span>
+                </div>
+                {% if not ans_ok %}
+                <div class="answer-box ok">
+                    <span class="answer-box-label">{{ _('Correct answer') }}</span>
+                    <span class="answer-box-value">{{ _('True') if row.question.correct_answers == 0 else _('False') }}</span>
+                </div>
+                {% endif %}
+            </div>
         {% else %}
             {# SA #}
-            <p>{{ _('Your answer') }}:
-                {% if row.answer is none or row.answer.answer is none %}<i>{{ _('(no answer)') }}</i>
-                {% else %}{{ row.answer.answer }}{% endif %}
-            </p>
-            {% if row.question.answer_display %}
-                <p>{{ _('Correct answer') }}: {{ row.question.answer_display }}</p>
-            {% else %}
-                <p>{{ _('Accepted patterns') }}:
-                    {% for acc in row.question.correct_answers %}{{ acc.text if acc is mapping else acc }}{% if not loop.last %} | {% endif %}{% endfor %}
-                </p>
-            {% endif %}
+            {% set ans_ok = row.answer and row.answer.is_correct %}
+            <div class="answer-compare">
+                <div class="answer-box {{ 'ok' if ans_ok else 'bad' }}">
+                    <span class="answer-box-label">{{ _('Your answer') }}</span>
+                    <span class="answer-box-value">{% if row.answer is none or row.answer.answer is none %}<i>{{ _('(no answer)') }}</i>{% else %}<code>{{ row.answer.answer }}</code>{% endif %}</span>
+                </div>
+                <div class="answer-box ok">
+                    {% if row.question.answer_display %}
+                        <span class="answer-box-label">{{ _('Correct answer') }}</span>
+                        <span class="answer-box-value">{{ row.question.answer_display }}</span>
+                    {% else %}
+                        <span class="answer-box-label">{{ _('Accepted patterns') }}</span>
+                        <span class="answer-box-value">{% for acc in row.question.correct_answers %}<code>{{ acc.text if acc is mapping else acc }}</code>{% if not loop.last %} | {% endif %}{% endfor %}</span>
+                    {% endif %}
+                </div>
+            </div>
         {% endif %}
 
         {% if row.question.explanation %}

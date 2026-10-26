@@ -1,12 +1,16 @@
 {% extends "common-content.html" %}
 
+{% block media %}
+{% include "quiz/_theme.html" %}
+{% endblock %}
+
 {% block body %}
 <p>
     <a href="{{ url('quiz_question_create') }}">{{ _('New question') }}</a> &middot;
     <a href="{{ url('quiz_import') }}">{{ _('Import') }}</a> &middot;
     <a href="{{ url('quiz_import_template') }}">{{ _('Download XLSX template') }}</a>
 </p>
-<form method="get" style="margin-bottom: 1em">
+<form method="get" class="qbank-filter">
     <input type="text" name="search" value="{{ request.GET.get('search', '') }}" placeholder="{{ _('Search...') }}">
     <select name="type"><option value="">{{ _('All types') }}</option>
         {% for value, label in types %}<option value="{{ value }}" {% if value == request.GET.get('type') %}selected{% endif %}>{{ label }}</option>{% endfor %}
