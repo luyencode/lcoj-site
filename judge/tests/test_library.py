@@ -153,6 +153,25 @@ class LibraryViewTestCase(CommonDataMixin, TestCase):
         response = self.client.get(reverse('library_detail', args=(exam.slug,)))
         self.assertEqual(response.status_code, 404)
 
+    def test_admin_list_includes_private(self):
+        self.client.force_login(self.users['superuser'])
+        response = self.client.get(reverse('library_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Đề ẩn')
+        self.assertContains(response, 'Đề tương lai')
+        self.assertContains(response, 'Đề HSG Hà Nội')
+
+    def test_normal_user_list_excludes_private(self):
+        self.client.force_login(self.users['normal'])
+        response = self.client.get(reverse('library_list'))
+        self.assertNotContains(response, 'Đề ẩn')
+        self.assertNotContains(response, 'Đề tương lai')
+
+    def test_admin_can_open_private_detail(self):
+        self.client.force_login(self.users['superuser'])
+        response = self.client.get(reverse('library_detail', args=(self.exam_invisible.slug,)))
+        self.assertEqual(response.status_code, 200)
+
     def test_pagination_preserves_filters(self):
         for i in range(13):
             ExamStatement.objects.create(
