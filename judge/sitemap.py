@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 from django.utils import timezone
@@ -15,17 +14,6 @@ class ProblemSitemap(Sitemap):
 
     def location(self, obj):
         return reverse('problem_detail', args=obj)
-
-
-class UserSitemap(Sitemap):
-    changefreq = 'weekly'
-    priority = 0.5
-
-    def items(self):
-        return User.objects.values_list('username')
-
-    def location(self, obj):
-        return reverse('user_page', args=obj)
 
 
 class ContestSitemap(Sitemap):
@@ -112,5 +100,4 @@ sitemaps = {
     'blog': BlogPostSitemap,
     'contest': ContestSitemap,
     'organization': OrganizationSitemap,
-    'user': UserSitemap,
 }

@@ -492,6 +492,13 @@ class ProblemSubmitMixin:
         ):
             return HttpResponse(format_html('<h1>{0}</h1>', _('You submitted too many submissions.')), status=429), None
 
+        if not request.user.has_perm('judge.spam_submission'):
+            now = timezone.now()
+            for window, limit in settings.VNOJ_SUBMISSION_RATE_LIMITS:
+                if Submission.objects.filter(user=request.profile, date__gte=now - window).count() >= limit:
+                    return HttpResponse(format_html('<h1>{0}</h1>', _('You are submitting too fast. '
+                                                                      'Please try again later.')), status=429), None
+
         if not self.object.allowed_languages.filter(id=form.cleaned_data['language'].id).exists():
             raise PermissionDenied()
 
