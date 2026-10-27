@@ -214,3 +214,65 @@ class TestQuizResultFeedbackModes(TestCase):
         # Editor sees full mode: choice list and explanation present
         self.assertContains(resp, '<ul class="quiz-choices-result">')
         self.assertContains(resp, 'This is the question explanation.')
+
+
+class TestChoiceLabelsFollowDisplayOrder(TestCase):
+    """A/B/C labels follow the (possibly shuffled) order the student saw, on both take and result pages."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.student = create_user(username='lblstudent')
+        cls.q = create_question(
+            title='lbl_q', code='lblq1', qtype='MC',
+            choices=[{'text': 'Choice %s' % name, 'explanation': ''} for name in ('zero', 'one', 'two', 'three')],
+            correct_answers=0, shuffle_choices=True,
+        )
+
+    def _make_attempt(self, feedback, submitted):
+        quiz = create_quiz(code='lblquiz_%s_%s' % (feedback, submitted), questions=[(self.q, 1.0)],
+                           result_feedback=feedback)
+        attempt = quiz.attempts.create(
+            user=self.student.profile, question_order=[self.q.id],
+            choice_orders={str(self.q.id): [2, 0, 3, 1]}, is_submitted=submitted, score=0.0,
+        )
+        attempt.answers.create(question=self.q, answer=3, points=0.0, is_correct=False)
+        self.client.force_login(self.student)
+        return quiz, attempt
+
+    def assertLabelled(self, html, pairs):
+        positions = []
+        for letter, text in pairs:
+            letter_pos = html.index('<span class="choice-letter">%s</span>' % letter)
+            text_pos = html.index(text)
+            self.assertLess(letter_pos, text_pos)
+            positions.append(text_pos)
+        self.assertEqual(positions, sorted(positions))
+
+    def test_take_page(self):
+        quiz, attempt = self._make_attempt('full', submitted=False)
+        resp = self.client.get(f'/quizzes/{quiz.code}/attempt/{attempt.id}')
+        self.assertEqual(resp.status_code, 200)
+        self.assertLabelled(resp.content.decode(), [
+            ('A', 'Choice two'), ('B', 'Choice zero'), ('C', 'Choice three'), ('D', 'Choice one'),
+        ])
+        # Submitted values stay the original choice indices
+        self.assertContains(resp, 'name="q%d" value="2"' % self.q.id)
+
+    def test_result_page_full(self):
+        quiz, attempt = self._make_attempt('full', submitted=True)
+        resp = self.client.get(f'/quizzes/{quiz.code}/attempt/{attempt.id}/result')
+        self.assertEqual(resp.status_code, 200)
+        self.assertLabelled(resp.content.decode(), [
+            ('A', 'Choice two'), ('B', 'Choice zero'), ('C', 'Choice three'), ('D', 'Choice one'),
+        ])
+
+    def test_result_page_answer_only(self):
+        quiz, attempt = self._make_attempt('score_only', submitted=True)
+        resp = self.client.get(f'/quizzes/{quiz.code}/attempt/{attempt.id}/result')
+        # Answer index 3 was shown third, so it is labelled C
+        self.assertContains(resp, '<b>C.</b> Choice three')
+
+    def test_choice_indices_tolerates_edited_choices(self):
+        attempt = QuizAttempt(choice_orders={str(self.q.id): [5, 2, 0]})
+        self.assertEqual(attempt.choice_indices(self.q), [2, 0, 1, 3])
+        self.assertEqual(QuizAttempt(choice_orders={}).choice_indices(self.q), [0, 1, 2, 3])

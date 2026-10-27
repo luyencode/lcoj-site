@@ -207,12 +207,10 @@ class QuizTake(TitleMixin, LoginRequiredMixin, AttemptMixin, TemplateView):
             question = questions.get(question_id)
             if question is None:
                 continue
-            choice_indices = self.attempt.choice_orders.get(
-                str(question_id)) or list(range(len(question.choices or [])))
             items.append({
                 'number': number,
                 'question': question,
-                'choice_indices': choice_indices,
+                'choice_indices': self.attempt.choice_indices(question),
                 'answer': answers.get(question_id),
             })
         context['items'] = items
@@ -343,6 +341,7 @@ class QuizResult(TitleMixin, LoginRequiredMixin, AttemptMixin, TemplateView):
             rows.append({
                 'number': number,
                 'question': question,
+                'choice_indices': self.attempt.choice_indices(question),
                 'answer': answers.get(question_id),
                 'max_points': links[question_id].points
                 if question_id in links else 0,

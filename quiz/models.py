@@ -412,6 +412,13 @@ class QuizAttempt(models.Model):
                                   question_order=order,
                                   choice_orders=choice_orders)
 
+    def choice_indices(self, question):
+        """Indices into question.choices, in the order shown to this attempt's user."""
+        count = len(question.choices or [])
+        # Tolerate choices added/removed after the attempt started: drop stale indices, append new ones
+        order = [i for i in self.choice_orders.get(str(question.id), []) if i < count]
+        return order + [i for i in range(count) if i not in order]
+
     @property
     def deadline(self):
         if self.quiz.time_limit is None:
