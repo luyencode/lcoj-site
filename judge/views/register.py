@@ -5,6 +5,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import get_default_password_validators
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.forms import ChoiceField, ModelChoiceField
 from django.shortcuts import render
@@ -79,6 +80,12 @@ class RegistrationView(OldRegistrationView):
         kwargs['oauth_only'] = settings.OAUTH_ONLY
         kwargs['oauth'] = self.social_auth
         return super(RegistrationView, self).get_context_data(**kwargs)
+
+    def post(self, request, *args, **kwargs):
+        # With OAUTH_ONLY the template only hides the form, so also reject direct POSTs (e.g. from bots)
+        if settings.OAUTH_ONLY:
+            raise PermissionDenied()
+        return super(RegistrationView, self).post(request, *args, **kwargs)
 
     @transaction.atomic
     def register(self, form):

@@ -129,7 +129,7 @@ VNOJ_COMMENT_MIN_CONTRIBUTION = -20
 VNOJ_COMMENT_MIN_LENGTH = 10
 VNOJ_COMMENT_MAX_LENGTH = 8196
 VNOJ_COMMENT_BLACKLIST_TERMS = []
-VNOJ_COMMENT_RATE_LIMIT_COUNT = None  # maximum number of comments allowed within the time window
+VNOJ_COMMENT_RATE_LIMIT_COUNT = 5  # maximum number of comments allowed within the time window, None to disable
 VNOJ_COMMENT_RATE_LIMIT_WINDOW = datetime.timedelta(seconds=600)
 
 VNOJ_TESTCASE_VISIBLE_LENGTH = 60
@@ -281,6 +281,12 @@ VNOJ_DISCORD_WEBHOOK_THROTTLING = (10, 60)  # Max 10 messages in 60 seconds
 
 # Maximum number of submissions a single user can queue without the `spam_submission` permission
 DMOJ_SUBMISSION_LIMIT = 2
+# Maximum number of submissions a single user can make within each time window, without the
+# `spam_submission` permission. A list of (window, count) pairs; set to [] to disable.
+VNOJ_SUBMISSION_RATE_LIMITS = [
+    (datetime.timedelta(minutes=5), 20),
+    (datetime.timedelta(days=1), 300),
+]
 DMOJ_SUBMISSIONS_REJUDGE_LIMIT = 10
 
 # Whether to allow users to view source code: 'all' | 'all-solved' | 'only-own'
