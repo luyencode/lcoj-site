@@ -1,6 +1,6 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import F, Q
-from django.http import JsonResponse
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.cache import patch_cache_control
 from django.utils.encoding import smart_str
@@ -36,6 +36,13 @@ class Select2CacheControlMixin:
 
 class Select2View(Select2CacheControlMixin, BaseListView):
     paginate_by = 20
+
+    def dispatch(self, request, *args, **kwargs):
+        # These endpoints back form widgets for logged-in users only; don't let
+        # anonymous crawlers enumerate users, problems, contests, etc.
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         self.request = request

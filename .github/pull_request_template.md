@@ -29,7 +29,8 @@ _Put an `x` in the boxes that apply. You can also fill these out after creating 
 - [ ] I have explained the purpose of this PR.
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the README/documentation
+- [ ] I have made corresponding changes to the README
+- [ ] If this changes user-visible behavior, settings, URLs or UI labels: I updated (or opened a PR for) the docs at [luyencode/docs](https://github.com/luyencode/docs), in both Vietnamese and English (see its [CONTRIBUTING.md](https://github.com/luyencode/docs/blob/master/CONTRIBUTING.md)), or this PR needs no docs change
 - [ ] Any dependent changes have been merged and published in downstream modules
 - [ ] Informed of breaking changes, testing and migrations (if applicable).
 - [ ] Attached screenshots (if applicable).
