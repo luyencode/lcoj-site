@@ -4393,6 +4393,10 @@ msgstr "Không thể sửa bài"
 msgid "You are not allowed to edit this problem."
 msgstr "Bạn không có quyền chỉnh sửa bài tập này."
 
+#: judge/views/problem.py:1432
+msgid "You are submitting too fast. Please try again later."
+msgstr "Bạn nộp bài quá nhanh. Vui lòng thử lại sau."
+
 #: judge/views/problem.py:1456
 #, fuzzy
 #| msgid "Edited from site"
