@@ -20,11 +20,6 @@
     }
     .quiz-choices-result li p { margin: 0 !important; }
     .choice-row { display: flex; align-items: flex-start; gap: 0.7em; }
-    .choice-letter {
-        flex: 0 0 1.7em; height: 1.7em; line-height: 1.7em; text-align: center;
-        border-radius: 50%; border: 1px solid #9aa6bd; color: #4a5670;
-        font-size: 0.85em; font-weight: bold; background: #f3f5fa;
-    }
     .choice-correct .choice-letter { background: #2f8f2f; border-color: #2f8f2f; color: #fff; }
     .choice-wrong-selected .choice-letter { background: #c44; border-color: #c44; color: #fff; }
     .choice-body { flex: 1; min-width: 0; }
@@ -77,10 +72,10 @@
     {% if not reveal_answer %}
         <p>{{ _('Your answer') }}:
             {% if row.answer is none or row.answer.answer is none %}<i>{{ _('(no answer)') }}</i>
-            {% elif row.question.type == 'MC' %}{{ row.question.choices[row.answer.answer]['text']|markdown('default', strip_paragraphs=True) }}
+            {% elif row.question.type == 'MC' %}<b>{{ 'ABCDEFGHIJKL'[row.choice_indices.index(row.answer.answer)] }}.</b> {{ row.question.choices[row.answer.answer]['text']|markdown('default', strip_paragraphs=True) }}
             {% elif row.question.type == 'TF' %}{{ _('True') if row.answer.answer == 0 else _('False') }}
             {% elif row.question.type == 'MA' %}
-                {% for idx in row.answer.answer %}{{ row.question.choices[idx]['text']|markdown('default', strip_paragraphs=True) }}{% if not loop.last %}; {% endif %}{% endfor %}
+                {% for idx in row.choice_indices if idx in row.answer.answer %}<b>{{ 'ABCDEFGHIJKL'[row.choice_indices.index(idx)] }}.</b> {{ row.question.choices[idx]['text']|markdown('default', strip_paragraphs=True) }}{% if not loop.last %}; {% endif %}{% endfor %}
             {% else %}{{ row.answer.answer }}
             {% endif %}
         </p>
@@ -90,7 +85,7 @@
     {% if reveal_answer %}
         {% if row.question.type in ('MC', 'MA') %}
             <ul class="quiz-choices-result">
-            {% for idx in range(row.question.choices|length) %}
+            {% for idx in row.choice_indices %}
                 {% set ch = row.question.choices[idx] %}
                 {% set is_correct = (row.question.type == 'MC' and idx == row.question.correct_answers) or
                                     (row.question.type == 'MA' and idx in (row.question.correct_answers or [])) %}
@@ -101,7 +96,7 @@
                     {%- if is_correct %} choice-correct{% endif %}
                     {%- if was_selected and not is_correct %} choice-wrong-selected{% endif %}">
                     <div class="choice-row">
-                        <span class="choice-letter">{{ 'ABCDEFGHIJKL'[idx] }}</span>
+                        <span class="choice-letter">{{ 'ABCDEFGHIJKL'[loop.index0] }}</span>
                         <div class="choice-body">
                             {{ ch['text']|markdown('default') }}
                             {% if ch['explanation'] %}

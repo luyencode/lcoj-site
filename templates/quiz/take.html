@@ -360,6 +360,7 @@
                         <label class="quiz-choice-label{% if item.answer == idx %} selected{% endif %}">
                             <input type="radio" name="q{{ item.question.id }}" value="{{ idx }}"
                                    {% if item.answer == idx %}checked{% endif %}>
+                            <span class="choice-letter">{{ 'ABCDEFGHIJKL'[loop.index0] }}</span>
                             <div class="quiz-choice-text content-description">{{ item.question.choices[idx]['text']|markdown('default') }}</div>
                         </label>
                         {% endfor %}
@@ -368,6 +369,7 @@
                         <label class="quiz-choice-label{% if item.answer and idx in item.answer %} selected{% endif %}">
                             <input type="checkbox" name="q{{ item.question.id }}" value="{{ idx }}"
                                    {% if item.answer and idx in item.answer %}checked{% endif %}>
+                            <span class="choice-letter">{{ 'ABCDEFGHIJKL'[loop.index0] }}</span>
                             <div class="quiz-choice-text content-description">{{ item.question.choices[idx]['text']|markdown('default') }}</div>
                         </label>
                         {% endfor %}
