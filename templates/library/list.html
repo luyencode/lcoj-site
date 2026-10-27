@@ -119,6 +119,7 @@
     <article class="library-card">
         <div class="library-card-top">
             <span class="library-card-badge" style="background:{{ category_colors.get(exam.category.slug, '#5b6770') }}">{{ exam.category.name }}</span>
+            {% if not exam.is_visible or exam.publish_on > now %}<span class="library-chip"><i class="fa fa-lock"></i> {{ _('Private') }}</span>{% endif %}
             {% if exam.year %}<span class="library-card-year">{{ exam.year }}</span>{% endif %}
         </div>
         <h3>

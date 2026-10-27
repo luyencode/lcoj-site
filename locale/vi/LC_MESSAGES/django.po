@@ -10074,3 +10074,7 @@ msgstr "Tải PDF"
 #: templates/widgets/select_all.html:8
 msgid "Check all"
 msgstr "Chọn tất cả"
+
+#: templates/library/list.html
+msgid "Private"
+msgstr "Riêng tư"

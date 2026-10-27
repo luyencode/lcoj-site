@@ -21,6 +21,18 @@ PUBLISHER_NAME = 'Cô Thi Lập Trình'
 PUBLISHER_URL = 'https://cothilaptrinh.vn'
 
 
+def get_listed_exams(request):
+    """Exams the requesting user may see in the library.
+
+    Everyone gets the visible, already-published statements. Users who can
+    edit library resources (admins) also get the hidden and scheduled ones.
+    """
+    queryset = ExamStatement.objects.all()
+    if not request.user.has_perm('judge.change_examstatement'):
+        queryset = queryset.filter(is_visible=True, publish_on__lte=timezone.now())
+    return queryset
+
+
 def dump_json_ld(payload):
     """Serialise a schema.org payload for inlining in a <script> tag.
 
@@ -43,9 +55,7 @@ class LibraryList(ListView):
                              orphans=orphans, allow_empty_first_page=allow_empty_first_page, **kwargs)
 
     def get_queryset(self):
-        queryset = (ExamStatement.objects
-                    .filter(is_visible=True, publish_on__lte=timezone.now())
-                    .select_related('category', 'contest'))
+        queryset = get_listed_exams(self.request).select_related('category', 'contest')
 
         q = self.request.GET.get('q', '').strip()
         if q:
@@ -72,13 +82,14 @@ class LibraryList(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(LibraryList, self).get_context_data(**kwargs)
-        visible = ExamStatement.objects.filter(is_visible=True, publish_on__lte=timezone.now())
+        visible = get_listed_exams(self.request)
 
         categories = list(ExamCategory.objects.order_by('order', 'name'))
         category_counts = dict(visible.values_list('category__slug')
                                .annotate(c=Count('id')).values_list('category__slug', 'c'))
 
         context['first_page_href'] = None
+        context['now'] = timezone.now()
         context['categories'] = categories
         context['category_counts'] = category_counts
         context['category_colors'] = {cat.slug: CATEGORY_PALETTE[i % len(CATEGORY_PALETTE)]
@@ -212,9 +223,7 @@ class LibraryDetail(TitleMixin, DetailView):
         return self.object.title
 
     def get_queryset(self):
-        return (ExamStatement.objects
-                .filter(is_visible=True, publish_on__lte=timezone.now())
-                .select_related('category', 'contest'))
+        return get_listed_exams(self.request).select_related('category', 'contest')
 
     def get_context_data(self, **kwargs):
         context = super(LibraryDetail, self).get_context_data(**kwargs)
