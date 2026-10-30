@@ -1,13 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 40" width="220" height="40" role="img" aria-label="Cô Thi Lập Trình">
-  <!-- Mark: 2x2 rounded squares -->
-  <g>
-    <rect x="0"    y="0"    width="15.5" height="15.5" rx="5" fill="#1f8b3f"/>
-    <rect x="18.5" y="0"    width="15.5" height="15.5" rx="5" fill="#2e86c9"/>
-    <rect x="0"    y="18.5" width="15.5" height="15.5" rx="5" fill="#2e86c9"/>
-    <rect x="18.5" y="18.5" width="15.5" height="15.5" rx="5" fill="#1f8b3f"/>
-  </g>
-  <!-- Wordmark -->
-  <text x="45" y="26" font-family="'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="20" font-weight="800" letter-spacing="-0.4">
-    <tspan fill="#1E3A63">Cô Thi </tspan><tspan fill="#d9a82a">Lập Trình</tspan>
-  </text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 215 32" height="32" role="img" aria-label="Cô Thi Lập Trình"><rect x="1.5" y="1.5" width="13" height="13" rx="3" fill="#1f8b3f"/><rect x="17.5" y="1.5" width="13" height="13" rx="3" fill="#2e86c9"/><rect x="1.5" y="17.5" width="13" height="13" rx="3" fill="#2e86c9"/><rect x="17.5" y="17.5" width="13" height="13" rx="3" fill="#1f8b3f"/><text x="42" y="23" font-family="Be Vietnam Pro, system-ui, sans-serif" font-weight="800" font-size="19"><tspan fill="#1f8b3f">Cô Thi</tspan><tspan fill="#2e86c9" dx="5">Lập Trình</tspan></text></svg>

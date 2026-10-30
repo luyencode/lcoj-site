@@ -1,0 +1,228 @@
+@use "vars" as *;
+
+// Site chrome from design-system-ctlt: footer, social pills, floating Zalo button.
+
+nav .nav-icon {
+    color: $color_nav_muted;
+}
+
+#footer-content {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 40px 20px 24px;
+    text-align: left;
+
+    p {
+        margin: 0;
+    }
+
+    h4 {
+        color: $color_footer_heading;
+        font-size: 15px;
+        margin: 0 0 12px;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    li {
+        margin: 6px 0;
+    }
+}
+
+.footer-cols {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1.2fr;
+    gap: 32px;
+}
+
+.footer-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 17px;
+    font-weight: 800;
+
+    b {
+        color: $brand_green;
+    }
+
+    em {
+        font-style: normal;
+        color: $brand_blue;
+    }
+}
+
+.footer-mark {
+    display: grid;
+    grid-template-columns: repeat(2, 10px);
+    gap: 2px;
+
+    i {
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        background: $brand_green;
+
+        &:nth-child(2),
+        &:nth-child(3) {
+            background: $brand_blue;
+        }
+    }
+}
+
+.footer-social {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+
+    > span {
+        font-weight: 700;
+        color: $color_footer_heading;
+        margin-right: 4px;
+    }
+}
+
+#footer-content .footer-soc {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1.5px solid $color_footer_border;
+    border-radius: $radius_pill;
+    padding: 4px 14px 4px 8px;
+    color: $color_footer_text;
+    background: $color_primary0;
+
+    svg {
+        width: 18px;
+        height: 18px;
+        color: $brand_green;
+    }
+
+    &:nth-of-type(2) svg {
+        color: $brand_blue;
+    }
+
+    b {
+        font-weight: 600;
+    }
+
+    &:hover {
+        border-color: $brand_green;
+        color: $brand_green;
+    }
+}
+
+.footer-legal {
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 1px solid $color_footer_border;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: $color_footer_legal;
+
+    a {
+        color: $color_footer_legal;
+    }
+}
+
+@media (max-width: 760px) {
+    .footer-cols {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .footer-brand {
+        grid-column: 1 / -1;
+    }
+}
+
+.zalo-fab {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 400;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: $brand_blue;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 800;
+    border-radius: $radius_pill;
+    padding: 8px 18px 8px 8px;
+    box-shadow: 0 12px 28px rgba($brand_blue, 0.38);
+
+    &:link,
+    &:visited,
+    &:hover,
+    &:active {
+        color: #fff;
+    }
+
+    svg {
+        width: 34px;
+        height: 34px;
+        box-sizing: border-box;
+        background: #fff;
+        color: $brand_blue;
+        border-radius: 50%;
+        padding: 7px;
+    }
+
+    &::before {
+        content: "";
+        position: absolute;
+        left: 8px;
+        top: 8px;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+        animation: zalo-fab-ping 2.4s ease-out infinite;
+    }
+
+    &:hover {
+        background: $brand_blue_deep;
+    }
+}
+
+@keyframes zalo-fab-ping {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.65);
+    }
+
+    80%,
+    100% {
+        box-shadow: 0 0 0 14px rgba(255, 255, 255, 0);
+    }
+}
+
+@media (max-width: 560px) {
+    .zalo-fab {
+        right: 14px;
+        bottom: 14px;
+        padding: 8px;
+
+        span {
+            display: none;
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .zalo-fab::before {
+        animation: none;
+    }
+}
+
+@media print {
+    .zalo-fab {
+        display: none;
+    }
+}

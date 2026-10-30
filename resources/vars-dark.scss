@@ -1,4 +1,6 @@
+@use 'sass:color';
 @forward "vars-common";
+@use "vars-common" as *;
 
 $is_light_theme: false;
 
@@ -13,10 +15,10 @@ $color_primary75: #ccc;     // widget
 $color_primary90: #eee;
 $color_primary100: #f8f8f8;
 
-$color_link50: #06d;    // default (title)
-$color_link75: #6bf;    // default
-$color_link100: #49e;   // hover
-$color_link200: #d83;   // active
+$color_link50: $brand_blue;    // default (title)
+$color_link75: color.mix($brand_blue, #fff, 70%);    // default
+$color_link100: color.mix($brand_blue, #fff, 55%);   // hover
+$color_link200: color.mix($brand_green, #fff, 70%);   // active
 
 $color_pageBg: #222;    // #222 because some elements should be darker than pageBg
 
@@ -79,7 +81,7 @@ $color_blog_text_muted: #707070;
 $color_blog_text_tertiary: #888888;
 $color_blog_hover_bg: #333333;
 $color_blog_active_bg: #404040;
-$color_blog_accent: #6bf;
+$color_blog_accent: color.mix($brand_blue, #fff, 70%);
 $color_blog_code_bg: #2d2d2d;
 $color_blog_blockquote_border: #505050;
 $color_blog_vote_active: #4ade80;
@@ -89,8 +91,21 @@ $color_blog_tag_text: #b0b0b0;
 $color_blog_tag_hover_bg: #353535;
 $color_blog_tag_hover_border: #4a4a4a;
 $color_blog_tag_hover_text: #d0d0d0;
-$color_blog_tag_active_bg: #3b82f6;
+$color_blog_tag_active_bg: $brand_green;
 $color_blog_hero_bg: #252525;
+
+// Brand chrome (design-system-ctlt), dark variant
+$color_heading: color.mix($brand_green, #fff, 70%);
+$color_nav_bg: #181818;
+$color_nav_text: #eee;
+$color_nav_muted: #aaa;
+$color_nav_hover_bg: rgba(255, 255, 255, 0.08);
+$color_nav_border: #3b3b3b;
+$color_footer_bg: #181818;
+$color_footer_text: #aaa;
+$color_footer_heading: #eee;
+$color_footer_legal: #808080;
+$color_footer_border: #3b3b3b;
 
 $path_to_root: '..';    // relative path from style.css to STATIC_ROOT
 

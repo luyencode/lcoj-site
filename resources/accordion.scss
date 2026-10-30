@@ -16,9 +16,9 @@
 }
 
 .accordion .card-toggle {
-    color: $color_primary0;
-    background: $color_primary75;
-    border-radius: 4px 4px 0 0;
+    color: #fff;
+    background: $brand_green;
+    border-radius: 10px 10px 0 0;
     display: block;
     font-size: 1.1em;
     padding: 0.5em;
@@ -27,5 +27,5 @@
 }
 
 .accordion .card-toggle:hover {
-    background: rgba($color_primary75, 0.7);
+    background: $brand_green_deep;
 }

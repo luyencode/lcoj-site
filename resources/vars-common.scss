@@ -1,9 +1,28 @@
-$highlight_blue: #1ba94c;
-$announcement_red: #ae0000;
+// Cô Thi Lập Trình brand tokens - mirrors design-system-ctlt/tokens/tokens.css.
+// Official palette: do not add new colors.
+$brand_green: #1f8b3f;
+$brand_blue: #2e86c9;
+$brand_green_deep: #176c31;
+$brand_blue_deep: #236ea8;
+$brand_mint: #eef7f1;
+$brand_ink: #1b2a22;
+$brand_muted: #5b6b63;
+$brand_line: #dfe8e2;
+$brand_foot: #f4f6f5;
+$brand_foot_ink: #6b7770;
+$brand_foot_legal: #8a948e;
+$brand_error: #c0392b;
+$brand_shadow_card: 0 18px 36px rgba(31, 139, 63, 0.12);
+$brand_shadow_pop: 0 16px 36px rgba(27, 42, 34, 0.16);
+$radius_pill: 999px;
+
+$highlight_blue: $brand_green;
+$announcement_red: $brand_error;
 
 $base_font_size: 15px;
 $widget_border_radius: 4px;
 
 $table_header_rounding: 6px;
 
-$monospace-fonts: Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace;
+$sans-fonts: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+$monospace-fonts: "Noto Sans Mono", "Liberation Mono", Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "Bitstream Vera Sans Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, ui-monospace, monospace;
