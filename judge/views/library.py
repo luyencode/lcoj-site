@@ -13,8 +13,8 @@ from judge.utils.opengraph import generate_opengraph
 from judge.utils.views import TitleMixin
 
 # Accent colors cycled across exam categories (by display order) for the
-# tab/badge chips on the library pages.
-CATEGORY_PALETTE = ['#1f8b3f', '#2e86c9', '#7a4fb5', '#c9762e', '#0e6a54', '#b5384f', '#5b6770']
+# tab/badge chips on the library pages. Brand rule: alternate green and blue only.
+CATEGORY_PALETTE = ['#1f8b3f', '#2e86c9']
 
 # Publisher block reused by the schema.org payload of both library pages.
 PUBLISHER_NAME = 'Cô Thi Lập Trình'

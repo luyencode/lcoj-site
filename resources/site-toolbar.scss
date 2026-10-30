@@ -1,3 +1,5 @@
+@use "vars" as *;
+
 .site-toolbar {
     position: fixed;
     top: 50%;
@@ -193,12 +195,13 @@ a.site-toolbar-action {
 }
 
 .donate-modal-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: $brand_green;
     color: white;
     padding: 20px 30px;
     border-radius: 12px 12px 0 0;
 
     h2 {
+        color: inherit;
         margin: 0;
         font-size: 24px;
         font-weight: 600;
@@ -226,7 +229,7 @@ a.site-toolbar-action {
 }
 
 .donate-info {
-    background: #f8f9fa;
+    background: $brand_mint;
     border-radius: 8px;
     padding: 20px;
     margin: 20px 0;
@@ -234,7 +237,7 @@ a.site-toolbar-action {
     h3 {
         margin-top: 0;
         margin-bottom: 15px;
-        color: #667eea;
+        color: $brand_green;
         font-size: 18px;
     }
 }
@@ -285,7 +288,7 @@ a.site-toolbar-action {
     text-align: center;
     font-size: 16px;
     font-weight: 600;
-    color: #667eea;
+    color: $brand_green;
     margin-top: 20px;
     margin-bottom: 0;
 }
