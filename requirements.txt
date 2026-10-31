@@ -39,7 +39,7 @@ lupa
 netaddr
 webauthn<1
 bleach[css]
-markdown2 @ git+https://github.com/VNOI-Admin/python-markdown2.git
+markdown2[latex] @ git+https://github.com/VNOI-Admin/python-markdown2.git
 discord-webhook
 django-admin-sortable2
 icalendar
