@@ -18,7 +18,7 @@ $lib-radius: 14px;
 .library-hero {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(135deg, $lib-green 0%, #177235 55%, #0f5f2a 100%);
+    background: $lib-green;
     color: #fff;
     border-radius: $lib-radius;
     padding: 28px 28px 26px;
@@ -58,13 +58,18 @@ $lib-radius: 14px;
     }
 
     h1 {
+        color: #fff;
         font-size: 1.85rem;
         font-weight: 800;
         letter-spacing: 0.2px;
     }
 
     .library-hero-hl {
-        color: #ffd75e;
+        color: #fff;
+        text-decoration: underline;
+        text-decoration-color: $lib-blue;
+        text-decoration-thickness: 4px;
+        text-underline-offset: 6px;
     }
 
     p {
@@ -76,7 +81,7 @@ $lib-radius: 14px;
     }
 }
 
-// Small kicker above the title, in the yellow used for highlights.
+// Small kicker above the title.
 .library-hero-kicker {
     display: inline-flex;
     align-items: center;
@@ -90,7 +95,7 @@ $lib-radius: 14px;
     font-weight: 700;
     letter-spacing: 0.6px;
     text-transform: uppercase;
-    color: #ffe89a;
+    color: #fff;
 }
 
 // Monogram echo of the logo: four rounded squares in a 2x2 block, alternating
@@ -148,7 +153,7 @@ $lib-radius: 14px;
         margin-bottom: 1px;
         font-size: 1.75rem;
         font-weight: 800;
-        color: #ffd75e;
+        color: #fff;
         line-height: 1.1;
     }
 }
@@ -526,7 +531,7 @@ $lib-radius: 14px;
 }
 
 .library-btn-contest {
-    background: linear-gradient(135deg, $lib-blue 0%, $lib-blue-dark 100%);
+    background: $lib-blue;
     color: #fff;
     box-shadow: 0 3px 10px rgba(46, 134, 201, 0.35);
     text-transform: uppercase;
@@ -538,7 +543,7 @@ $lib-radius: 14px;
 
     &:hover,
     &:focus {
-        background: linear-gradient(135deg, $lib-blue-dark 0%, #1b5c8e 100%);
+        background: $lib-blue-dark;
         box-shadow: 0 5px 16px rgba(46, 134, 201, 0.45);
         transform: translateY(-1px);
         color: #fff;

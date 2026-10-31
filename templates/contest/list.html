@@ -167,7 +167,7 @@
     <td>
         {% if request.profile not in contest.authors.all() and request.profile not in contest.curators.all() and request.profile not in contest.testers.all() %}
             {% if request.profile and contest.id in request.profile.registered_contest_ids %}
-                <span style="color: #87ab69"><b>Already registered</b></span>
+                <span style="color: #1f8b3f"><b>Already registered</b></span>
             {% elif not contest.can_register %}
                 {% if contest.time_before_register %}
                     <span class="time">{{ _('Registration opens in %(countdown)s', countdown=as_countdown(contest.time_before_register)) }}</span>
@@ -177,7 +177,7 @@
             {% else %}
                 <form action="{{ url('contest_register', contest.key) }}" method="post">
                     {% csrf_token %}
-                    <input type="submit" class="unselectable button full participate-button register-warning" style="background: linear-gradient(to bottom, #87ab69 0, #4b6043 100%) repeat-x"
+                    <input type="submit" class="unselectable button full participate-button register-warning" style="background: #2e86c9"
                             value="{{ _('Register') }}">
                 </form>
             {% endif %}

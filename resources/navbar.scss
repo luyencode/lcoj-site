@@ -4,7 +4,7 @@
     top: 0;
     right: 0;
     position: absolute;
-    color: #5c5954;
+    color: $color_nav_muted;
     padding-right: 10px;
     display: inline-flex;
     min-height: 100%;
@@ -12,7 +12,7 @@
     white-space: nowrap;
 
     a {
-        color: #FFF;
+        color: $color_nav_text;
     }
 
     li {
@@ -43,7 +43,7 @@
 
                     & > span {
                         vertical-align: middle;
-                        color: #eee;
+                        color: $color_nav_text;
                     }
                 }
             }
@@ -62,16 +62,16 @@
     left: 0;
     width: 100%;
     height: 56px;
-    background: #519c53;
+    background: $color_nav_bg;
 }
 
 #nav-shadow {
-    height: 3px;
-    background: linear-gradient(rgba(0, 0, 0, 0.5), transparent);
+    height: 0;
 }
 
 #nav-container {
-    background: #3d7a3f;
+    background: $color_nav_bg;
+    border-bottom: 1px solid $color_nav_border;
 
     // opacity: 0.77
     // filter: alpha(opacity=77)
@@ -92,10 +92,10 @@ nav {
 
         li {
             display: inline-block;
-            color: #FFF;
-            text-transform: uppercase;
+            color: $color_nav_text;
             position: relative;
-            font-family: 'Source Sans Pro', sans-serif;
+            font-family: $sans-fonts;
+            font-weight: 600;
             &.home-nav-element a {
                 padding: 0;
                 height: 44px;
@@ -110,27 +110,26 @@ nav {
             a, button {
                 text-decoration: none;
                 vertical-align: middle;
-                color: #FFF;
-                padding: 14px 7px;
+                color: $color_nav_text;
+                padding: 7px 12px;
+                margin: 7px 1px;
                 height: 20px;
                 display: inline-table;
+                border-radius: $radius_pill;
+                font-size: 14px;
 
                 &:link {
-                    color: #FFF;
+                    color: $color_nav_text;
                 }
 
                 &:hover {
-                    color: #FFF;
-                    background: rgba(255, 255, 255, 0.25);
-                    margin: 0;
+                    color: $color_nav_text;
+                    background: $color_nav_hover_bg;
                 }
 
                 &.active {
-                    color: #FFF;
-
-                    border: 5px solid transparent;
-                    border-bottom: 5px solid $highlight_blue;
-                    padding: 9px 2px;
+                    color: #fff;
+                    background: $brand_green;
                 }
 
                 .nav-expand {
@@ -143,15 +142,18 @@ nav {
                 position: absolute;
                 left: 5px;
                 display: none;
-                color: #fff;
-                background: #3d7a3f;
+                color: $color_nav_text;
+                background: $color_nav_bg;
                 margin: 0 !important;
-                box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+                padding: 6px;
+                border: 1px solid $color_nav_border;
+                border-radius: 14px;
+                box-shadow: $brand_shadow_pop;
 
                 li {
                     a.active {
-                        border: none;
-                        border-left: 5px solid $highlight_blue;
+                        color: #fff;
+                        background: $brand_green;
                     }
                 }
 
@@ -159,17 +161,19 @@ nav {
                     display: block;
 
                     a, button {
-                        padding: 8px 20px 8px 8px !important;
-                        font-size: 0.8em;
+                        margin: 0;
+                        padding: 8px 20px 8px 12px !important;
+                        font-size: 14px;
                         line-height: 18px;
                         display: block;
-                        border-left: 4px solid $highlight_blue;
+                        border-radius: 10px;
                         white-space: nowrap;
                     }
                 }
             }
 
             button {
+                color: $color_nav_text !important;
                 background: none;
                 text-align: left;
                 border: none;
@@ -198,7 +202,7 @@ nav {
         display: inline-block;
         height: 32px;
         margin-right: 1px;
-        border-right: 3px solid rgba(255, 255, 255, 0.15);
+        border-right: 1px solid $color_nav_border;
     }
 }
 
@@ -216,15 +220,14 @@ nav {
         display: block;
         line-height: 26px;
         font-size: 2em;
-        color: #FFF;
+        color: $brand_green;
         padding: 0 0.25em;
         margin: 4px 0.25em;
         white-space: nowrap;
         float: left;
 
         &.hover {
-            color: #4db7fe;
-            text-shadow: 0 0 5px $highlight_blue;
+            color: $brand_green_deep;
             transition-duration: 0.25s;
         }
     }
@@ -235,9 +238,10 @@ nav {
         margin: 0;
         position: fixed;
         top: 36px;
-        background: #3d7a3f;
+        background: $color_nav_bg;
+        border-right: 1px solid $color_nav_border;
         bottom: 0;
-        width: 8em;
+        width: 10em;
         left: 0;
 
         &.show-list {
@@ -260,7 +264,7 @@ nav {
             }
 
             ul {
-                left: 8em;
+                left: 10em;
                 top: 0px;
 
                 &.show-list {

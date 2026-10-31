@@ -22,6 +22,10 @@
     float: right;
 }
 
+input, select, textarea, button {
+    font-family: inherit;
+}
+
 // Bootstrap-y buttons
 .button, button, input[type=submit] {
     color: white !important;
@@ -29,13 +33,12 @@
     cursor: pointer;
     vertical-align: middle;
     white-space: nowrap;
-    font-weight: 400;
+    font-family: inherit;
+    font-weight: 600;
     line-height: 1.4;
-    background: rgb(51, 122, 183) none repeat scroll 0 (0% / auto) padding-box border-box;
-    background: -webkit-linear-gradient(top, #337ab7 0, #265a88 100%) repeat-x;
-    background: linear-gradient(to bottom, #337ab7 0, #265a88 100%) repeat-x;
-    border-radius: $widget_border_radius;
-    padding: 6px 12px;
+    background: $brand_green;
+    border-radius: $radius_pill;
+    padding: 6px 16px;
     display: block;
     border: 0;
     text-align: center;
@@ -44,12 +47,12 @@
     font-size: $base_font_size;
 
     &:hover {
-        background: #265a88;
+        background: $brand_green_deep;
     }
 
     &:active {
-        border-color: #245580;
-        background: #265a88;
+        border-color: $brand_green_deep;
+        background: $brand_green_deep;
     }
 
     &.full {
@@ -57,8 +60,8 @@
     }
 
     &.disabled {
-        background: linear-gradient(to bottom, darkgray 0, gray 100%) repeat-x !important;
-        border-color: grey !important;
+        background: $color_primary33 !important;
+        border-color: $color_primary33 !important;
         cursor: not-allowed;
     }
 }
@@ -85,13 +88,13 @@ input {
         font-size: $base_font_size;
 
         &:hover {
-            border-color: rgba(82, 168, 236, 0.8);
-            box-shadow: inset 0 1px 1px rgba($color_primary100, 0.075), 0 0 4px rgba(82, 168, 236, 0.6);
+            border-color: $brand_blue;
+            box-shadow: inset 0 1px 1px rgba($color_primary100, 0.075), 0 0 4px rgba($brand_blue, 0.4);
         }
 
         &:focus {
-            border-color: rgba(82, 168, 236, 0.8);
-            box-shadow: inset 0 1px 1px rgba($color_primary100, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+            border-color: $brand_blue;
+            box-shadow: inset 0 1px 1px rgba($color_primary100, 0.075), 0 0 0 3px rgba($brand_blue, 0.2);
             outline: 0;
         }
     }
@@ -129,13 +132,13 @@ textarea {
 }
 
 textarea:hover {
-    border-color: rgba(82, 168, 236, 0.8);
-    box-shadow: inset 0 1px 1px rgba($color_primary100, 0.075), 0 0 4px rgba(82, 168, 236, 0.6);
+    border-color: $brand_blue;
+    box-shadow: inset 0 1px 1px rgba($color_primary100, 0.075), 0 0 4px rgba($brand_blue, 0.4);
 }
 
 textarea:focus {
-    border-color: rgba(82, 168, 236, 0.8);
-    box-shadow: inset 0 1px 1px rgba($color_primary100, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+    border-color: $brand_blue;
+    box-shadow: inset 0 1px 1px rgba($color_primary100, 0.075), 0 0 0 3px rgba($brand_blue, 0.2);
     outline: 0;
 }
 
@@ -185,7 +188,7 @@ textarea:focus {
             color: $color_primary50;
 
             &.fa-plus {
-                color: green !important;
+                color: $brand_green !important;
             }
         }
 
@@ -205,7 +208,7 @@ textarea:focus {
     }
 
     h2 {
-        color: $color_primary75;
+        color: $color_heading;
     }
 
     > ul {
@@ -285,9 +288,9 @@ ul.pagination {
                     padding: 4px 12px;
                     line-height: 1.42857;
                     text-decoration: none;
-                    color: $color_primary0;
-                    background-color: $color_primary75;
-                    border: 1px solid $color_primary50;
+                    color: $color_link75;
+                    background-color: $color_primary0;
+                    border: 1px solid $color_primary25;
                     margin-left: -1px;
                 }
             }
@@ -303,8 +306,8 @@ ul.pagination {
             a, span {
                 z-index: 2;
                 color: #FFF;
-                background-color: $highlight_blue;
-                border-color: transparent;
+                background-color: $brand_green;
+                border-color: $brand_green;
                 cursor: default;
             }
         }
@@ -398,7 +401,7 @@ a.close {
     text-align: center;
     white-space: nowrap;
     vertical-align: middle;
-    background-color: #e84848;
+    background-color: $brand_error;
     border-radius: 10px;
     box-sizing: border-box;
 }
@@ -412,9 +415,9 @@ a.close {
 
 .sidebox h3 {
     margin: 0 -5px;
-    background: $color_primary75;
-    border-radius: $widget_border_radius $widget_border_radius 0 0;
-    color: $color_primary0;
+    background: $brand_green;
+    border-radius: 10px 10px 0 0;
+    color: #fff;
     padding-top: 5px;
     padding-bottom: 5px;
     padding-left: 7px;
@@ -422,7 +425,7 @@ a.close {
 }
 
 .sidebox h3 .fa {
-    color: $color_primary0;
+    color: #fff;
     float: right;
     margin: 0.2em 0.4em 0 0;
 }

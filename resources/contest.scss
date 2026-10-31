@@ -220,13 +220,12 @@ form.contest-join-pseudotab {
         display: block;
     }
 
-    /* Make problem table headers green on hover */
     th a:hover {
-        color: #0F0;
+        color: $brand_mint;
     }
 
     th a, th a:link, th a:visited {
-        color: $color_primary0;
+        color: #fff;
     }
 
     .rank {

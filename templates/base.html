@@ -24,10 +24,10 @@
     <link rel="icon" type="image/png" href="{{ static('icons/android-chrome-192x192.png') }}" sizes="192x192">
     <link rel="icon" type="image/png" href="{{ static('icons/favicon-96x96.png') }}" sizes="96x96">
     <link rel="icon" type="image/png" href="{{ static('icons/favicon-16x16.png') }}" sizes="16x16">
-    <meta name="msapplication-TileColor" content="#231F20">
+    <meta name="msapplication-TileColor" content="#1f8b3f">
     <meta name="msapplication-TileImage" content="{{ static('icons/mstile-144x144.png') }}">
     {# Chrome 39 for Android colour #}
-    <meta name="theme-color" content="#519c53">
+    <meta name="theme-color" content="#1f8b3f">
     {% if og_image %}
         <meta property="og:image" content="{{ request.build_absolute_uri(og_image) }}">
         <meta name="twitter:image" content="{{ request.build_absolute_uri(og_image) }}">
@@ -61,6 +61,9 @@
           content="{{ DMOJ_SCHEME }}://{{ DMOJ_CANONICAL|default(site.domain) }}{{ request.get_full_path() }}">
 
     {% block meta %}{% endblock %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Noto+Sans+Mono:wght@400;500;700&display=swap">
     {% if not INLINE_FONTAWESOME %}
         <link rel="stylesheet" href="{{ FONTAWESOME_CSS }}">
     {% endif %}
@@ -72,7 +75,6 @@
             <link rel="stylesheet" href="{{ static(DARK_STYLE_CSS) }}" media="(prefers-color-scheme: dark)">
         {% endif %}
         {% if INLINE_FONTAWESOME %}<link rel="stylesheet" href="{{ static('libs/fontawesome/font-awesome.css') }}">{% endif %}
-        <link rel="stylesheet" href="{{ static('source_sans_pro.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ static('libs/clipboard/tooltip.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ static('libs/select2/select2.css') }}">
     {% endcompress %}
@@ -306,7 +308,7 @@
                         <a href="javascript:void(0)" style="margin-right: 5px;">
                     {% endif %}
                         <span title="{{ _('Settings') }}">
-                            <i class="fa fa-gear" style="color: rgb(200,200,200); font-size: 1.15em"></i>
+                            <i class="fa fa-gear nav-icon" style="font-size: 1.15em"></i>
                         </span>
                     </a>
                     <ul class="settings-popup" style="min-width: 210px; right: 0; left: auto;">
@@ -340,7 +342,7 @@
                     {% endif %}
                 style="margin-right: 5px;">
                     <span title="{{ _('Report issue') }}">
-                        <i class="fa fa-exclamation-triangle" style="color: yellow;"></i>
+                        <i class="fa fa-exclamation-triangle nav-icon"></i>
                     </span>
                 </a>
                 <ul id="notification-nav">
@@ -419,7 +421,7 @@
             {% endif %}
         </a>
         {% if current_contest.can_see_own_scoreboard(request.user) %}
-            <a href="{{ url('contest_ranking', current_contest.key) }}" style="text-align: center; font-size: 0.7em; color: #DCD427;">
+            <a href="{{ url('contest_ranking', current_contest.key) }}" style="text-align: center; font-size: 0.7em; color: #eef7f1;">
                 {{ _('Go to Rankings') }}
             </a>
         {% endif %}
@@ -455,12 +457,48 @@
     {% block bodyend %}{% endblock %}
 
     <footer>
-        <span id="footer-content">
-            <br>
-            © 2026 <a href="https://cothilaptrinh.vn">Cô Thi Lập Trình</a>.
-            {% if misc_config.footer %}
-                | {{ misc_config.footer|safe }}
-            {% endif %}
+        <div id="footer-content">
+            <div class="footer-cols">
+                <div class="footer-brand">
+                    <a class="footer-logo" href="https://cothilaptrinh.vn/" target="_blank" rel="noopener">
+                        <span class="footer-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                        <span><b>Cô Thi</b> <em>Lập Trình</em></span>
+                    </a>
+                    <p>Dạy học với trọn vẹn yêu thương.</p>
+                    <div class="footer-social">
+                        <span>Theo dõi Cô Thi</span>
+                        <a class="footer-soc" href="https://www.facebook.com/cothilaptrinh/" target="_blank" rel="noopener" aria-label="Facebook Cô Thi Lập Trình">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.6-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H8v3h2.5V21z"/></svg><b>Facebook</b>
+                        </a>
+                        <a class="footer-soc" href="https://www.tiktok.com/@co.thi.lap.trinh" target="_blank" rel="noopener" aria-label="TikTok @co.thi.lap.trinh">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.6 3c.3 2.2 1.6 3.7 3.9 3.9v2.6c-1.4.1-2.6-.3-3.9-1.1v5.8c0 3.3-2.4 5.6-5.6 5.6S5.4 17.5 5.4 14.3c0-3.4 2.9-5.8 6.4-5.3v2.8c-1.6-.4-3.5.6-3.5 2.5 0 1.5 1.1 2.7 2.7 2.7 1.7 0 2.8-1.1 2.8-3V3z"/></svg><b>TikTok</b>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4>Khám phá</h4>
+                    <ul>
+                        <li><a href="https://cothilaptrinh.vn/khoa-hoc/" target="_blank" rel="noopener">Khóa học</a></li>
+                        <li><a href="https://cothilaptrinh.vn/blog/" target="_blank" rel="noopener">Bài viết</a></li>
+                        <li><a href="https://cothilaptrinh.vn/ve-co-thi/" target="_blank" rel="noopener">Giới thiệu</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Liên hệ</h4>
+                    <ul>
+                        <li><a href="https://zalo.me/0985188655" target="_blank" rel="noopener">Zalo 0985 188 655</a></li>
+                        <li><a href="mailto:contact@cothilaptrinh.vn">contact@cothilaptrinh.vn</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-legal">
+                Hộ kinh doanh Cô Thi Lập Trình, chủ hộ kinh doanh Đặng Kim Thi. Mã số hộ kinh doanh 001184024014 do UBND xã Gia Lâm, thành phố Hà Nội cấp.<br>
+                Địa chỉ: nhà 66 đường An Đào B, xã Gia Lâm, thành phố Hà Nội. Điện thoại 0985 188 655, email contact@cothilaptrinh.vn.<br>
+                © 2026 Cô Thi Lập Trình.
+                {% if misc_config.footer %}
+                    | {{ misc_config.footer|safe }}
+                {% endif %}
+            </div>
             <form id="set_language" action="{{ url('set_language') }}" method="post" style="display: inline">
                 {% csrf_token %}
                 <input name="next" type="hidden" value="{{ request.get_full_path() }}">
@@ -471,8 +509,17 @@
                 <input name="next" type="hidden" value="{{ request.get_full_path() }}">
                 <input name="theme" type="hidden" value="{{ SITE_THEME_NAME }}">
             </form>
-        </span>
+        </div>
     </footer>
+
+    {% block zalo_fab %}
+        {% if not request.in_contest %}
+            <a class="zalo-fab" href="https://zalo.me/0985188655" target="_blank" rel="noopener" aria-label="Nhắn Zalo cho Cô Thi"
+               onclick="if(window.gtag) gtag('event','cta_click',{event_category:'cta',event_label:'zalo_fab'});">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.8 2 11.5c0 2.6 1.4 4.9 3.6 6.5L5 21l3.6-1.8c1.1.3 2.2.5 3.4.5 5.5 0 10-3.8 10-8.5S17.5 3 12 3z"/></svg><span>Nhắn Zalo</span>
+            </a>
+        {% endif %}
+    {% endblock %}
 
 
 </div>

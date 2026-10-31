@@ -31,7 +31,7 @@
     }
     .quiz-progress-bar-fill {
         height: 100%;
-        background: #1958c1;
+        background: #2e86c9;
         border-radius: 99px;
         transition: width 0.25s ease;
     }
@@ -56,7 +56,7 @@
     }
     .quiz-question-badge {
         display: inline-block;
-        background: #1958c1;
+        background: #2e86c9;
         color: #fff;
         font-size: 0.78em;
         font-weight: bold;
@@ -101,19 +101,19 @@
         background: #fafbff;
     }
     .quiz-choice-label:hover {
-        border-color: #5b80b9;
+        border-color: #2e86c9;
         background: #f0f4ff;
     }
     .quiz-choice-label input[type=radio],
     .quiz-choice-label input[type=checkbox] {
         margin-top: 3px;
         flex-shrink: 0;
-        accent-color: #1958c1;
+        accent-color: #2e86c9;
     }
     .quiz-choice-text { flex: 1; }
     .quiz-choice-text p { margin: 0 !important; }
     .quiz-choice-label.selected {
-        border-color: #1958c1;
+        border-color: #2e86c9;
         background: #eef2ff;
     }
     .quiz-sa-input {
@@ -126,7 +126,7 @@
         transition: border-color 0.12s;
     }
     .quiz-sa-input:focus {
-        border-color: #1958c1;
+        border-color: #2e86c9;
         outline: none;
         box-shadow: 0 0 0 2px rgba(25,88,193,0.15);
     }
@@ -165,14 +165,14 @@
         cursor: default;
     }
     .btn-quiz-nav-next {
-        background: #1958c1;
-        border-color: #1958c1;
+        background: #2e86c9;
+        border-color: #2e86c9;
         color: #fff;
         font-weight: bold;
     }
     .btn-quiz-nav-next:hover:not(:disabled) {
-        background: #0645ad;
-        border-color: #0645ad;
+        background: #236ea8;
+        border-color: #236ea8;
         color: #fff;
     }
     .quiz-nav-spacer { flex: 1; }
@@ -248,7 +248,7 @@
         transition: border-color 0.12s, background 0.12s;
     }
     .quiz-map a:hover {
-        border-color: #5b80b9;
+        border-color: #2e86c9;
         background: #f0f4ff;
     }
     .quiz-map a.answered {
@@ -257,16 +257,16 @@
         color: #1a4a1a;
     }
     .quiz-map a.current {
-        border-color: #1958c1;
+        border-color: #2e86c9;
         background: #eef2ff;
-        color: #1958c1;
+        color: #2e86c9;
         font-weight: bold;
-        box-shadow: 0 0 0 1px #1958c1;
+        box-shadow: 0 0 0 1px #2e86c9;
     }
     .quiz-map a.answered.current {
         background: #b8ddc3;
-        border-color: #1958c1;
-        color: #1958c1;
+        border-color: #2e86c9;
+        color: #2e86c9;
     }
 
     /* ── Submit button ───────────────────────────────────────── */
@@ -634,3 +634,5 @@ window.quizIntegrityConfig = {
 <script src="{{ static('quiz-integrity.js') }}"></script>
 {% endif %}
 {% endblock %}
+
+{% block zalo_fab %}{% endblock %}

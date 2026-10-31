@@ -94,13 +94,6 @@ div.info-float {
     padding: 10px;
 }
 
-footer {
-    color: $color_primary50;
-    display: block;
-    width: 100%;
-    position: absolute;
-    bottom: 0;
-}
 
 body {
     position: relative;
@@ -109,7 +102,7 @@ body {
     font-size: $base_font_size;
     line-height: 1.231;
     background: $color_primary5;
-    font-family: "Segoe UI", "Lucida Grande", Arial, sans-serif;
+    font-family: $sans-fonts;
     color: $color_primary100;
     height: 100%;
 }
@@ -130,8 +123,12 @@ b {
     font-weight: bold;
 }
 
+h1, h2, h3 {
+    color: $color_heading;
+}
+
 h2 {
-    font-weight: 400;
+    font-weight: 700;
     font-size: 2em;
     border-radius: $widget_border_radius;
     padding: 0;
@@ -139,7 +136,7 @@ h2 {
 }
 
 h3 {
-    font-weight: 400;
+    font-weight: 700;
     font-size: 1.4em;
     border-radius: $widget_border_radius;
     padding: 0;
@@ -171,10 +168,26 @@ hr {
 }
 
 footer {
-    text-align: center;
-    height: 40px;
-    border-top: 1px solid $color_primary25;
-    background: $color_primary10;
+    display: block;
+    width: 100%;
+    color: $color_footer_text;
+    background: $color_footer_bg;
+    border-top: 1px solid $color_footer_border;
+    font-size: 14px;
+    line-height: 1.6;
+
+    a {
+        color: $color_footer_text;
+
+        &:hover {
+            color: $brand_green;
+        }
+    }
+}
+
+:focus-visible {
+    outline: 3px solid $brand_blue;
+    outline-offset: 2px;
 }
 
 html {
@@ -188,7 +201,7 @@ a {
 }
 
 noscript #noscript {
-    font-family: Arial, sans-serif;
+    font-family: $sans-fonts;
     font-size: 111%;
     color: white;
     font-weight: bold;
@@ -202,7 +215,7 @@ noscript #noscript {
 }
 
 #announcement {
-    font-family: Arial, sans-serif;
+    font-family: $sans-fonts;
     font-size: 111%;
     color: white;
     font-weight: bold;
@@ -217,7 +230,8 @@ noscript #noscript {
     padding: 5px 6px 6px 5px;
 
     a {
-        color: orange;
+        color: #fff;
+        text-decoration: underline;
     }
 }
 
@@ -274,7 +288,9 @@ noscript #noscript {
 }
 
 #page-container {
-    min-height: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     position: relative;
     margin: 0 auto;
     border-right: 1px solid $color_primary25;
@@ -286,6 +302,10 @@ noscript #noscript {
 // border-bottom: 1px solid rgb(204, 204, 204)
 // border-bottom-left-radius: 4px
 // border-bottom-right-radius: 4px
+
+#content {
+    flex: 1 0 auto;
+}
 
 #content-body {
     padding-bottom: 4em;

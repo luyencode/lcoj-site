@@ -28,7 +28,7 @@
         height: 16px;
         padding: 0 4px;
         border-radius: 8px;
-        background: #e74c3c;
+        background: $brand_error;
         color: #fff;
         font-size: 0.65em;
         line-height: 16px;
@@ -49,11 +49,11 @@
             align-items: center;
             justify-content: space-between;
             padding: 8px 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            border-bottom: 1px solid $color_nav_border;
             white-space: nowrap;
 
             .notification-panel-title {
-                color: #fff;
+                color: $color_nav_text;
                 font-weight: bold;
             }
 
@@ -61,7 +61,7 @@
                 padding: 0 !important;
                 border: none !important;
                 font-size: 0.75em;
-                color: #4db7fe;
+                color: $brand_blue;
 
                 &:hover {
                     background: none;
@@ -77,11 +77,11 @@
                 padding: 8px 12px !important;
                 border-left: 4px solid transparent !important;
                 white-space: normal !important;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                border-bottom: 1px solid $color_nav_border;
 
                 &.unread {
                     border-left-color: $highlight_blue !important;
-                    background: rgba(77, 183, 254, 0.08);
+                    background: $color_nav_hover_bg;
                 }
 
                 .notification-item-title {
@@ -90,7 +90,7 @@
                 }
 
                 .notification-item-body {
-                    color: #ccc;
+                    color: $color_nav_muted;
                     overflow: hidden;
                     text-overflow: ellipsis;
                     display: -webkit-box;
@@ -99,7 +99,7 @@
                 }
 
                 .notification-item-time {
-                    color: #999;
+                    color: $color_nav_muted;
                     font-size: 0.75em;
                     margin-top: 2px;
                 }
@@ -107,7 +107,7 @@
 
             .notification-empty {
                 padding: 16px 12px;
-                color: #999;
+                color: $color_nav_muted;
                 text-align: center;
 
                 &.hidden {
@@ -118,7 +118,7 @@
 
         .notification-panel-footer {
             text-align: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            border-top: 1px solid $color_nav_border;
 
             a {
                 font-size: 0.8em;
@@ -139,7 +139,7 @@
 
         a {
             padding: 4px 12px;
-            border-radius: 4px;
+            border-radius: $radius_pill;
             text-decoration: none;
 
             &.active {
@@ -170,7 +170,7 @@
 
             &.unread {
                 border-left: 4px solid $highlight_blue;
-                background: rgba(77, 183, 254, 0.08);
+                background: rgba($brand_green, 0.06);
             }
 
             .notification-page-item-title {
@@ -189,7 +189,7 @@
             }
 
             .notification-page-item-url {
-                color: #4db7fe;
+                color: $brand_blue;
                 font-size: 0.8em;
                 margin-top: 4px;
                 word-break: break-all;
